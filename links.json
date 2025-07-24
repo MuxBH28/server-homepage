@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Plex",
+        "icon": "bi-tv",
+        "category": "Media",
+        "url": "http://192.168.1.69:32400"
+    },
+    {
+        "name": "1337x",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "url": "https://1337x.to"
+    },
+    {
+        "name": "msehic",
+        "url": "https://msehic.com",
+        "icon": "bi-link-45deg",
+        "category": "External"
+    }
+]
