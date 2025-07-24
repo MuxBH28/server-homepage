@@ -1,0 +1,17 @@
+{
+    "name": "homepage",
+    "version": "1.0.0",
+    "main": "script.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "diskusage": "^1.2.0",
+        "express": "^5.1.0",
+        "os-utils": "^0.0.14"
+    }
+}
