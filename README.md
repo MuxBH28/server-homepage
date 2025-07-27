@@ -85,6 +85,8 @@ Custom links are stored in `links.json` on the server. You can edit this file ma
 By default, the server listens on port `6969`. You can change this by modifying the `PORT` variable in `server.js`.
 
 ### To Do
+
+- [X] Status indicator
 - [ ] Better loading screen
 - [ ] Vakti times prayer
 - [ ] Navidrome music player

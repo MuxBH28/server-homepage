@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const preload = document.getElementById("preloader");
     const main = document.getElementById("mainContent");
-
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
     const closeSettings = document.getElementById('closeSettings');
@@ -39,6 +38,19 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("datetime").textContent = dt.toLocaleDateString("en-GB", options);
     }
 
+    function checkLinkStatus(url, dot) {
+        fetch(url, { method: 'HEAD', mode: 'no-cors' })
+            .then(() => {
+                dot.classList.remove('bg-red-500', 'bg-gray-400');
+                dot.classList.add('bg-green-500');
+            })
+            .catch(() => {
+                dot.classList.remove('bg-green-500', 'bg-gray-400');
+                dot.classList.add('bg-red-500');
+            });
+    }
+
+
     function renderLinksList() {
         linksList.innerHTML = '';
         settings.links.forEach((link, i) => {
@@ -66,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        const weatherAPIKey = "REDACTED";
+        const weatherAPIKey = "1d6f2f389d424a848c6185910251002";
         const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=${weatherAPIKey}&q=${encodeURIComponent(settings.city)}&aqi=yes`;
 
         return fetch(weatherAPI)
@@ -227,8 +239,15 @@ document.addEventListener("DOMContentLoaded", () => {
           rounded-lg px-4 py-3 shadow-md transition-transform transform hover:scale-105
           w-full sm:w-auto
         `;
-                card.innerHTML = `<i class="bi ${link.icon} text-lg"></i> <span>${link.name}</span>`;
+                card.innerHTML = `
+  <span class="inline-block w-2 h-2 rounded-full bg-gray-400" data-url="${link.url}"></span>
+  <i class="bi ${link.icon} text-lg"></i>
+  <span>${link.name}</span>
+`;
                 grid.appendChild(card);
+                const dot = card.querySelector('span');
+                checkLinkStatus(link.url, dot);
+
             });
             container.appendChild(section);
         });
