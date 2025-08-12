@@ -6,6 +6,7 @@
 | About         | [Go to About](#about)                 |
 | Preview       | [Go to Preview](#preview)             |
 | Installation  | [Go to Installation](#installation)   |
+| Arduino       | [Go to Arduino](#arduino)             |
 | Usage         | [Go to Usage](#usage)                 |
 | Customization | [Go to Customization](#customization) |
 | Author        | [Go to Author](#author)               |
@@ -51,6 +52,16 @@ pm2 start server.js
 ```
 
 5. Access the homepage via `http://your-server-ip:6969/` in your browser.
+
+---
+
+## Arduino
+
+- The Arduino sketch (`arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server. 
+- It visually indicates the server health status using LEDs: green for normal, yellow for warning, and red for critical conditions. A white LED briefly blinks each time fresh data is received successfully.
+- The sketch connects to WiFi and handles network errors gracefully.
+
+I added this Arduino sketch as a test to explore how the ESP32 connects and interacts with my server, so I can plan a mini wireless server hub with a display for temperature, buttons for controlling the display, and a server restart feature.
 
 ---
 
