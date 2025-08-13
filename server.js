@@ -107,6 +107,25 @@ app.delete('/api/links/:index', (req, res) => {
     });
 });
 
+app.get('/api/process', (req, res) => {
+    exec('ps -eo pid,comm,%cpu,rss --sort=-%cpu --no-headers', (err, stdout) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const lines = stdout.trim().split('\n').slice(0, 15);
+        const processes = lines.map(line => {
+            const match = line.trim().match(/^(\d+)\s+(.+?)\s+([\d.]+)\s+([\d.]+)$/);
+            if (!match) return null;
+            return {
+                pid: match[1],
+                name: match[2],
+                cpu: match[3],
+                memory: match[4]
+            };
+        }).filter(p => p !== null);
+
+        res.json(processes);
+    });
+});
 
 function getCpuUsage() {
     return new Promise((resolve) => {

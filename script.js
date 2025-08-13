@@ -13,7 +13,131 @@ document.addEventListener("DOMContentLoaded", () => {
     const linkCategoryInput = document.getElementById('linkCategory');
     const linkUrlInput = document.getElementById('linkUrl');
     const searchInput = document.getElementById("linkSearch");
+    let cpuGauge, ramGauge, cpuTempGauge;
+    function initGauges() {
+        cpuGauge = new RadialGauge({
+            renderTo: 'cpuGauge',
+            width: 250,
+            height: 250,
+            units: '%',
+            minValue: 0,
+            maxValue: 100,
+            majorTicks: ['0', '20', '40', '60', '80', '100'],
+            minorTicks: 4,
+            strokeTicks: true,
+            highlights: [
+                { from: 0, to: 60, color: 'rgba(0, 200, 0, 0.7)' },
+                { from: 60, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
+                { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
+            ],
+            colorPlate: '#2d2d3d',
+            colorUnits: '#f5f5f5',
+            colorNumbers: '#f5f5f5',
+            colorMajorTicks: '#f5f5f5',
+            colorMinorTicks: '#aaa',
+            colorNeedle: 'rgba(255, 238, 88, 1)',
+            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
+            needleType: 'arrow',
+            needleWidth: 2,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: false,
+            animationDuration: 1000,
+            animationRule: 'linear',
+            valueBox: true,
+            valueTextShadow: false,
+            borders: true,
+            borderShadowWidth: 0,
+            valueInt: 1,
+            title: "CPU Usage",
+            titleFont: "18px sans-serif",
+            titleFontWeight: "bold",
+            titleShadow: false
+        }).draw();
 
+        ramGauge = new RadialGauge({
+            renderTo: 'ramGauge',
+            width: 250,
+            height: 250,
+            units: '%',
+            minValue: 0,
+            maxValue: 100,
+            majorTicks: ['0', '20', '40', '60', '80', '100'],
+            minorTicks: 4,
+            strokeTicks: true,
+            highlights: [
+                { from: 0, to: 50, color: 'rgba(0, 180, 0, 0.7)' },
+                { from: 50, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
+                { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
+            ],
+            colorPlate: '#2d2d3d',
+            colorUnits: '#f5f5f5',
+            colorNumbers: '#f5f5f5',
+            colorMajorTicks: '#f5f5f5',
+            colorMinorTicks: '#aaa',
+            colorNeedle: 'rgba(255, 238, 88, 1)',
+            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
+            needleType: 'arrow',
+            needleWidth: 2,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: false,
+            animationDuration: 1000,
+            animationRule: 'linear',
+            valueBox: true,
+            valueTextShadow: false,
+            borders: true,
+            borderShadowWidth: 0,
+            valueInt: 1,
+            title: "RAM Usage",
+            titleFont: "18px sans-serif",
+            titleFontWeight: "bold",
+            titleShadow: false
+        }).draw();
+
+        cpuTempGauge = new RadialGauge({
+            renderTo: 'cpuTempGauge',
+            width: 150,
+            height: 150,
+            units: '°C',
+            minValue: 0,
+            maxValue: 100,
+            majorTicks: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'],
+            minorTicks: 2,
+            strokeTicks: true,
+            highlights: [
+                { from: 0, to: 10, color: 'rgba(0, 0, 255, 0.5)' },
+                { from: 10, to: 40, color: 'rgba(0,0,0,0)' },
+                { from: 40, to: 60, color: 'rgba(0, 200, 0, 0.5)' },
+                { from: 60, to: 70, color: 'rgba(0,0,0,0)' },
+                { from: 70, to: 80, color: 'rgba(255, 255, 0, 0.5)' },
+                { from: 80, to: 100, color: 'rgba(200, 50, 50, 0.5)' }
+            ],
+            colorPlate: '#2d2d3d',
+            colorUnits: '#f5f5f5',
+            colorNumbers: '#f5f5f5',
+            colorMajorTicks: '#f5f5f5',
+            colorMinorTicks: '#aaa',
+            colorNeedle: 'rgba(255, 238, 88, 1)',
+            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
+            needleType: 'arrow',
+            needleWidth: 2,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: false,
+            animationDuration: 1000,
+            animationRule: 'linear',
+            valueBox: true,
+            valueTextShadow: false,
+            borders: true,
+            borderShadowWidth: 0,
+            valueInt: 1,
+            title: "CPU Temp",
+            titleFont: "18px sans-serif",
+            titleFontWeight: "bold",
+            titleShadow: false
+        }).draw();
+    }
     let settings = {
         city: 'Sarajevo',
         refreshInterval: 30,
@@ -34,19 +158,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateDate() {
         const dt = new Date();
+
         const options = { weekday: "long", day: "2-digit", month: "long", year: "numeric" };
         document.getElementById("datetime").textContent = dt.toLocaleDateString("en-GB", options);
+
+        const hours = String(dt.getHours()).padStart(2, '0');
+        const minutes = String(dt.getMinutes()).padStart(2, '0');
+        document.getElementById("time").textContent = `${hours}:${minutes}`;
     }
 
     function checkLinkStatus(url, dot) {
         fetch(url, { method: 'HEAD', mode: 'no-cors' })
             .then(() => {
-                dot.classList.remove('bg-red-500', 'bg-gray-400');
+                dot.classList.remove('bg-red-600', 'bg-gray-400');
                 dot.classList.add('bg-green-500');
             })
             .catch(() => {
                 dot.classList.remove('bg-green-500', 'bg-gray-400');
-                dot.classList.add('bg-red-500');
+                dot.classList.add('bg-red-600');
             });
     }
 
@@ -58,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
             li.className = "flex justify-between items-center p-1 border-b border-gray-600 last:border-0";
             li.innerHTML = `
         <span><i class="bi ${link.icon}"></i> ${link.name}</span>
-        <button data-index="${i}" class="text-red-500 hover:text-red-400 text-xl" aria-label="Delete link">&times;</button>
+        <button data-index="${i}" class="text-red-600 hover:text-red-600 text-xl" aria-label="Delete link">&times;</button>
       `;
             linksList.appendChild(li);
         });
@@ -93,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(() => {
                 const weatherBox = document.getElementById("weatherBox");
-                weatherBox.innerHTML += `<p class="text-red-400 mt-2 text-sm">Unable to load weather data.</p>`;
+                weatherBox.innerHTML += `<p class="text-red-600 mt-2 text-sm">Unable to load weather data.</p>`;
             });
     }
 
@@ -113,51 +242,29 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("clouds").innerHTML = `<i class="bi bi-cloud-fog2"></i> ${data.current.cloud}%`;
         document.getElementById("air-quality").innerHTML = `<i class="bi bi-lungs"></i> ${aqiText}`;
     }
-
     function fetchSystemData() {
         fetch("/api/system")
-            .then((res) => res.json())
-            .then((data) => {
-                const cpuTemp = data.cpu_temp ?? null;
-                const cpuTempLabel = document.getElementById("cpuTempLabel");
-                const cpuTempPointer = document.getElementById("cpuTempPointer");
-                if (cpuTemp === null) {
-                    cpuTempLabel.textContent = "CPU Temp: N/A";
-                    cpuTempPointer.style.left = "0%";
-                } else {
-                    const temp = Math.min(cpuTemp, 100);
-                    const leftPercent = temp;
-                    cpuTempPointer.style.left = `calc(${leftPercent}% - 6px)`;
-                    cpuTempLabel.textContent = `CPU Temp: ${cpuTemp} °C`;
-                }
-                document.getElementById("uptime").textContent = "Uptime: " + data.uptime;
+            .then(res => res.json())
+            .then(data => {
+                const cpuTemp = data.cpu_temp !== undefined && data.cpu_temp !== null ?
+                    Math.max(0, Math.min(100, parseFloat(data.cpu_temp))) : 0;
+
+                cpuTempGauge.value = cpuTemp;
+                cpuTempGauge.update();
+
+                const cpuPercent = parseFloat(data.cpu_percent) || 0;
+                cpuGauge.value = Math.min(100, cpuPercent);
+                cpuGauge.update();
 
                 const ramUsedGB = (data.memory.totalMem - data.memory.freeMem) / 1024 / 1024 / 1024;
                 const totalMemGB = data.memory.totalMem / 1024 / 1024 / 1024;
                 const freeMemGB = data.memory.freeMem / 1024 / 1024 / 1024;
-
-                const cpuPercent = parseFloat(data.cpu_percent);
-                const cpuUsedBar = document.getElementById("cpuUsedBar");
-                const cpuIdleBar = document.getElementById("cpuIdleBar");
-                const cpuUsedLabel = document.getElementById("cpuUsedLabel");
-                const cpuIdleLabel = document.getElementById("cpuIdleLabel");
-
-                cpuUsedBar.style.width = cpuPercent + "%";
-                cpuIdleBar.style.width = 100 - cpuPercent + "%";
-                cpuUsedLabel.textContent = `Used: ${cpuPercent.toFixed(1)}%`;
-                cpuIdleLabel.textContent = `Idle: ${(100 - cpuPercent).toFixed(1)}%`;
-
                 const ramUsedPercent = (ramUsedGB / totalMemGB) * 100;
-                const ramFreePercent = (freeMemGB / totalMemGB) * 100;
-                const ramUsedBar = document.getElementById("ramUsedBar");
-                const ramFreeBar = document.getElementById("ramFreeBar");
-                const ramUsedLabel = document.getElementById("ramUsedLabel");
-                const ramFreeLabel = document.getElementById("ramFreeLabel");
 
-                ramUsedBar.style.width = ramUsedPercent + "%";
-                ramFreeBar.style.width = ramFreePercent + "%";
-                ramUsedLabel.textContent = `Used: ${ramUsedGB.toFixed(2)} GB`;
-                ramFreeLabel.textContent = `Free: ${freeMemGB.toFixed(2)} GB`;
+                ramGauge.value = Math.min(100, ramUsedPercent);
+                ramGauge.update();
+
+                document.getElementById("uptime").textContent = "Uptime: " + data.uptime;
 
                 const diskDiv = document.getElementById("diskCharts");
                 diskDiv.innerHTML = "";
@@ -176,29 +283,52 @@ document.addEventListener("DOMContentLoaded", () => {
                     const diskSection = document.createElement("section");
                     diskSection.className = "mb-6";
                     diskSection.innerHTML = `
-            <h4 class="text-yellow-400 font-semibold mb-1">${path}</h4>
-            <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
-              <div class="h-5 bg-purple-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
-              <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-              <span>Used: ${usedPercent.toFixed(1)}%</span>
-              <span>${usedGB} GB / ${totalGB} GB</span>
-            </div>
-          `;
+                    <h4 class="text-red-600 font-semibold mb-1">${path}</h4>
+                    <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
+                      <div class="h-5 bg-red-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
+                      <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
+                      <span>Used: ${usedPercent.toFixed(1)}%</span>
+                      <span>${usedGB} GB / ${totalGB} GB</span>
+                    </div>
+                `;
                     diskDiv.appendChild(diskSection);
                 });
 
-                preload.style.display = "none";
+                preload.classList.add("fade-out");
+                setTimeout(() => preload.remove(), 500);
                 main.classList.remove("hidden");
+
+                if (cpuTemp >= 80) setIndicatorActive('indicatorTemp', 'red');
+                else if (cpuTemp >= 70) setIndicatorActive('indicatorTemp', 'red');
+                else setIndicatorInactive('indicatorTemp');
+
+                if (cpuPercent >= 80) setIndicatorActive('indicatorRam', 'red');
+                else setIndicatorInactive('indicatorRam');
+
+                if (cpuPercent >= 80 || cpuTemp >= 80) setIndicatorActive('indicatorWarning', 'red');
+                else setIndicatorInactive('indicatorWarning');
+
+                setIndicatorActive('indicatorBattery', 'limegreen');
+
+                let storageWarning = false;
+                Object.values(data.disk).forEach(disk => {
+                    if (disk && disk.used / disk.total > 0.9) storageWarning = true;
+                });
+                if (storageWarning) setIndicatorActive('indicatorStorage', 'red');
+                else setIndicatorInactive('indicatorStorage');
+
             })
-            .catch((e) => {
+            .catch(e => {
                 console.error("Greška pri dohvaćanju sistemskih podataka:", e);
                 document.getElementById("systemInfo").textContent = "Ne mogu dohvatiti sistemske podatke.";
-                preload.style.display = "none";
+                preload.classList.add("fade-out");
+                setTimeout(() => preload.remove(), 500);
                 main.classList.remove("hidden");
             });
     }
+
 
     function fetchLinks() {
         return fetch("/api/links")
@@ -226,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const section = document.createElement("section");
             section.className = "space-y-4";
             section.innerHTML = `
-        <h3 class="text-lg font-semibold text-yellow-300 border-b border-gray-600 pb-2">${category}</h3>
+        <h3 class="text-lg font-semibold text-red-600 border-b border-gray-600 pb-2">${category}</h3>
         <div class="flex flex-wrap gap-4 justify-center"></div>
       `;
             const grid = section.querySelector("div");
@@ -251,6 +381,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             container.appendChild(section);
         });
+        if (settings.links.length === 0) setIndicatorActive('indicatorNoLinks', 'red');
+        else setIndicatorInactive('indicatorNoLinks');
+
     }
 
     function filterLinks() {
@@ -369,17 +502,119 @@ document.addEventListener("DOMContentLoaded", () => {
         settings.refreshInterval = val;
         refreshIntervalInput.value = val;
     });
+    function fetchSystemProcess() {
+        fetch('/api/process')
+            .then(res => res.json())
+            .then(processes => {
+                const container = document.getElementById('processContainer');
+                if (!processes || processes.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">No processes found.</p>';
+                    return;
+                }
 
+                let html = `
+                <table class="w-full text-left text-sm text-gray-300 border border-gray-700 rounded-lg">
+                    <thead class="bg-gray-800 sticky top-0">
+                        <tr>
+                            <th class="px-3 py-2 border-b border-gray-700">PID</th>
+                            <th class="px-3 py-2 border-b border-gray-700">Name</th>
+                            <th class="px-3 py-2 border-b border-gray-700">CPU %</th>
+                            <th class="px-3 py-2 border-b border-gray-700">Memory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+                processes.forEach(p => {
+                    html += `
+                    <tr class="hover:bg-gray-700">
+                        <td class="px-3 py-1 border-b border-gray-700">${p.pid}</td>
+                        <td class="px-3 py-1 border-b border-gray-700">${p.name}</td>
+                        <td class="px-3 py-1 border-b border-gray-700">${p.cpu}</td>
+                        <td class="px-3 py-1 border-b border-gray-700">${formatBytes(p.memory)}</td>
+                    </tr>
+                `;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('processContainer').innerHTML =
+                    '<p class="text-red-600">Failed to load processes.</p>';
+            });
+    }
+
+    function formatBytes(kb) {
+        if (!kb || kb === '0') return '0 MB';
+        const num = parseFloat(kb);
+        const mb = num / 1024;
+        return mb.toFixed(1) + ' MB';
+    }
+
+    function setIndicatorActive(id, color) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('opacity-40');
+
+        const img = el.querySelector('img');
+        switch (color) {
+            case 'red':
+                img.style.filter = 'invert(35%) sepia(80%) saturate(700%) hue-rotate(0deg) brightness(1.1)';
+                break;
+            case 'red':
+                img.style.filter = 'invert(90%) sepia(100%) saturate(1000%) hue-rotate(10deg) brightness(1.1)';
+                break;
+            case 'limegreen':
+                img.style.filter = 'invert(60%) sepia(70%) saturate(500%) hue-rotate(80deg) brightness(1.2)';
+                break;
+            default:
+                img.style.filter = '';
+        }
+    }
+
+    function setIndicatorInactive(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('opacity-40');
+        el.querySelector('img').style.filter = '';
+    }
+
+
+
+    initGauges();
     loadSettings();
     updateDate();
 
     let systemInterval;
     let weatherInterval;
+    let processInterval;
 
     fetchLinks().then(() => {
         fetchSystemData();
         fetchWeather();
-        systemInterval = setInterval(() => fetchSystemData(), settings.refreshInterval * 1000);
-        weatherInterval = setInterval(() => fetchWeather(), settings.weatherRefreshInterval * 1000);
+        fetchSystemProcess();
+
+        systemInterval = setInterval(
+            () => updateDate(),
+            settings.refreshInterval * 1000
+        );
+
+        systemInterval = setInterval(
+            () => fetchSystemData(),
+            settings.refreshInterval * 1000
+        );
+
+        weatherInterval = setInterval(
+            () => fetchWeather(),
+            settings.weatherRefreshInterval * 1000
+        );
+
+        processInterval = setInterval(
+            () => fetchSystemProcess(),
+            settings.processRefreshInterval
+                ? settings.processRefreshInterval * 1000
+                : 5000
+        );
     });
+
 });

@@ -8,174 +8,215 @@
     <link rel="icon" href="/favicon.ico" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+    </style>
 </head>
 
 <body class="font-sans p-4 min-h-screen flex items-center justify-center bg-cover bg-center"
     style="background-image: url('./background.jpg');">
-    <div id="preloader" class="text-center text-3xl py-20">Loading...</div>
+    <div id="preloader"
+        class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-50">
+        <i class="bi bi-cpu-fill text-6xl animate-bounce mb-6"></i>
+        <div class="flex space-x-2">
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-150"></div>
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-300"></div>
+        </div>
+        <p class="mt-4 text-lg animate-fade-in">Initializing Server Dashboard...</p>
+    </div>
+
     <div id="mainContent"
-        class="max-w-7xl mx-auto hidden flex-grow flex flex-col bg-[#2d2d3d] bg-opacity-70 p-4 rounded-xl">
-        <div class="flex flex-1 gap-6">
-            <aside class="w-1/3 flex flex-col gap-6">
+        class="max-w-7xl mx-auto hidden w-full flex-grow flex flex-col bg-[#2d2d3d] bg-opacity-70 p-4 rounded-xl">
+        <div class="w-full mb-6">
+            <section id="systemInfo" class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg">
+                <header
+                    class="flex justify-between items-center mb-8 relative pb-6 border-b border-red-600/30 text-red-600">
+                    <h2 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="bi bi-activity"></i> Brahketov server
+                    </h2>
+                    <p id="uptime" class="text-center text-sm text-red-600 mt-2">Uptime: N/A</p>
+                    <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings" title="Settings">
+                        <i class="bi bi-gear-fill text-2xl"></i>
+                    </button>
+                </header>
 
-                <section id="systemInfo" class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg flex flex-col">
-                    <header
-                        class="flex justify-between items-center mb-8 relative pb-6 border-b border-yellow-400/30 text-yellow-400">
-                        <h2 class="text-xl font-semibold flex items-center">
-                            <i class="bi bi-activity mr-2"></i> Brahketov server
-                        </h2>
-                        <button id="settingsBtn" class="absolute top-0 right-0 p-2 hover:text-yellow-300"
-                            aria-label="Open settings" title="Settings">
-                            <i class="bi bi-gear-fill text-2xl"></i>
-                        </button>
-                    </header>
-                    <div class="mb-8">
-                        <h3 class="text-yellow-400 font-semibold mb-2">CPU Usage</h3>
-                        <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden shadow-inner relative">
-                            <div id="cpuUsedBar" class="h-6 bg-pink-500 transition-all duration-500" style="width: 0%">
-                            </div>
-                            <div id="cpuIdleBar"
-                                class="h-6 bg-gray-600 transition-all duration-500 absolute right-0 top-0"
-                                style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-                            <span id="cpuUsedLabel">Used: 0%</span><span id="cpuIdleLabel">Idle: 0%</span>
-                        </div>
+
+                <div class="flex flex-col md:flex-row items-start justify-center gap-6 w-full">
+                    <div class="flex flex-col items-center">
+                        <canvas id="cpuGauge" width="250" height="250" title="CPU Usage"></canvas>
                     </div>
 
-                    <div class="mb-8">
-                        <h3 class="text-yellow-400 font-semibold mb-2">CPU Temperature</h3>
+                    <div class="flex flex-col items-center gap-4">
+                        <canvas id="cpuTempGauge" width="150" height="150" title="CPU Temperature"></canvas>
+
                         <div
-                            class="w-full h-6 rounded-full overflow-hidden shadow-inner relative bg-gradient-to-r from-blue-500 via-gray-500 to-red-600">
-                            <div id="cpuTempPointer"
-                                class="absolute top-0 w-1.5 h-6 bg-yellow-400 rounded-md shadow-md transition-left duration-500"
-                                style="left: 0;"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-                            <span>0°C</span>
-                            <span>30°C</span>
-                            <span>80°C</span>
-                            <span>100°C</span>
-                        </div>
-                        <div id="cpuTempLabel" class="text-center text-sm text-yellow-300 mt-1"></div>
-                    </div>
-
-
-                    <div class="mb-8">
-                        <h3 class="text-yellow-400 font-semibold mb-2">
-                            RAM Usage (GB)
-                        </h3>
-                        <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden shadow-inner relative">
-                            <div id="ramUsedBar" class="h-6 bg-red-400 transition-all duration-500" style="width: 0%">
+                            class="grid grid-cols-3 gap-3 bg-[#3a3a4d] p-4 rounded-lg shadow w-full md:w-auto justify-items-center">
+                            <div id="indicatorBattery" class="w-8 h-8 opacity-40" title="Server connected">
+                                <img src="./svg/battery.svg" alt="Battery" class="w-full h-full">
                             </div>
-                            <div id="ramFreeBar"
-                                class="h-6 bg-green-500 transition-all duration-500 absolute right-0 top-0"
-                                style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-                            <span id="ramUsedLabel">Used: 0 GB</span><span id="ramFreeLabel">Free: 0 GB</span>
-                        </div>
-                    </div>
-
-                    <div id="diskCharts" class="space-y-8"></div>
-
-                    <p id="uptime" class="text-center text-sm text-yellow-300 m-6">Uptime: N/A</p>
-                </section>
-            </aside>
-
-            <main class="w-2/3 flex flex-col">
-                <section id="weatherBox" class="bg-[#2d2d3d] rounded-xl p-6 mb-6 shadow-lg space-y-4">
-                    <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-3xl font-bold text-yellow-400"> Welcome, Muhammed
-                        </h1>
-                        <div id="datetime" class="text-sm text-gray-300"></div>
-                    </div>
-                    <div id="location-name" class="flex items-center gap-2 text-lg"></div>
-                    <div class="grid grid-cols-2 gap-4 text-gray-300 text-sm">
-                        <div id="temperature" class="flex items-center gap-1"></div>
-                        <div id="wind" class="flex items-center gap-1"></div>
-                        <div id="humidity" class="flex items-center gap-1"></div>
-                        <div id="clouds" class="flex items-center gap-1"></div>
-                        <div id="air-quality" class="col-span-2 flex items-center gap-1 font-semibold"></div>
-                    </div>
-                    <hr>
-                    <div class="mb-6">
-                        <input id="linkSearch" type="search" placeholder="Search links..."
-                            class="w-full rounded-lg px-4 py-3 bg-[#3a3a4d] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow"
-                            autocomplete="off" />
-                    </div>
-                </section>
-
-                <section id="linksContainer" class="flex-1 overflow-auto space-y-8"
-                    style="max-height: calc(100vh - 200px);"></section>
-
-                <footer class="mt-8 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
-                    <p>
-                        &copy; 2025 Brahketov Server — Developed by
-                        <a href="https://msehic.com" target="_blank" rel="noopener noreferrer"
-                            class="text-yellow-400 hover:underline">Mux BH</a>
-                    </p>
-                </footer>
-
-                <div id="settingsModal"
-                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-                    <div class="bg-[#2d2d3d] rounded-lg w-11/12 max-w-md p-6 relative shadow-lg">
-                        <button id="closeSettings" aria-label="Close settings"
-                            class="absolute top-3 right-3 text-yellow-400 hover:text-yellow-300 text-2xl font-bold">&times;</button>
-                        <h2 class="text-yellow-400 text-xl font-semibold mb-4">Settings</h2>
-
-                        <form id="addLinkForm" class="mb-6">
-                            <h3 class="text-yellow-300 font-semibold mb-2">Add Link</h3>
-                            <div class="flex flex-col space-y-2">
-                                <input type="text" id="linkName" placeholder="Link Name" required
-                                    class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400" />
-                                <input type="text" id="linkIcon" placeholder="Link Icon" required
-                                    class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400" />
-                                <select id="linkCategory" required
-                                    class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400">
-                                    <option value="">Select a category</option>
-                                    <option value="Media">Media</option>
-                                    <option value="Files">Files</option>
-                                    <option value="Infrastructure">Infrastructure</option>
-                                    <option value="Development">Development</option>
-                                    <option value="External">External</option>
-                                    <option value="Other">Other</option>
-                                </select>
-
-                                <input type="url" id="linkUrl" placeholder="Link URL" required
-                                    class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400" />
-                                <button type="submit"
-                                    class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold py-2 rounded transition">Add
-                                    Link</button>
+                            <div id="indicatorTemp" class="w-8 h-8 opacity-40" title="CPU Temperature is high">
+                                <img src="./svg/temperature.svg" alt="CPU Temp" class="w-full h-full">
                             </div>
-                        </form>
-
-                        <div class="mb-6">
-                            <label for="cityInput" class="block text-yellow-300 font-semibold mb-1">City</label>
-                            <input type="text" id="cityInput" placeholder="Enter city name"
-                                class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400" />
+                            <div id="indicatorRam" class="w-8 h-8 opacity-40" title="RAM Usage High">
+                                <img src="./svg/ram-high.svg" alt="RAM High" class="w-full h-full">
+                            </div>
+                            <div id="indicatorWarning" class="w-8 h-8 opacity-40" title="System Warning">
+                                <img src="./svg/check-engine.svg" alt="Check Engine" class="w-full h-full">
+                            </div>
+                            <div id="indicatorNoLinks" class="w-8 h-8 opacity-40" title="There are no links available">
+                                <img src="./svg/no-links.svg" alt="No Links" class="w-full h-full">
+                            </div>
+                            <div id="indicatorStorage" class="w-8 h-8 opacity-40" title="Storage is almost full">
+                                <img src="./svg/storage.svg" alt="Storage" class="w-full h-full">
+                            </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="refreshInterval" class="block text-yellow-300 font-semibold mb-1">System Refresh
-                                Interval (seconds)</label>
-                            <input type="number" id="refreshInterval" min="5" max="3600" step="1"
-                                class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-yellow-400" />
-                            <p class="text-gray-400 text-xs mt-1">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
-                        </div>
-
-                        <div class="mt-6">
-                            <h3 class="text-yellow-300 font-semibold mb-2">Manage Links</h3>
-                            <ul id="linksList"
-                                class="max-h-40 overflow-y-auto divide-y divide-gray-700 text-white text-sm"></ul>
-                        </div>
+                    <div class="flex flex-col items-center">
+                        <canvas id="ramGauge" width="250" height="250" title="RAM Usage"></canvas>
                     </div>
                 </div>
 
-            </main>
+
+                <div id="diskCharts" class="flex flex-col md:flex-row items-center justify-between mt-6 gap-6"></div>
+
+            </section>
+        </div>
+
+        <div class="flex flex-col gap-6 flex-1 w-full">
+            <div class="flex flex-col md:flex-row gap-6 w-full">
+                <div class="w-full md:w-2/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg w-full">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-6 w-full">
+                            <div class="flex flex-col gap-3 flex-1">
+                                <h1 class="text-2xl font-bold text-red-600">Welcome, Muhammed</h1>
+                                <input id="linkSearch" type="search" placeholder="Search links..." class="w-full rounded-lg px-4 py-2 bg-[#3a3a4d] text-white placeholder-gray-400
+                     focus:outline-none focus:ring-2 focus:ring-red-600 shadow" autocomplete="off" />
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <div id="datetime" class="text-sm text-gray-300 tracking-wide mb-3"></div>
+                                <div id="time"
+                                    class="text-4xl font-mono text-red-600 bg-[#1f1f2e] px-4 py-2 rounded-lg shadow-inner tracking-wider">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="w-full md:w-1/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg flex flex-col w-full">
+                        <div class="flex justify-between items-center mb-2 w-full">
+                            <h3 class="text-red-500 font-semibold text-sm">Weather | <span id="air-quality"></span>
+                            </h3>
+                            <div id="location-name" class="text-sm text-gray-300 mb-2 flex items-center gap-1"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-gray-300 text-xs w-full">
+                            <div id="temperature" class="flex items-center gap-1"></div>
+                            <div id="wind" class="flex items-center gap-1"></div>
+                            <div id="humidity" class="flex items-center gap-1"></div>
+                            <div id="clouds" class="flex items-center gap-1"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6 flex-1 w-full">
+                <div class="w-full md:w-2/3 flex flex-col gap-6">
+                    <section id="linksContainer"
+                        class="flex-1 overflow-auto bg-[#2d2d3d] rounded-xl p-6 shadow-lg w-full"></section>
+                </div>
+
+                <div class="w-full md:w-1/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg h-full flex flex-col w-full">
+                        <h2 class="text-xl font-semibold text-red-600 mb-4">Process Viewer</h2>
+                        <div id="processContainer" class="flex-grow text-gray-300 overflow-auto"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-6 border-t border-gray-700 pt-4 text-center text-gray-400 text-sm">
+
+            <a href="https://github.com/MuxBH28/server-homepage/" target="_blank" rel="noopener noreferrer"
+                class="text-gray-400 hover:text-white text-center gap-1">
+                <i class="bi bi-star text-yellow-500"></i>
+                If you like it, please star this project on GitHub!
+            </a>
+            <p>
+                &copy; 2025 Brahketov Server — Developed by
+                <a href="https://msehic.com" target="_blank" rel="noopener noreferrer"
+                    class="text-red-600 hover:underline">
+                    Mux BH
+                </a>
+            </p>
+        </footer>
+
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+        <div class="bg-[#2d2d3d] rounded-lg w-11/12 max-w-md p-6 relative shadow-lg">
+            <button id="closeSettings" aria-label="Close settings"
+                class="absolute top-3 right-3 text-red-600 hover:text-red-600 text-2xl font-bold">&times;</button>
+            <h2 class="text-red-600 text-xl font-semibold mb-4">Settings</h2>
+
+            <form id="addLinkForm" class="mb-6">
+                <h3 class="text-red-600 font-semibold mb-2">Add Link</h3>
+                <div class="flex flex-col space-y-2">
+                    <input type="text" id="linkName" placeholder="Link Name" required
+                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    <input type="text" id="linkIcon" placeholder="Link Icon" required
+                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    <select id="linkCategory" required
+                        class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600">
+                        <option value="">Select a category</option>
+                        <option value="Media">Media</option>
+                        <option value="Files">Files</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Development">Development</option>
+                        <option value="External">External</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <input type="url" id="linkUrl" placeholder="Link URL" required
+                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    <button type="submit"
+                        class="bg-red-600 hover:bg-red-600 text-gray-900 font-semibold py-2 rounded transition">Add
+                        Link</button>
+                </div>
+            </form>
+
+            <div class="mb-6">
+                <label for="cityInput" class="block text-red-600 font-semibold mb-1">City</label>
+                <input type="text" id="cityInput" placeholder="Enter city name"
+                    class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+            </div>
+
+            <div>
+                <label for="refreshInterval" class="block text-red-600 font-semibold mb-1">System Refresh Interval
+                    (seconds)</label>
+                <input type="number" id="refreshInterval" min="5" max="3600" step="1"
+                    class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                <p class="text-gray-400 text-xs mt-1">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-red-600 font-semibold mb-2">Manage Links</h3>
+                <ul id="linksList" class="max-h-40 overflow-y-auto divide-y divide-gray-700 text-white text-sm"></ul>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
     <script src="script.js"></script>
 </body>
 

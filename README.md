@@ -25,9 +25,14 @@ The project is intended to be deployed on a Linux server and accessed locally or
 
 ## Preview
 
-![Preview](preview.png)
+Version 1.0:
+![Version 1.0](preview.png)
+[Release v1.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.0)
 
----
+Version 1.1:
+![Version 1.1](preview2.png)
+[Release v1.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.1)
+----------------------------------------------------------------------------
 
 ## Installation
 
@@ -57,7 +62,7 @@ pm2 start server.js
 
 ## Arduino
 
-- The Arduino sketch (`arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server. 
+- The Arduino sketch (`arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server.
 - It visually indicates the server health status using LEDs: green for normal, yellow for warning, and red for critical conditions. A white LED briefly blinks each time fresh data is received successfully.
 - The sketch connects to WiFi and handles network errors gracefully.
 
@@ -80,7 +85,7 @@ I added this Arduino sketch as a test to explore how the ESP32 connects and inte
 The background image is:
 
 ```
-background.jpg
+./background.jpg
 ```
 
 To change the background, simply replace this file with your desired image, keeping the same filename and extension or in `index.html` change style of body tag.
@@ -95,13 +100,28 @@ Custom links are stored in `links.json` on the server. You can edit this file ma
 
 By default, the server listens on port `6969`. You can change this by modifying the `PORT` variable in `server.js`.
 
+### Indicators
+
+The dashboard includes several indicators to help monitor the server's status:
+
+- **Battery** (./svg/battery.svg) – Shows whether the dashboard is connected to server.
+- **CPU Temperature** (./svg/temperature.svg) – Lights up if the CPU temperature is high.
+- **RAM Usage** (./svg/ram-high.svg) – Indicates high memory usage.
+- **System Warning** (./svg/check-engine.svg) – Alerts about general system issues.
+- **No Links** (./svg/no-links.svg) – Displays when there are no available links.
+- **Storage** (./svg/storage.svg) – Indicates that disk storages are almost full.
+
+The SVG icons used in this project are proudly sourced from [SVG Repo](https://www.svgrepo.com/collection/car-parts-2/) collection *Car Parts 2*.
+
 ### To Do
 
 - [X] Status indicator
-- [ ] Better loading screen
+- [X] Better loading screen
 - [ ] Vakti times prayer
 - [ ] Navidrome music player
-- [ ] Process viewer
+- [X] Process viewer
+
+Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
 
 ---
 
