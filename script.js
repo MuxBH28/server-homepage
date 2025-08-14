@@ -18,14 +18,19 @@ $(document).ready(function () {
 
     /*Misc */
     function initWelcomeModal() {
+
         if (settings.server) {
             $("#serverNameInput").val(settings.server);
             $("#serverName").text(settings.server);
+            $("title").text(settings.server);
         }
         if (settings.name) {
             $("#yourNameInput").val(settings.name);
             $("#name").text(settings.name);
         }
+
+        $('body').css('background-image', 'url(./assets/background.jpg)');
+        $('#bgPath').val(settings.bgPath);
 
         if (!settings.welcome) {
             $("#welcomeModal").removeClass("hidden");
@@ -264,11 +269,15 @@ $(document).ready(function () {
                     public_ip: "203.0.113." + Math.floor(Math.random() * 255),
                     city: "Leicester",
                     country: "UK",
-                    loc: "52.62055, -1.14154"
+                    loc: "52.625, -1.154",
+                    ifaceName: "enp3s0",
+                    state: "up",
+                    upload_speed: (Math.random() * 10).toFixed(2) + " MB/s",
+                    download_speed: (Math.random() * 10).toFixed(2) + " MB/s"
                 },
                 appVersions: {
-                    local: "1.0.0",
-                    github: "1.0.0"
+                    local: "1.3.1",
+                    github: "1.3.1"
                 }
             };
 
@@ -296,6 +305,10 @@ $(document).ready(function () {
             $("#city").text(data.network.city);
             $("#country").text(data.network.country);
             $("#loc").text(data.network.loc);
+            $("#uploadSpeed").text(data.network.upload_speed);
+            $("#downloadSpeed").text(data.network.download_speed);
+            $("#ifaceName").text(data.network.ifaceName);
+            $("#state").text(data.network.state);
 
             $("#appVersion").text(data.appVersions.local);
             if (data.appVersions.local !== data.appVersions.github) {
