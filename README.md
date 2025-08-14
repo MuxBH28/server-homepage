@@ -66,7 +66,7 @@ pm2 start server.js
 
 4. Access the homepage via `http://your-server-ip:6969/` in your browser.
 
-### Option 2: Using Docker
+### Option 2: Using Dockerfile
 
 1. Make sure you have [Docker](https://www.docker.com/get-started/) installed.
 2. Build the Docker image:
@@ -82,13 +82,33 @@ docker run -d -p 6969:6969 --name dashboard-server dashboard-server
 ```
 
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
-5. To stop the container:
+   
+
+### Option 3: Using Prebuilt Docker Image
+
+1. Make sure you have [Docker](https://www.docker.com/get-started/) installed.
+
+2. Pull the latest image from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/MuxBH28/server-homepage:latest
+```
+
+3. Run the container:
+```
+docker run -d -p 6969:6969 --name dashboard-server ghcr.io/MuxBH28/server-homepage:latest
+```
+
+4. Access the homepage via http://your-server-ip:6969/ in your browser.
+
+#### Docker stop
+1. To stop the container:
 
 ```bash
 docker stop dashboard-server
 ```
 
-6. To remove the container:
+2. To remove the container:
 
 ```bash
 docker rm dashboard-server
