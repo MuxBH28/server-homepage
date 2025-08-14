@@ -2,7 +2,7 @@ const express = require('express');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const disk = require('diskusage');
+const si = require('systeminformation');
 const { exec } = require('child_process');
 const axios = require('axios');
 
@@ -38,6 +38,7 @@ if (!fs.existsSync(settingsFile)) {
         name: 'Nickname',
         refreshInterval: 30,
         welcome: false,
+        bgPath: './assets/background.jpg',
         diskPaths: [
             '/'
         ]
@@ -59,17 +60,18 @@ app.get('/api/system', async (req, res) => {
         const uptime = process.uptime();
         const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 
+        const fsData = await si.fsSize();
         const diskInfo = {};
         for (const p of settings.diskPaths) {
-            try {
-                const info = disk.checkSync(p);
+            const match = fsData.find(d => d.mount === p || d.fs === p);
+            if (match) {
                 diskInfo[p] = {
-                    total: info.total,
-                    free: info.free,
-                    used: info.total - info.free,
-                    usedPercent: ((info.total - info.free) / info.total * 100).toFixed(2)
+                    total: match.size,
+                    free: match.size - match.used,
+                    used: match.used,
+                    usedPercent: ((match.used / match.size) * 100).toFixed(2)
                 };
-            } catch {
+            } else {
                 diskInfo[p] = null;
             }
         }
@@ -99,6 +101,7 @@ app.get('/api/system', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
 
 app.post('/api/links', express.json(), (req, res) => {
     const { name, url, icon = 'bi-link-45deg', category = 'Custom' } = req.body;
@@ -143,24 +146,23 @@ app.delete('/api/links/:index', (req, res) => {
     });
 });
 
-app.get('/api/process', (req, res) => {
-    exec('ps -eo pid,comm,%cpu,rss --sort=-%cpu --no-headers', (err, stdout) => {
-        if (err) return res.status(500).json({ error: err.message });
+app.get('/api/process', async (req, res) => {
+    try {
+        const data = await si.processes();
 
-        const lines = stdout.trim().split('\n').slice(0, 15);
-        const processes = lines.map(line => {
-            const match = line.trim().match(/^(\d+)\s+(.+?)\s+([\d.]+)\s+([\d.]+)$/);
-            if (!match) return null;
-            return {
-                pid: match[1],
-                name: match[2],
-                cpu: match[3],
-                memory: match[4]
-            };
-        }).filter(p => p !== null);
+        const sorted = data.list.sort((a, b) => b.cpu - a.cpu);
 
-        res.json(processes);
-    });
+        const topProcesses = sorted.slice(0, 15).map(proc => ({
+            pid: proc.pid,
+            name: proc.name,
+            cpu: proc.cpu.toFixed(1),
+            memory: proc.memRss
+        }));
+
+        res.json(topProcesses);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.post('/api/links/:index/increment', (req, res) => {
@@ -255,44 +257,61 @@ async function getVersions() {
 async function getNetworkInfo() {
     const now = Date.now();
 
-    if (networkCache && (now - networkCacheTime < NETWORK_CACHE_TTL)) {
-        return networkCache;
-    }
+    if (!networkCache || (now - networkCacheTime >= NETWORK_CACHE_TTL)) {
+        const nets = os.networkInterfaces();
+        let localIP = null;
+        let ifaceName = null;
+        let state = null;
 
-    const nets = os.networkInterfaces();
-    let localIP = null;
-    for (const name of Object.keys(nets)) {
-        for (const net of nets[name]) {
-            if (net.family === 'IPv4' && !net.internal) {
-                localIP = net.address;
-                break;
+        for (const name of Object.keys(nets)) {
+            for (const net of nets[name]) {
+                if (net.family === 'IPv4' && !net.internal) {
+                    localIP = net.address;
+                    ifaceName = name;
+                    state = net.mac ? 'up' : 'down';
+                    break;
+                }
             }
+            if (localIP) break;
         }
-        if (localIP) break;
+
+        let publicIP = 'N/A';
+        let city = 'N/A';
+        let country = 'N/A';
+        let loc = 'N/A';
+        try {
+            const response = await axios.get('https://ipinfo.io/json');
+            const data = response.data;
+            publicIP = data.ip || publicIP;
+            city = data.city || city;
+            country = data.country || country;
+            loc = data.loc || loc;
+        } catch (err) {
+            console.error("Failed to fetch public IP info:", err.message);
+        }
+
+        networkCache = {
+            ifaceName,
+            state,
+            local_ip: localIP,
+            public_ip: publicIP,
+            city,
+            country,
+            loc
+        };
+        networkCacheTime = now;
     }
 
-    let publicIP = 'N/A';
-    let city = 'N/A';
-    let country = 'N/A';
-    let loc = 'N/A';
+    const netStats = await si.networkStats();
+    const downloadSpeed = (netStats[0].rx_sec / 1024 / 1024).toFixed(2) + " MB/s";
+    const uploadSpeed = (netStats[0].tx_sec / 1024 / 1024).toFixed(2) + " MB/s";
 
-    try {
-        const response = await axios.get('https://ipinfo.io/json');
-        const data = response.data;
-        publicIP = data.ip || publicIP;
-        city = data.city || city;
-        country = data.country || country;
-        loc = data.loc || loc;
-    } catch (err) {
-        console.error("Failed to fetch public IP info:", err.message);
-    }
-
-    networkCache = { local_ip: localIP, public_ip: publicIP, city, country, loc };
-    networkCacheTime = now;
-
-    return networkCache;
+    return {
+        ...networkCache,
+        download_speed: downloadSpeed,
+        upload_speed: uploadSpeed
+    };
 }
-
 
 function formatUptime(seconds) {
     const d = Math.floor(seconds / (3600 * 24));

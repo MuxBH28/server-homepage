@@ -13,6 +13,8 @@
 
 ---
 
+# [- Server Homepage | Demo available here -](https://server-homepage.msehic.com/)
+
 ## About
 
 This is a minimalist personal homepage project built with **Node.js (Express)** backend and a **static frontend** with HTML, CSS (Tailwind), and vanilla JS.
@@ -31,6 +33,9 @@ Version 1.0:
 
 Version 1.1+:
 ![Version 1.1](preview2.png)
+
+Version 1.1.3:
+![Version 1.1.3](preview1.3.1.png)
 
 ## Installation
 
@@ -72,13 +77,13 @@ pm2 start server.js
 2. Build the Docker image:
 
 ```bash
-docker build -t dashboard-server .
+docker build -t server-homepage .
 ```
 
 3. Run the container:
 
 ```bash
-docker run -d -p 6969:6969 --name dashboard-server dashboard-server
+docker run -d -p 6969:6969 --name server-homepage server-homepage
 ```
 
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
@@ -96,7 +101,7 @@ docker pull ghcr.io/muxbh28/server-homepage:latest
 
 3. Run the container:
 ```
-docker run -d -p 6969:6969 --name dashboard-server ghcr.io/muxbh28/server-homepage:latest
+docker run -d -p 6969:6969 --name server-homepage ghcr.io/muxbh28/server-homepage:latest
 ```
 
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
@@ -105,13 +110,13 @@ docker run -d -p 6969:6969 --name dashboard-server ghcr.io/muxbh28/server-homepa
 1. To stop the container:
 
 ```bash
-docker stop dashboard-server
+docker stop server-homepage
 ```
 
 2. To remove the container:
 
 ```bash
-docker rm dashboard-server
+docker rm server-homepage
 ```
 
 ---
@@ -138,15 +143,17 @@ I added this Arduino sketch as a test to explore how the ESP32 connects and inte
 
 ### Background Image
 
-The background image is:
+The easiest way to change the background is to go to the settings and replace the path with your desired image. You can use a local file or an online image URL.
+
+The default background image is:
 
 ```
 ./assets/background.jpg
 ```
 
-To change the background, simply replace this file with your desired image, keeping the same filename and extension or in `index.html` change style of body tag.
+One more option to change the background is to simply replace this file with your desired image, keeping the same filename and extension or in `index.html` change style of body tag.
 
-Current background is from [https://pixabay.com/photos/mostar-bridge-travel-bosnia-1155674/](https://pixabay.com/photos/mostar-bridge-travel-bosnia-1155674/)
+Current default background is by [Manuela](https://pixabay.com/users/sinnesreich-2779296/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1759179) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1759179)
 
 ### Links
 
@@ -181,7 +188,7 @@ The SVG icons used in this project are proudly sourced from [SVG Repo](https://w
 - [X] Welcome screen
 - [X] Move settings from localStorage to json
 - [X] Make a Dockerfile
-- [ ] Online available Demo
+- [X] Online available Demo
 - [ ] Telegram notifications for warnings
 - [ ] System logs with Chart.js
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))

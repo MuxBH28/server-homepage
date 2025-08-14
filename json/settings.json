@@ -1,8 +1,9 @@
 {
     "server": "Server name",
     "name": "Nickname",
-    "refreshInterval": 15,
+    "refreshInterval": 5,
     "welcome": false,
+    "bgPath": "./assets/background.jpg",
     "diskPaths": [
         "/"
     ]

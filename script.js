@@ -18,14 +18,19 @@ $(document).ready(function () {
 
     /*Misc */
     function initWelcomeModal() {
+
         if (settings.server) {
             $("#serverNameInput").val(settings.server);
             $("#serverName").text(settings.server);
+            $("title").text(settings.server);
         }
         if (settings.name) {
             $("#yourNameInput").val(settings.name);
             $("#name").text(settings.name);
         }
+
+        $('body').css('background-image', 'url(' + settings.bgPath + ')');
+        $('#bgPath').val(settings.bgPath);
 
         if (!settings.welcome) {
             $("#welcomeModal").removeClass("hidden");
@@ -68,7 +73,7 @@ $(document).ready(function () {
             borders: true,
             borderShadowWidth: 0,
             valueInt: 1,
-            colorPlate: '#2d2d3d',
+            colorPlate: '#00000005',
             colorUnits: '#f5f5f5',
             colorNumbers: '#f5f5f5',
             colorMajorTicks: '#f5f5f5',
@@ -268,6 +273,10 @@ $(document).ready(function () {
                 $("#city").text(data.network.city);
                 $("#country").text(data.network.country);
                 $("#loc").text(data.network.loc);
+                $("#uploadSpeed").text(data.network.upload_speed);
+                $("#downloadSpeed").text(data.network.download_speed);
+                $("#ifaceName").text(data.network.ifaceName);
+                $("#state").text(data.network.state);
 
                 $("#appVersion").text(data.appVersions.local);
                 if (data.appVersions.local !== data.appVersions.github) {
@@ -342,12 +351,19 @@ $(document).ready(function () {
     function checkLinkStatus(url, $dot) {
         fetch(url, { method: 'HEAD', mode: 'no-cors' })
             .then(() => {
-                $dot.removeClass('bg-red-600 bg-gray-400').addClass('bg-green-500');
+                $dot
+                    .removeClass('bg-red-600 bg-gray-400')
+                    .addClass('bg-green-500')
+                    .css('box-shadow', '0 0 4px 1.5px rgba(34,197,94,0.6), 0 0 8px 2.5px rgba(34,197,94,0.4)');
             })
             .catch(() => {
-                $dot.removeClass('bg-green-500 bg-gray-400').addClass('bg-red-600');
+                $dot
+                    .removeClass('bg-green-500 bg-gray-400')
+                    .addClass('bg-red-600')
+                    .css('box-shadow', '0 0 4px 1.5px rgba(239,68,68,0.6), 0 0 8px 2.5px rgba(239,68,68,0.4)');
             });
     }
+
     function incrementLinkOpened(index) {
         console.log(index);
         $.ajax({
@@ -398,14 +414,16 @@ $(document).ready(function () {
 
             $.each(links, function (_, link) {
                 const $card = $(`
-                <a href="${link.url}" target="_blank"
-                   class="flex items-center gap-2 bg-[#3a3a4d] text-white hover:bg-[#505070]
-                   rounded-lg px-4 py-3 shadow-md transition-transform transform hover:scale-105 w-full sm:w-auto">
-                   <span class="status-dot inline-block w-2 h-2 rounded-full bg-gray-400" data-url="${link.url}"></span>
-                   <i class="bi ${link.icon} text-lg"></i>
-                   <span>${link.name}</span>
-                </a>
-            `);
+        <a href="${link.url}" target="_blank"
+           class="flex items-center gap-2 text-white rounded-lg px-4 py-3 w-full sm:w-auto
+                  bg-white/10 backdrop-blur-md border border-white/20 shadow-lg
+                  transition-transform transform hover:scale-105 hover:bg-white/20">
+           <span class="status-dot inline-block w-2 h-2 rounded-full bg-gray-400" data-url="${link.url}"></span>
+           <i class="bi ${link.icon} text-lg"></i>
+           <span>${link.name}</span>
+                 </a>
+                `);
+
 
                 $card.on('click', function () {
                     incrementLinkOpened(link.globalIndex);
@@ -490,6 +508,8 @@ $(document).ready(function () {
 
     $closeSettings.on('click', function () {
         $settingsModal.addClass('hidden');
+        settings.bgPath = $('#bgPath').val().trim();
+
         saveSettings();
         fetchLinks();
 
@@ -618,7 +638,6 @@ $(document).ready(function () {
         }
     });
 
-    // Brisanje disk path-a
     $currentDiskPaths.on("click", "button", function () {
         const index = $(this).data("index");
         if (index !== undefined) {
