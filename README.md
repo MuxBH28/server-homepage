@@ -34,17 +34,25 @@ Version 1.1+:
 
 ## Installation
 
+Before continuing, first clone or upload all project files to your server:
+```
+git clone https://github.com/MuxBH28/server-homepage
+```
+After that, you have two options: either run the project using Node.js/PM2 or Docker.
+I personally use PM2 because I find it easier, and I also manage many other projects with PM2.
+
+If you get stuck or encounter any issues, feel free to reach out by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
+
 ### Option 1: Using Node.js / PM2
 
-1. Clone or upload all project files to your server.
-2. Make sure you have [Node.js](https://nodejs.org/) installed (version 16+ recommended).
-3. In the project folder, install dependencies:
+1. Make sure you have [Node.js](https://nodejs.org/) installed (version 16+ recommended).
+2. In the project folder, install dependencies:
 
 ```bash
 npm install
 ```
 
-4. Start the server:
+3. Start the server:
 
 ```bash
 node server.js
@@ -56,7 +64,7 @@ or better, use [PM2](https://pm2.keymetrics.io/) to manage the process:
 pm2 start server.js
 ```
 
-5. Access the homepage via `http://your-server-ip:6969/` in your browser.
+4. Access the homepage via `http://your-server-ip:6969/` in your browser.
 
 ### Option 2: Using Docker
 
