@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-white">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brahketov Server</title>
+    <link rel="icon" href="/assets/favicon.ico" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes flash {
+
+            0%,
+            50%,
+            100% {
+                opacity: 1;
+            }
+
+            25%,
+            75% {
+                opacity: 0;
+            }
+        }
+
+        .flashing {
+            animation: flash 3s infinite;
+        }
+    </style>
+</head>
+
+<body class="font-sans p-4 min-h-screen flex items-center justify-center bg-cover bg-center"
+    style="background-image: url('./assets/background.jpg');">
+    <div id="preloader"
+        class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-50">
+        <i class="bi bi-cpu-fill text-6xl animate-bounce mb-6"></i>
+        <div class="flex space-x-2">
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-150"></div>
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-300"></div>
+        </div>
+        <p class="mt-4 text-lg animate-fade-in">Initializing Server Dashboard...</p>
+    </div>
+
+    <div id="mainContent"
+        class="max-w-7xl mx-auto hidden w-full flex-grow flex flex-col bg-[#2d2d3d] bg-opacity-70 p-4 rounded-xl">
+        <div class="w-full mb-6">
+            <section id="systemInfo" class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg">
+                <header
+                    class="flex justify-between items-center mb-8 relative pb-6 border-b border-red-600/30 text-red-600">
+                    <h2 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="bi bi-activity"></i> <span id="serverName"></span>
+                    </h2>
+                    <div id="datetime" class="text-sm text-gray-300 tracking-wide"></div>
+                    <div id="time"
+                        class="text-4xl font-mono text-red-600 bg-[#1f1f2e] px-4 py-2 rounded-lg shadow-inner tracking-wider">
+                    </div>
+                    <p id="uptime" class="text-center text-sm text-red-600 mt-2">Uptime: N/A</p>
+                    <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings" title="Settings">
+                        <i class="bi bi-gear-fill text-2xl"></i>
+                    </button>
+                </header>
+
+
+                <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 w-full">
+
+                    <div class="flex flex-col items-center w-full md:w-auto">
+                        <canvas id="cpuGauge" width="250" height="250" title="CPU Usage"></canvas>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4 w-full md:w-auto">
+                        <canvas id="cpuTempGauge" width="150" height="150" title="CPU Temperature"></canvas>
+
+                        <div
+                            class="grid grid-cols-3 gap-3 bg-[#3a3a4d] p-4 rounded-lg shadow w-full md:w-auto justify-items-center">
+                            <div id="indicatorBattery" class="w-8 h-8 opacity-40" title="Server connected">
+                                <img src="./assets/battery.svg" alt="Battery" class="w-full h-full">
+                            </div>
+                            <div id="indicatorTemp" class="w-8 h-8 opacity-40" title="CPU Temperature is high">
+                                <img src="./assets/temperature.svg" alt="CPU Temp" class="w-full h-full">
+                            </div>
+                            <div id="indicatorRam" class="w-8 h-8 opacity-40" title="RAM Usage High">
+                                <img src="./assets/ram-high.svg" alt="RAM High" class="w-full h-full">
+                            </div>
+                            <div id="indicatorWarning" class="w-8 h-8 opacity-40" title="System Warning">
+                                <img src="./assets/check-engine.svg" alt="Check Engine" class="w-full h-full">
+                            </div>
+                            <div id="indicatorNoLinks" class="w-8 h-8 opacity-40" title="There are no links available">
+                                <img src="./assets/no-links.svg" alt="No Links" class="w-full h-full">
+                            </div>
+                            <div id="indicatorStorage" class="w-8 h-8 opacity-40" title="Storage is almost full">
+                                <img src="./assets/storage.svg" alt="Storage" class="w-full h-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center w-full md:w-auto">
+                        <canvas id="ramGauge" width="250" height="250" title="RAM Usage"></canvas>
+                    </div>
+
+                </div>
+
+
+
+                <div id="diskCharts" class="flex flex-col md:flex-row items-center justify-between mt-6 gap-6"></div>
+
+            </section>
+        </div>
+
+        <section class="flex flex-col gap-6 flex-1 w-full">
+            <article class="flex flex-col md:flex-row gap-6 w-full">
+                <div class="w-full md:w-1/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg w-full h-full">
+                        <div class="flex flex-col md:flex-row justify-between items-stretch gap-6 w-full h-full">
+                            <div class="flex flex-col gap-3 flex-1">
+                                <h1 class="text-2xl font-bold text-red-600">Welcome, <span id="name"></span></h1>
+                                <input id="linkSearch" type="search" placeholder="Search links..." class="w-full rounded-lg px-4 py-2 bg-[#3a3a4d] text-white placeholder-gray-400
+                        focus:outline-none focus:ring-2 focus:ring-red-600 shadow h-full" autocomplete="off" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="w-full md:w-2/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg flex flex-col w-full h-full">
+                        <h1 class="text-red-500 font-semibold text-xl mb-4">Network Info</h1>
+                        <div
+                            class="flex flex-col sm:flex-row flex-wrap justify-between gap-4 text-gray-300 text-sm h-full">
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="bi bi-hdd-network text-red-500 text-lg"></i>
+                                <div>
+                                    <div class="text-gray-400 text-xs">Local IP</div>
+                                    <span id="localIP" class="font-medium">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="bi bi-globe text-red-500 text-lg"></i>
+                                <div>
+                                    <div class="text-gray-400 text-xs">Public IP</div>
+                                    <span id="publicIP" class="font-medium">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="bi bi-building text-red-500 text-lg"></i>
+                                <div>
+                                    <div class="text-gray-400 text-xs">City</div>
+                                    <span id="city" class="font-medium">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="bi bi-flag text-red-500 text-lg"></i>
+                                <div>
+                                    <div class="text-gray-400 text-xs">Country</div>
+                                    <span id="country" class="font-medium">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <i class="bi bi-geo-alt text-red-500 text-lg"></i>
+                                <div>
+                                    <div class="text-gray-400 text-xs">Location</div>
+                                    <span id="loc" class="font-medium">Loading...</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+                </div>
+
+            </article>
+
+            <article class="flex flex-col md:flex-row gap-6 flex-1 w-full">
+                <div class="w-full md:w-2/3 flex flex-col gap-6">
+                    <section id="linksContainer"
+                        class="flex-1 overflow-auto bg-[#2d2d3d] rounded-xl p-6 shadow-lg w-full"></section>
+                </div>
+
+                <div class="w-full md:w-1/3 flex flex-col gap-6">
+                    <section class="bg-[#2d2d3d] rounded-xl p-6 shadow-lg h-full flex flex-col w-full">
+                        <h2 class="text-xl font-semibold text-red-600 mb-4">Process Viewer</h2>
+                        <div id="processContainer" class="flex-grow text-gray-300 overflow-auto"></div>
+                    </section>
+                </div>
+            </article>
+        </section>
+
+        <footer
+            class="mt-6 border-t border-gray-700 pt-4 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
+            <a href="https://github.com/MuxBH28/server-homepage/" target="_blank" rel="noopener noreferrer"
+                class="text-gray-400 hover:text-white flex items-center gap-1">
+                <i class="bi bi-star text-yellow-500"></i>
+                If you like it, please star this project on GitHub!
+            </a>
+            <p>
+                &copy; 2025 Brahketov Server — Developed by
+                <a href="https://msehic.com" target="_blank" rel="noopener noreferrer"
+                    class="text-red-600 hover:underline">
+                    Mux BH
+                </a>
+            </p>
+            <p class="text-gray-400 text-xs">
+                | Version: <span id="appVersion" class="font-semibold">Loading...</span>
+                <span id="appVersionUpdate" class="font-semibold">|</span>
+            </p>
+        </footer>
+
+
+    </div>
+
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4">
+        <div
+            class="bg-[#2d2d3d] rounded-xl w-full max-w-4xl p-6 relative shadow-xl flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
+
+            <button id="closeSettings" aria-label="Close settings"
+                class="absolute top-3 right-3 text-red-600 hover:text-red-500 text-3xl font-bold">&times;</button>
+
+            <h2 class="text-red-600 text-2xl font-semibold text-center">Settings</h2>
+            <p class="text-gray-400 text-xs">Note: Some changes are visible after refreshing page.</p>
+
+            <section class="flex flex-col space-y-3">
+                <h3 class="text-red-600 font-semibold text-lg">Add Link</h3>
+                <form id="addLinkForm" class="flex flex-col space-y-2">
+                    <input type="text" id="linkName" placeholder="Link Name" required
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                    <input type="text" id="linkIcon" placeholder="Link Icon" required
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                    <select id="linkCategory" required
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full">
+                        <option value="">Select a category</option>
+                        <option value="Media">Media</option>
+                        <option value="Files">Files</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Development">Development</option>
+                        <option value="External">External</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="url" id="linkUrl" placeholder="Link URL" required
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                    <button type="submit"
+                        class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition-colors w-full">
+                        Add Link
+                    </button>
+                </form>
+            </section>
+
+            <section class="flex flex-col space-y-2">
+                <label for="diskPathsInput" class="text-red-600 font-semibold">Enter new disk path</label>
+                <input type="text" id="diskPathsInput" placeholder="e.g /250GB"
+                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                <ul id="currentDiskPaths">
+
+                </ul>
+                <p class="text-gray-400 text-xs">Press enter to add a new path</p>
+
+            </section>
+
+            <section class="flex flex-col space-y-1">
+                <label for="refreshInterval" class="text-red-600 font-semibold">
+                    System Refresh Interval (seconds)
+                </label>
+                <input type="number" id="refreshInterval" min="5" max="3600" step="1"
+                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                <p class="text-gray-400 text-xs">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
+            </section>
+
+            <section class="flex flex-col space-y-2">
+                <h3 class="text-red-600 font-semibold text-lg">Manage Links</h3>
+                <table class="w-full max-h-48 overflow-y-auto text-white text-sm">
+                    <thead class="bg-gray-800 sticky top-0">
+                        <tr>
+                            <th class="px-2 py-1 text-left text-red-600">Name</th>
+                            <th class="px-2 py-1 text-left text-red-600">Category</th>
+                            <th class="px-2 py-1 text-center text-red-600">Opened</th>
+                            <th class="px-2 py-1 text-left text-red-600">URL</th>
+                            <th class="px-2 py-1 text-center text-red-600">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="linksList"></tbody>
+                </table>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 text-white rounded-lg shadow-lg w-11/12 max-w-2xl p-6 relative">
+            <h2 class="text-2xl font-bold mb-4">Welcome to the Demo Server Homepage</h2>
+            <div class="space-y-3 text-sm">
+                <p>This is a <strong>demo version</strong> of your server monitoring homepage. Here you can view:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li>CPU, RAM, and disk usage (simulated)</li>
+                    <li>System processes (simulated)</li>
+                    <li>Network information (simulated)</li>
+                    <li>Quick links to your favorite tools or apps</li>
+                </ul>
+                <p>You can manage links and settings via the settings modal (demo data only).</p>
+
+                <div class="flex gap-4 mt-4">
+                    <div class="flex-1">
+                        <label for="serverNameInput" class="block text-sm font-medium mb-1">Server name</label>
+                        <input type="text" id="serverNameInput" name="serverNameInput"
+                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500"
+                            value="Demo Server">
+                    </div>
+                    <div class="flex-1">
+                        <label for="yourNameInput" class="block text-sm font-medium mb-1">Your name</label>
+                        <input type="text" id="yourNameInput" name="yourNameInput"
+                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500"
+                            value="Demo User">
+                    </div>
+                </div>
+
+                <hr class="border-gray-600 my-3">
+
+                <p>Useful links:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li><a href="https://github.com/MuxBH28/server-homepage/" target="_blank"
+                            class="text-red-500 hover:underline">GitHub Repository</a></li>
+                    <li><a href="https://msehic.com/" target="_blank" class="text-red-500 hover:underline">Author's
+                            website</a></li>
+                </ul>
+                <p>Please report ideas, suggestions, bugs or any issues directly on GitHub.</p>
+
+                <hr class="border-gray-600 my-3">
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="dontShowWelcome" class="accent-red-600">
+                    <label for="dontShowWelcome" class="text-sm">Don't show this welcome screen again</label>
+                </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button id="closeWelcome"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
+                    Close Welcome Screen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
