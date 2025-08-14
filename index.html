@@ -51,12 +51,13 @@
                 </header>
 
 
-                <div class="flex flex-col md:flex-row items-start justify-center gap-6 w-full">
-                    <div class="flex flex-col items-center">
+                <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 w-full">
+
+                    <div class="flex flex-col items-center w-full md:w-auto">
                         <canvas id="cpuGauge" width="250" height="250" title="CPU Usage"></canvas>
                     </div>
 
-                    <div class="flex flex-col items-center gap-4">
+                    <div class="flex flex-col items-center gap-4 w-full md:w-auto">
                         <canvas id="cpuTempGauge" width="150" height="150" title="CPU Temperature"></canvas>
 
                         <div
@@ -82,10 +83,12 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center w-full md:w-auto">
                         <canvas id="ramGauge" width="250" height="250" title="RAM Usage"></canvas>
                     </div>
+
                 </div>
+
 
 
                 <div id="diskCharts" class="flex flex-col md:flex-row items-center justify-between mt-6 gap-6"></div>
@@ -163,21 +166,25 @@
 
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-        <div class="bg-[#2d2d3d] rounded-lg w-11/12 max-w-md p-6 relative shadow-lg">
-            <button id="closeSettings" aria-label="Close settings"
-                class="absolute top-3 right-3 text-red-600 hover:text-red-600 text-2xl font-bold">&times;</button>
-            <h2 class="text-red-600 text-xl font-semibold mb-4">Settings</h2>
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4">
+        <div
+            class="bg-[#2d2d3d] rounded-xl w-full max-w-4xl p-6 relative shadow-xl flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
 
-            <form id="addLinkForm" class="mb-6">
-                <h3 class="text-red-600 font-semibold mb-2">Add Link</h3>
-                <div class="flex flex-col space-y-2">
+            <button id="closeSettings" aria-label="Close settings"
+                class="absolute top-3 right-3 text-red-600 hover:text-red-500 text-3xl font-bold">&times;</button>
+
+            <h2 class="text-red-600 text-2xl font-semibold text-center">Settings</h2>
+
+            <section class="flex flex-col space-y-3">
+                <h3 class="text-red-600 font-semibold text-lg">Add Link</h3>
+                <form id="addLinkForm" class="flex flex-col space-y-2">
                     <input type="text" id="linkName" placeholder="Link Name" required
-                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
                     <input type="text" id="linkIcon" placeholder="Link Icon" required
-                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
                     <select id="linkCategory" required
-                        class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600">
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full">
                         <option value="">Select a category</option>
                         <option value="Media">Media</option>
                         <option value="Files">Files</option>
@@ -186,36 +193,94 @@
                         <option value="External">External</option>
                         <option value="Other">Other</option>
                     </select>
-
                     <input type="url" id="linkUrl" placeholder="Link URL" required
-                        class="p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
                     <button type="submit"
-                        class="bg-red-600 hover:bg-red-600 text-gray-900 font-semibold py-2 rounded transition">Add
-                        Link</button>
-                </div>
-            </form>
+                        class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition-colors w-full">
+                        Add Link
+                    </button>
+                </form>
+            </section>
 
-            <div class="mb-6">
-                <label for="cityInput" class="block text-red-600 font-semibold mb-1">City</label>
+            <section class="flex flex-col space-y-2">
+                <label for="cityInput" class="text-red-600 font-semibold">City</label>
                 <input type="text" id="cityInput" placeholder="Enter city name"
-                    class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
-            </div>
+                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+            </section>
 
-            <div>
-                <label for="refreshInterval" class="block text-red-600 font-semibold mb-1">System Refresh Interval
-                    (seconds)</label>
+            <section class="flex flex-col space-y-1">
+                <label for="refreshInterval" class="text-red-600 font-semibold">
+                    System Refresh Interval (seconds)
+                </label>
                 <input type="number" id="refreshInterval" min="5" max="3600" step="1"
-                    class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
-                <p class="text-gray-400 text-xs mt-1">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
+                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                <p class="text-gray-400 text-xs">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
+            </section>
+
+            <section class="flex flex-col space-y-2">
+                <h3 class="text-red-600 font-semibold text-lg">Manage Links</h3>
+                <table class="w-full max-h-48 overflow-y-auto text-white text-sm">
+                    <thead class="bg-gray-800 sticky top-0">
+                        <tr>
+                            <th class="px-2 py-1 text-left text-red-600">Name</th>
+                            <th class="px-2 py-1 text-left text-red-600">Category</th>
+                            <th class="px-2 py-1 text-center text-red-600">Opened</th>
+                            <th class="px-2 py-1 text-left text-red-600">URL</th>
+                            <th class="px-2 py-1 text-center text-red-600">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="linksList"></tbody>
+                </table>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 text-white rounded-lg shadow-lg w-11/12 max-w-2xl p-6 relative">
+            <h2 class="text-2xl font-bold mb-4">Welcome to Server Homepage</h2>
+
+            <div class="space-y-3 text-sm">
+                <p>This is your server monitoring homepage. Here you can view:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li>CPU, RAM, and disk usage</li>
+                    <li>System processes</li>
+                    <li>Weather information</li>
+                    <li>Quick links to your favorite tools or apps</li>
+                </ul>
+                <p>You can manage links and settings via the settings modal.</p>
+
+                <hr class="border-gray-600 my-3">
+
+                <p>Useful links:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li><a href="https://github.com/MuxBH28/server-homepage/" target="_blank"
+                            class="text-red-500 hover:underline">GitHub Repository</a></li>
+                    <li><a href="https://msehic.com/" target="_blank" class="text-red-500 hover:underline">Author's
+                            website</a></li>
+                </ul>
+                <p> Please report ideas, suggestions, bugs or any issues directly in GitHub. </p>
+
+                <hr class="border-gray-600 my-3">
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="dontShowWelcome" class="accent-red-600">
+                    <label for="dontShowWelcome" class="text-sm">Don't show this welcome screen again</label>
+                </div>
             </div>
 
-            <div class="mt-6">
-                <h3 class="text-red-600 font-semibold mb-2">Manage Links</h3>
-                <ul id="linksList" class="max-h-40 overflow-y-auto divide-y divide-gray-700 text-white text-sm"></ul>
+            <div class="mt-6 text-right">
+                <button id="closeWelcome"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
+                    Close Welcome Screen
+                </button>
             </div>
         </div>
     </div>
 
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
     <script src="script.js"></script>
 </body>

@@ -1,101 +1,102 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const preload = document.getElementById("preloader");
-    const main = document.getElementById("mainContent");
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsModal = document.getElementById('settingsModal');
-    const closeSettings = document.getElementById('closeSettings');
-    const cityInput = document.getElementById('cityInput');
-    const refreshIntervalInput = document.getElementById('refreshInterval');
-    const linksList = document.getElementById('linksList');
-    const addLinkForm = document.getElementById('addLinkForm');
-    const linkNameInput = document.getElementById('linkName');
-    const linkIconInput = document.getElementById('linkIcon');
-    const linkCategoryInput = document.getElementById('linkCategory');
-    const linkUrlInput = document.getElementById('linkUrl');
-    const searchInput = document.getElementById("linkSearch");
+$(document).ready(function () {
+    const $preload = $('#preloader');
+    const $main = $('#mainContent');
+    const $settingsBtn = $('#settingsBtn');
+    const $settingsModal = $('#settingsModal');
+    const $closeSettings = $('#closeSettings');
+    const $cityInput = $('#cityInput');
+    const $refreshIntervalInput = $('#refreshInterval');
+    const $linksList = $('#linksList');
+    const $addLinkForm = $('#addLinkForm');
+    const $linkNameInput = $('#linkName');
+    const $linkIconInput = $('#linkIcon');
+    const $linkCategoryInput = $('#linkCategory');
+    const $linkUrlInput = $('#linkUrl');
+    const $searchInput = $("#linkSearch");
     let cpuGauge, ramGauge, cpuTempGauge;
+    const $welcomeModal = $("#welcomeModal");
+    const $closeWelcomeBtn = $("#closeWelcome");
+    const $dontShowCheckbox = $("#dontShowWelcome");
+
+    /*Misc */
+    const hideWelcome = localStorage.getItem("hideWelcomeScreen");
+
+    if (hideWelcome !== "true") {
+        $welcomeModal.removeClass("hidden");
+    }
+
+    $closeWelcomeBtn.on("click", function () {
+        if ($dontShowCheckbox.is(":checked")) {
+            localStorage.setItem("hideWelcomeScreen", "true");
+        }
+        $welcomeModal.addClass("hidden");
+    });
+
     function initGauges() {
-        cpuGauge = new RadialGauge({
-            renderTo: 'cpuGauge',
+        const baseGaugeOptions = {
             width: 250,
             height: 250,
+            strokeTicks: true,
+            needleType: 'arrow',
+            needleWidth: 2,
+            needleCircleSize: 7,
+            needleCircleOuter: true,
+            needleCircleInner: false,
+            animationDuration: 1000,
+            animationRule: 'linear',
+            valueBox: true,
+            valueTextShadow: false,
+            borders: true,
+            borderShadowWidth: 0,
+            valueInt: 1,
+            colorPlate: '#2d2d3d',
+            colorUnits: '#f5f5f5',
+            colorNumbers: '#f5f5f5',
+            colorMajorTicks: '#f5f5f5',
+            colorMinorTicks: '#aaa',
+            colorNeedle: 'rgba(255, 238, 88, 1)',
+            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
+            titleFont: "18px sans-serif",
+            titleFontWeight: "bold",
+            titleShadow: false
+        };
+
+        cpuGauge = new RadialGauge({
+            ...baseGaugeOptions,
+            renderTo: 'cpuGauge',
             units: '%',
             minValue: 0,
             maxValue: 100,
             majorTicks: ['0', '20', '40', '60', '80', '100'],
             minorTicks: 4,
-            strokeTicks: true,
             highlights: [
-                { from: 0, to: 60, color: 'rgba(0, 200, 0, 0.7)' },
+                { from: 0, to: 20, color: 'rgba(0, 200, 0, 0.7)' },
+                { from: 20, to: 60, color: 'rgba(0,0,0,0)' },
                 { from: 60, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
                 { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
             ],
-            colorPlate: '#2d2d3d',
-            colorUnits: '#f5f5f5',
-            colorNumbers: '#f5f5f5',
-            colorMajorTicks: '#f5f5f5',
-            colorMinorTicks: '#aaa',
-            colorNeedle: 'rgba(255, 238, 88, 1)',
-            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
-            needleType: 'arrow',
-            needleWidth: 2,
-            needleCircleSize: 7,
-            needleCircleOuter: true,
-            needleCircleInner: false,
-            animationDuration: 1000,
-            animationRule: 'linear',
-            valueBox: true,
-            valueTextShadow: false,
-            borders: true,
-            borderShadowWidth: 0,
-            valueInt: 1,
-            title: "CPU Usage",
-            titleFont: "18px sans-serif",
-            titleFontWeight: "bold",
-            titleShadow: false
+            title: "CPU Usage"
         }).draw();
 
         ramGauge = new RadialGauge({
+            ...baseGaugeOptions,
             renderTo: 'ramGauge',
-            width: 250,
-            height: 250,
             units: '%',
             minValue: 0,
             maxValue: 100,
             majorTicks: ['0', '20', '40', '60', '80', '100'],
             minorTicks: 4,
-            strokeTicks: true,
             highlights: [
-                { from: 0, to: 50, color: 'rgba(0, 180, 0, 0.7)' },
+                { from: 0, to: 20, color: 'rgba(0, 180, 0, 0.7)' },
+                { from: 20, to: 50, color: 'rgba(0,0,0,0)' },
                 { from: 50, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
                 { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
             ],
-            colorPlate: '#2d2d3d',
-            colorUnits: '#f5f5f5',
-            colorNumbers: '#f5f5f5',
-            colorMajorTicks: '#f5f5f5',
-            colorMinorTicks: '#aaa',
-            colorNeedle: 'rgba(255, 238, 88, 1)',
-            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
-            needleType: 'arrow',
-            needleWidth: 2,
-            needleCircleSize: 7,
-            needleCircleOuter: true,
-            needleCircleInner: false,
-            animationDuration: 1000,
-            animationRule: 'linear',
-            valueBox: true,
-            valueTextShadow: false,
-            borders: true,
-            borderShadowWidth: 0,
-            valueInt: 1,
-            title: "RAM Usage",
-            titleFont: "18px sans-serif",
-            titleFontWeight: "bold",
-            titleShadow: false
+            title: "RAM Usage"
         }).draw();
 
         cpuTempGauge = new RadialGauge({
+            ...baseGaugeOptions,
             renderTo: 'cpuTempGauge',
             width: 150,
             height: 150,
@@ -104,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
             maxValue: 100,
             majorTicks: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'],
             minorTicks: 2,
-            strokeTicks: true,
             highlights: [
                 { from: 0, to: 10, color: 'rgba(0, 0, 255, 0.5)' },
                 { from: 10, to: 40, color: 'rgba(0,0,0,0)' },
@@ -113,31 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 { from: 70, to: 80, color: 'rgba(255, 255, 0, 0.5)' },
                 { from: 80, to: 100, color: 'rgba(200, 50, 50, 0.5)' }
             ],
-            colorPlate: '#2d2d3d',
-            colorUnits: '#f5f5f5',
-            colorNumbers: '#f5f5f5',
-            colorMajorTicks: '#f5f5f5',
-            colorMinorTicks: '#aaa',
-            colorNeedle: 'rgba(255, 238, 88, 1)',
-            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
-            needleType: 'arrow',
-            needleWidth: 2,
-            needleCircleSize: 7,
-            needleCircleOuter: true,
-            needleCircleInner: false,
-            animationDuration: 1000,
-            animationRule: 'linear',
-            valueBox: true,
-            valueTextShadow: false,
-            borders: true,
-            borderShadowWidth: 0,
-            valueInt: 1,
-            title: "CPU Temp",
-            titleFont: "18px sans-serif",
-            titleFontWeight: "bold",
-            titleShadow: false
+            title: "CPU Temp"
         }).draw();
     }
+
     let settings = {
         city: 'Sarajevo',
         refreshInterval: 30,
@@ -158,39 +137,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateDate() {
         const dt = new Date();
-
         const options = { weekday: "long", day: "2-digit", month: "long", year: "numeric" };
-        document.getElementById("datetime").textContent = dt.toLocaleDateString("en-GB", options);
+        $("#datetime").text(dt.toLocaleDateString("en-GB", options));
 
         const hours = String(dt.getHours()).padStart(2, '0');
         const minutes = String(dt.getMinutes()).padStart(2, '0');
-        document.getElementById("time").textContent = `${hours}:${minutes}`;
-    }
-
-    function checkLinkStatus(url, dot) {
-        fetch(url, { method: 'HEAD', mode: 'no-cors' })
-            .then(() => {
-                dot.classList.remove('bg-red-600', 'bg-gray-400');
-                dot.classList.add('bg-green-500');
-            })
-            .catch(() => {
-                dot.classList.remove('bg-green-500', 'bg-gray-400');
-                dot.classList.add('bg-red-600');
-            });
-    }
-
-
-    function renderLinksList() {
-        linksList.innerHTML = '';
-        settings.links.forEach((link, i) => {
-            const li = document.createElement('li');
-            li.className = "flex justify-between items-center p-1 border-b border-gray-600 last:border-0";
-            li.innerHTML = `
-        <span><i class="bi ${link.icon}"></i> ${link.name}</span>
-        <button data-index="${i}" class="text-red-600 hover:text-red-600 text-xl" aria-label="Delete link">&times;</button>
-      `;
-            linksList.appendChild(li);
-        });
+        $("#time").text(`${hours}:${minutes}`);
     }
 
     function fetchWeather(force = false) {
@@ -203,27 +155,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const cachedData = localStorage.getItem(weatherKey);
             if (cachedData && cachedTime && (now - cachedTime) / 1000 < settings.weatherRefreshInterval) {
                 updateWeatherUI(JSON.parse(cachedData));
-                return Promise.resolve();
+                return $.Deferred().resolve().promise();
             }
         }
 
         const weatherAPIKey = "1d6f2f389d424a848c6185910251002";
         const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=${weatherAPIKey}&q=${encodeURIComponent(settings.city)}&aqi=yes`;
 
-        return fetch(weatherAPI)
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch weather");
-                return res.json();
-            })
-            .then((data) => {
+        return $.ajax({
+            url: weatherAPI,
+            method: 'GET',
+            success: function (data) {
                 localStorage.setItem(weatherKey, JSON.stringify(data));
                 localStorage.setItem(weatherTimeKey, now.toString());
                 updateWeatherUI(data);
-            })
-            .catch(() => {
-                const weatherBox = document.getElementById("weatherBox");
-                weatherBox.innerHTML += `<p class="text-red-600 mt-2 text-sm">Unable to load weather data.</p>`;
-            });
+            },
+            error: function () {
+                $("#weatherBox").append('<p class="text-red-600 mt-2 text-sm">Unable to load weather data.</p>');
+            }
+        });
     }
 
     function updateWeatherUI(data) {
@@ -235,17 +185,70 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (aqi <= 9) aqiText = "Poor 😷";
         else aqiText = "Very Poor ☠️";
 
-        document.getElementById("location-name").innerHTML = `<i class="bi bi-geo-alt"></i> ${data.location.name}`;
-        document.getElementById("temperature").innerHTML = `<i class="bi bi-thermometer-half"></i> ${data.current.temp_c}°C`;
-        document.getElementById("wind").innerHTML = `<i class="bi bi-wind"></i> ${data.current.wind_kph} km/h`;
-        document.getElementById("humidity").innerHTML = `<i class="bi bi-moisture"></i> ${data.current.humidity}%`;
-        document.getElementById("clouds").innerHTML = `<i class="bi bi-cloud-fog2"></i> ${data.current.cloud}%`;
-        document.getElementById("air-quality").innerHTML = `<i class="bi bi-lungs"></i> ${aqiText}`;
+        $("#location-name").html(`<i class="bi bi-geo-alt"></i> ${data.location.name}`);
+        $("#temperature").html(`<i class="bi bi-thermometer-half"></i> ${data.current.temp_c}°C`);
+        $("#wind").html(`<i class="bi bi-wind"></i> ${data.current.wind_kph} km/h`);
+        $("#humidity").html(`<i class="bi bi-moisture"></i> ${data.current.humidity}%`);
+        $("#clouds").html(`<i class="bi bi-cloud-fog2"></i> ${data.current.cloud}%`);
+        $("#air-quality").html(`<i class="bi bi-lungs"></i> ${aqiText}`);
     }
+
+    $cityInput.on('change', function () {
+        settings.city = $(this).val().trim() || 'Sarajevo';
+    });
+
+    $refreshIntervalInput.on('change', function () {
+        let val = parseInt($(this).val(), 10);
+
+        if (isNaN(val)) val = 5;
+        if (val < 5) val = 5;
+        if (val > 3600) val = 3600;
+
+        settings.refreshInterval = val;
+        $(this).val(val);
+    });
+
+    function formatBytes(kb) {
+        if (!kb || kb === '0') return '0 MB';
+        const num = parseFloat(kb);
+        const mb = num / 1024;
+        return mb.toFixed(1) + ' MB';
+    }
+
+    function setIndicatorActive(id, color) {
+        const $el = $(`#${id}`);
+        if (!$el.length) return;
+        $el.removeClass('opacity-40');
+
+        const $img = $el.find('img');
+        switch (color) {
+            case 'red':
+                $img.css('filter', 'invert(35%) sepia(80%) saturate(700%) hue-rotate(0deg) brightness(1.1)');
+                break;
+            case 'red':
+                $img.css('filter', 'invert(90%) sepia(100%) saturate(1000%) hue-rotate(10deg) brightness(1.1)');
+                break;
+            case 'limegreen':
+                $img.css('filter', 'invert(60%) sepia(70%) saturate(500%) hue-rotate(80deg) brightness(1.2)');
+                break;
+            default:
+                $img.css('filter', '');
+        }
+    }
+
+    function setIndicatorInactive(id) {
+        const $el = $(`#${id}`);
+        if (!$el.length) return;
+        $el.addClass('opacity-40');
+        $el.find('img').css('filter', '');
+    }
+
+    /*System Data */
     function fetchSystemData() {
-        fetch("/api/system")
-            .then(res => res.json())
-            .then(data => {
+        $.ajax({
+            url: "/api/system",
+            method: 'GET',
+            success: function (data) {
                 const cpuTemp = data.cpu_temp !== undefined && data.cpu_temp !== null ?
                     Math.max(0, Math.min(100, parseFloat(data.cpu_temp))) : 0;
 
@@ -264,41 +267,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 ramGauge.value = Math.min(100, ramUsedPercent);
                 ramGauge.update();
 
-                document.getElementById("uptime").textContent = "Uptime: " + data.uptime;
+                $("#uptime").text("Uptime: " + data.uptime);
 
-                const diskDiv = document.getElementById("diskCharts");
-                diskDiv.innerHTML = "";
-                Object.entries(data.disk).forEach(([path, disk]) => {
+                const $diskDiv = $("#diskCharts");
+                $diskDiv.empty();
+                $.each(data.disk, function (path, disk) {
                     if (!disk) {
-                        const p = document.createElement("p");
-                        p.className = "text-center text-gray-400";
-                        p.textContent = `${path}: N/A`;
-                        diskDiv.appendChild(p);
+                        $diskDiv.append(`<p class="text-center text-gray-400">${path}: N/A</p>`);
                         return;
                     }
                     const usedPercent = (disk.used / disk.total) * 100;
                     const freePercent = 100 - usedPercent;
                     const usedGB = (disk.used / 1024 / 1024 / 1024).toFixed(2);
                     const totalGB = (disk.total / 1024 / 1024 / 1024).toFixed(2);
-                    const diskSection = document.createElement("section");
-                    diskSection.className = "mb-6";
-                    diskSection.innerHTML = `
-                    <h4 class="text-red-600 font-semibold mb-1">${path}</h4>
-                    <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
-                      <div class="h-5 bg-red-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
-                      <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
-                    </div>
-                    <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-                      <span>Used: ${usedPercent.toFixed(1)}%</span>
-                      <span>${usedGB} GB / ${totalGB} GB</span>
-                    </div>
-                `;
-                    diskDiv.appendChild(diskSection);
+                    $diskDiv.append(`
+                        <section class="mb-6">
+                            <h4 class="text-red-600 font-semibold mb-1">${path}</h4>
+                            <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
+                                <div class="h-5 bg-red-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
+                                <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
+                                <span>Used: ${usedPercent.toFixed(1)}%</span>
+                                <span>${usedGB} GB / ${totalGB} GB</span>
+                            </div>
+                        </section>
+                    `);
                 });
 
-                preload.classList.add("fade-out");
-                setTimeout(() => preload.remove(), 500);
-                main.classList.remove("hidden");
+                $preload.addClass("fade-out");
+                setTimeout(() => $preload.remove(), 500);
+                $main.removeClass("hidden");
 
                 if (cpuTemp >= 80) setIndicatorActive('indicatorTemp', 'red');
                 else if (cpuTemp >= 70) setIndicatorActive('indicatorTemp', 'red');
@@ -313,202 +312,282 @@ document.addEventListener("DOMContentLoaded", () => {
                 setIndicatorActive('indicatorBattery', 'limegreen');
 
                 let storageWarning = false;
-                Object.values(data.disk).forEach(disk => {
+                $.each(data.disk, function (_, disk) {
                     if (disk && disk.used / disk.total > 0.9) storageWarning = true;
                 });
                 if (storageWarning) setIndicatorActive('indicatorStorage', 'red');
                 else setIndicatorInactive('indicatorStorage');
-
-            })
-            .catch(e => {
+            },
+            error: function (e) {
                 console.error("Greška pri dohvaćanju sistemskih podataka:", e);
-                document.getElementById("systemInfo").textContent = "Ne mogu dohvatiti sistemske podatke.";
-                preload.classList.add("fade-out");
-                setTimeout(() => preload.remove(), 500);
-                main.classList.remove("hidden");
+                $("#systemInfo").text("Ne mogu dohvatiti sistemske podatke.");
+                $preload.addClass("fade-out");
+                setTimeout(() => $preload.remove(), 500);
+                $main.removeClass("hidden");
+            }
+        });
+    }
+
+    /*Links */
+    function checkLinkStatus(url, $dot) {
+        fetch(url, { method: 'HEAD', mode: 'no-cors' })
+            .then(() => {
+                $dot.removeClass('bg-red-600 bg-gray-400').addClass('bg-green-500');
+            })
+            .catch(() => {
+                $dot.removeClass('bg-green-500 bg-gray-400').addClass('bg-red-600');
             });
+    }
+    function incrementLinkOpened(index) {
+        console.log(index);
+        $.ajax({
+            url: `/api/links/${index}/increment`,
+            method: 'POST',
+            success: function () {
+                fetchLinks();
+            },
+            error: function (err) {
+                console.error('Failed to increment opened count:', err);
+            }
+        });
     }
 
 
+    function renderLinksOnPage() {
+        const $container = $("#linksContainer");
+        $container.empty();
+
+        if (settings.links.length === 0) {
+            $container.append(`
+            <p class="text-center text-gray-400 italic mt-4">
+                No links available. Please visit settings to add one.
+            </p>
+        `);
+            setIndicatorActive('indicatorNoLinks', 'red');
+            return;
+        } else {
+            setIndicatorInactive('indicatorNoLinks');
+        }
+
+        settings.links.forEach((link, idx) => link.globalIndex = idx);
+
+        const grouped = {};
+        $.each(settings.links, function (_, link) {
+            if (!grouped[link.category]) grouped[link.category] = [];
+            grouped[link.category].push(link);
+        });
+
+        $.each(grouped, function (category, links) {
+            const $section = $(`
+            <section class="space-y-4">
+                <h3 class="text-lg font-semibold text-red-600 border-b border-gray-600 pb-2">${category}</h3>
+                <div class="flex flex-wrap gap-4 justify-center"></div>
+            </section>
+        `);
+            const $grid = $section.find('div');
+
+            $.each(links, function (_, link) {
+                const $card = $(`
+                <a href="${link.url}" target="_blank"
+                   class="flex items-center gap-2 bg-[#3a3a4d] text-white hover:bg-[#505070]
+                   rounded-lg px-4 py-3 shadow-md transition-transform transform hover:scale-105 w-full sm:w-auto">
+                   <span class="status-dot inline-block w-2 h-2 rounded-full bg-gray-400" data-url="${link.url}"></span>
+                   <i class="bi ${link.icon} text-lg"></i>
+                   <span>${link.name}</span>
+                </a>
+            `);
+
+                $card.on('click', function () {
+                    incrementLinkOpened(link.globalIndex);
+                });
+
+                $grid.append($card);
+
+                const $dot = $card.find('.status-dot');
+                checkLinkStatus(link.url, $dot);
+            });
+
+            $container.append($section);
+        });
+    }
+
     function fetchLinks() {
-        return fetch("/api/links")
-            .then((res) => res.json())
-            .then((data) => {
+        return $.ajax({
+            url: "/api/links",
+            method: 'GET',
+            success: function (data) {
                 settings.links = data;
                 renderLinksList();
                 renderLinksOnPage();
-            })
-            .catch(() => {
+            },
+            error: function () {
                 settings.links = [];
                 renderLinksList();
-            });
-    }
-
-    function renderLinksOnPage() {
-        const container = document.getElementById("linksContainer");
-        container.innerHTML = "";
-        const grouped = settings.links.reduce((acc, link) => {
-            if (!acc[link.category]) acc[link.category] = [];
-            acc[link.category].push(link);
-            return acc;
-        }, {});
-        Object.entries(grouped).forEach(([category, links]) => {
-            const section = document.createElement("section");
-            section.className = "space-y-4";
-            section.innerHTML = `
-        <h3 class="text-lg font-semibold text-red-600 border-b border-gray-600 pb-2">${category}</h3>
-        <div class="flex flex-wrap gap-4 justify-center"></div>
-      `;
-            const grid = section.querySelector("div");
-            links.forEach((link) => {
-                const card = document.createElement("a");
-                card.href = link.url;
-                card.target = "_blank";
-                card.className = `
-          flex items-center gap-2 bg-[#3a3a4d] text-white hover:bg-[#505070]
-          rounded-lg px-4 py-3 shadow-md transition-transform transform hover:scale-105
-          w-full sm:w-auto
-        `;
-                card.innerHTML = `
-  <span class="inline-block w-2 h-2 rounded-full bg-gray-400" data-url="${link.url}"></span>
-  <i class="bi ${link.icon} text-lg"></i>
-  <span>${link.name}</span>
-`;
-                grid.appendChild(card);
-                const dot = card.querySelector('span');
-                checkLinkStatus(link.url, dot);
-
-            });
-            container.appendChild(section);
+            }
         });
-        if (settings.links.length === 0) setIndicatorActive('indicatorNoLinks', 'red');
-        else setIndicatorInactive('indicatorNoLinks');
-
     }
 
     function filterLinks() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const sections = document.querySelectorAll("#linksContainer section");
-        sections.forEach((section) => {
-            const cards = section.querySelectorAll("a");
+        const searchTerm = $searchInput.val().toLowerCase();
+        let anyLinkVisible = false;
+
+        $("#linksContainer section").each(function () {
+            const $section = $(this);
+            const $cards = $section.find("a");
             let anyVisible = false;
-            cards.forEach((card) => {
-                const text = card.textContent.toLowerCase();
+
+            $cards.each(function () {
+                const $card = $(this);
+                const text = $card.text().toLowerCase();
                 if (text.includes(searchTerm)) {
-                    card.style.display = "flex";
+                    $card.css("display", "flex");
                     anyVisible = true;
+                    anyLinkVisible = true;
                 } else {
-                    card.style.display = "none";
+                    $card.css("display", "none");
                 }
             });
-            section.style.display = anyVisible ? "block" : "none";
+
+            $section.css("display", anyVisible ? "block" : "none");
         });
+
+        if (!anyLinkVisible) {
+            $("#linksContainer p.text-center").remove();
+
+            $("#linksContainer").append(`
+            <p class="text-center text-gray-400 italic mt-4">
+                Could not find any links.
+            </p>
+        `);
+        } else {
+            $("#linksContainer p.text-center").remove();
+        }
     }
 
-    searchInput.addEventListener("input", filterLinks);
 
-    settingsBtn.addEventListener('click', async () => {
+    $searchInput.on("input", filterLinks);
+
+    $settingsBtn.on('click', function () {
         loadSettings();
-        cityInput.value = settings.city;
-        refreshIntervalInput.value = settings.refreshInterval;
-        await fetchLinks();
-        renderLinksList();
-        settingsModal.classList.remove('hidden');
+        $cityInput.val(settings.city);
+        $refreshIntervalInput.val(settings.refreshInterval);
+        fetchLinks().then(function () {
+            renderLinksList();
+            $settingsModal.removeClass('hidden');
+        });
     });
 
-
-    closeSettings.addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
+    $closeSettings.on('click', function () {
+        $settingsModal.addClass('hidden');
         saveSettings();
         fetchLinks();
         fetchWeather(true);
         clearInterval(systemInterval);
-        systemInterval = setInterval(() => fetchSystemData(), settings.refreshInterval * 1000);
+        systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
         clearInterval(weatherInterval);
-        weatherInterval = setInterval(() => fetchWeather(), settings.weatherRefreshInterval * 1000);
+        weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
     });
 
-    settingsModal.addEventListener('click', e => {
-        if (e.target === settingsModal) {
-            settingsModal.classList.add('hidden');
+    $settingsModal.on('click', function (e) {
+        if (e.target === this) {
+            $(this).addClass('hidden');
             saveSettings();
             fetchLinks();
             fetchWeather(true);
             clearInterval(systemInterval);
-            systemInterval = setInterval(() => fetchSystemData(), settings.refreshInterval * 1000);
+            systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
             clearInterval(weatherInterval);
-            weatherInterval = setInterval(() => fetchWeather(), settings.weatherRefreshInterval * 1000);
+            weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
         }
     });
 
-    linksList.addEventListener('click', async e => {
-        if (e.target.matches('button')) {
-            const idx = e.target.dataset.index;
-            if (idx !== undefined) {
-                try {
-                    const res = await fetch(`/api/links/${idx}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!res.ok) throw new Error("Delete failed");
-
-                    await fetchLinks();
-                } catch (err) {
+    $linksList.on('click', 'button', function () {
+        const idx = $(this).data('index');
+        if (idx !== undefined) {
+            $.ajax({
+                url: `/api/links/${idx}`,
+                method: 'DELETE',
+                success: function () {
+                    fetchLinks();
+                },
+                error: function (err) {
                     alert("Brisanje nije uspjelo");
                     console.error(err);
                 }
-            }
+            });
         }
     });
 
-
-    addLinkForm.addEventListener('submit', async e => {
+    $addLinkForm.on('submit', function (e) {
         e.preventDefault();
-        const name = linkNameInput.value.trim();
-        const url = linkUrlInput.value.trim();
-        const icon = linkIconInput.value.trim() || 'bi-link-45deg';
-        const category = linkCategoryInput.value;
+        const name = $linkNameInput.val().trim();
+        const url = $linkUrlInput.val().trim();
+        const icon = $linkIconInput.val().trim() || 'bi-link-45deg';
+        const category = $linkCategoryInput.val();
 
         if (name && url) {
-            try {
-                const res = await fetch('/api/links', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, url, icon, category })
-                });
-
-                if (!res.ok) throw new Error("Failed to save");
-
-                await fetchLinks();
-                linkNameInput.value = '';
-                linkUrlInput.value = '';
-                linkIconInput.value = '';
-                linkCategoryInput.value = 'Other';
-            } catch (err) {
-                alert('Greška pri dodavanju linka.');
-                console.error(err);
-            }
+            $.ajax({
+                url: '/api/links',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ name, url, icon, category }),
+                success: function () {
+                    fetchLinks();
+                    $linkNameInput.val('');
+                    $linkUrlInput.val('');
+                    $linkIconInput.val('');
+                    $linkCategoryInput.val('Other');
+                },
+                error: function (err) {
+                    alert('Greška pri dodavanju linka.');
+                    console.error(err);
+                }
+            });
         }
     });
 
-    cityInput.addEventListener('change', e => {
-        settings.city = e.target.value.trim() || 'Sarajevo';
-    });
+    function renderLinksList() {
+        const $linksList = $("#linksList");
+        $linksList.empty();
 
-    refreshIntervalInput.addEventListener('change', e => {
-        let val = parseInt(e.target.value);
-        if (isNaN(val) || val < 5) val = 5;
-        else if (val > 3600) val = 3600;
-        settings.refreshInterval = val;
-        refreshIntervalInput.value = val;
-    });
+        if (settings.links.length === 0) {
+            $linksList.append(`
+            <tr>
+                <td colspan="5" class="text-gray-400 text-center py-2">
+                    No links added yet.
+                </td>
+            </tr>
+        `);
+            return;
+        }
+
+        $.each(settings.links, function (i, link) {
+            $linksList.append(`
+            <tr class="hover:bg-gray-700 transition">
+                <td class="px-2 py-1 flex items-center gap-2">
+                    <i class="bi ${link.icon} text-red-600"></i>
+                    ${link.name}
+                </td>
+                <td class="px-2 py-1">${link.category}</td>
+                <td class="px-2 py-1 text-center">${link.opened}</td>
+                <td class="px-2 py-1 break-all">${link.url}</td>
+                <td class="px-2 py-1 text-center">
+                    <button data-index="${i}" class="text-red-500 hover:text-red-600 font-bold text-lg" aria-label="Delete link">&times;</button>
+                </td>
+            </tr>
+        `);
+        });
+    }
+
+    /*System Process */
     function fetchSystemProcess() {
-        fetch('/api/process')
-            .then(res => res.json())
-            .then(processes => {
-                const container = document.getElementById('processContainer');
+        $.ajax({
+            url: '/api/process',
+            method: 'GET',
+            success: function (processes) {
+                const $container = $('#processContainer');
                 if (!processes || processes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400">No processes found.</p>';
+                    $container.html('<p class="text-gray-400">No processes found.</p>');
                     return;
                 }
 
@@ -523,8 +602,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         </tr>
                     </thead>
                     <tbody>
-            `;
-                processes.forEach(p => {
+                `;
+
+                $.each(processes, function (_, p) {
                     html += `
                     <tr class="hover:bg-gray-700">
                         <td class="px-3 py-1 border-b border-gray-700">${p.pid}</td>
@@ -532,54 +612,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td class="px-3 py-1 border-b border-gray-700">${p.cpu}</td>
                         <td class="px-3 py-1 border-b border-gray-700">${formatBytes(p.memory)}</td>
                     </tr>
-                `;
+                    `;
                 });
+
                 html += `</tbody></table>`;
-                container.innerHTML = html;
-            })
-            .catch(err => {
+                $container.html(html);
+            },
+            error: function (err) {
                 console.error(err);
-                document.getElementById('processContainer').innerHTML =
-                    '<p class="text-red-600">Failed to load processes.</p>';
-            });
+                $('#processContainer').html('<p class="text-red-600">Failed to load processes.</p>');
+            }
+        });
     }
-
-    function formatBytes(kb) {
-        if (!kb || kb === '0') return '0 MB';
-        const num = parseFloat(kb);
-        const mb = num / 1024;
-        return mb.toFixed(1) + ' MB';
-    }
-
-    function setIndicatorActive(id, color) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.remove('opacity-40');
-
-        const img = el.querySelector('img');
-        switch (color) {
-            case 'red':
-                img.style.filter = 'invert(35%) sepia(80%) saturate(700%) hue-rotate(0deg) brightness(1.1)';
-                break;
-            case 'red':
-                img.style.filter = 'invert(90%) sepia(100%) saturate(1000%) hue-rotate(10deg) brightness(1.1)';
-                break;
-            case 'limegreen':
-                img.style.filter = 'invert(60%) sepia(70%) saturate(500%) hue-rotate(80deg) brightness(1.2)';
-                break;
-            default:
-                img.style.filter = '';
-        }
-    }
-
-    function setIndicatorInactive(id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.add('opacity-40');
-        el.querySelector('img').style.filter = '';
-    }
-
-
 
     initGauges();
     loadSettings();
@@ -589,32 +633,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let weatherInterval;
     let processInterval;
 
-    fetchLinks().then(() => {
+    fetchLinks().then(function () {
         fetchSystemData();
         fetchWeather();
         fetchSystemProcess();
 
-        systemInterval = setInterval(
-            () => updateDate(),
-            settings.refreshInterval * 1000
-        );
-
-        systemInterval = setInterval(
-            () => fetchSystemData(),
-            settings.refreshInterval * 1000
-        );
-
-        weatherInterval = setInterval(
-            () => fetchWeather(),
-            settings.weatherRefreshInterval * 1000
-        );
-
+        systemInterval = setInterval(updateDate, settings.refreshInterval * 1000);
+        systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
+        weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
         processInterval = setInterval(
-            () => fetchSystemProcess(),
-            settings.processRefreshInterval
-                ? settings.processRefreshInterval * 1000
-                : 5000
+            fetchSystemProcess,
+            settings.processRefreshInterval ? settings.processRefreshInterval * 1000 : 5000
         );
     });
-
 });

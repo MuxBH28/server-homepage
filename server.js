@@ -11,8 +11,23 @@ const PORT = 6969;
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
-app.get('/api/links', (req, res) => {
-    fs.readFile(path.join(__dirname, 'links.json'), 'utf8', (err, data) => {
+const linksFile = path.join(__dirname, 'links.json');
+
+if (!fs.existsSync(linksFile)) {
+    const defaultLinks = [
+        {
+            name: "msehic",
+            url: "https://msehic.com",
+            icon: "bi-link-45deg",
+            category: "External",
+            opened: 0
+        }
+    ];
+    fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
+}
+
+app.get('/api/links', async (req, res) => {
+    fs.readFile(linksFile, 'utf8', async (err, data) => {
         if (err) return res.status(500).json({ error: 'Failed to read links' });
         res.json(JSON.parse(data));
     });
@@ -65,9 +80,7 @@ app.post('/api/links', express.json(), (req, res) => {
     const { name, url, icon = 'bi-link-45deg', category = 'Custom' } = req.body;
     if (!name || !url) return res.status(400).json({ error: "Name and URL are required" });
 
-    const filePath = path.join(__dirname, 'links.json');
-
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(linksFile, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ error: 'Failed to read links' });
 
         let links = [];
@@ -88,9 +101,8 @@ app.post('/api/links', express.json(), (req, res) => {
 
 app.delete('/api/links/:index', (req, res) => {
     const index = parseInt(req.params.index);
-    const filePath = path.join(__dirname, 'links.json');
 
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(linksFile, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ error: 'Failed to read links' });
 
         let links = JSON.parse(data);
@@ -126,6 +138,24 @@ app.get('/api/process', (req, res) => {
         res.json(processes);
     });
 });
+
+app.post('/api/links/:index/increment', (req, res) => {
+    const index = parseInt(req.params.index);
+    fs.readFile(linksFile, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: 'Failed to read links' });
+        let links = [];
+        try { links = JSON.parse(data); } catch { return res.status(500).json({ error: 'Corrupt links data' }); }
+        if (index < 0 || index >= links.length) return res.status(400).json({ error: 'Invalid index' });
+
+        links[index].opened = (links[index].opened || 0) + 1;
+
+        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
+            if (err) return res.status(500).json({ error: 'Failed to save link' });
+            res.json({ success: true, opened: links[index].opened });
+        });
+    });
+});
+
 
 function getCpuUsage() {
     return new Promise((resolve) => {

@@ -29,10 +29,8 @@ Version 1.0:
 ![Version 1.0](preview.png)
 [Release v1.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.0)
 
-Version 1.1:
+Version 1.1+:
 ![Version 1.1](preview2.png)
-[Release v1.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.1)
-----------------------------------------------------------------------------
 
 ## Installation
 
@@ -117,9 +115,12 @@ The SVG icons used in this project are proudly sourced from [SVG Repo](https://w
 
 - [X] Status indicator
 - [X] Better loading screen
-- [ ] Vakti times prayer
-- [ ] Navidrome music player
 - [X] Process viewer
+- [X] Welcome screen
+- [ ] Make a .env file
+- [ ] Telegram notifications for warnings
+- [ ] System logs with Chart.js
+- [ ] Move settings from localStorage to json
 
 Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
 
