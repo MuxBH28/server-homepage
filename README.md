@@ -91,12 +91,12 @@ docker run -d -p 6969:6969 --name dashboard-server dashboard-server
 2. Pull the latest image from GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/MuxBH28/server-homepage:latest
+docker pull ghcr.io/muxbh28/server-homepage:latest
 ```
 
 3. Run the container:
 ```
-docker run -d -p 6969:6969 --name dashboard-server ghcr.io/MuxBH28/server-homepage:latest
+docker run -d -p 6969:6969 --name dashboard-server ghcr.io/muxbh28/server-homepage:latest
 ```
 
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
