@@ -1,0 +1,9 @@
+{
+    "server": "Server name",
+    "name": "Nickname",
+    "refreshInterval": 15,
+    "welcome": false,
+    "diskPaths": [
+        "/"
+    ]
+}

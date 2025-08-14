@@ -4,14 +4,20 @@ const fs = require('fs');
 const path = require('path');
 const disk = require('diskusage');
 const { exec } = require('child_process');
+const axios = require('axios');
 
 const app = express();
 const PORT = 6969;
 
+let networkCache = null;
+let networkCacheTime = 0;
+const NETWORK_CACHE_TTL = 5 * 60 * 1000;
+
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
-const linksFile = path.join(__dirname, 'links.json');
+const linksFile = path.join(__dirname, 'json/links.json');
+const settingsFile = path.join(__dirname, 'json/settings.json');
 
 if (!fs.existsSync(linksFile)) {
     const defaultLinks = [
@@ -26,6 +32,19 @@ if (!fs.existsSync(linksFile)) {
     fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
 }
 
+if (!fs.existsSync(settingsFile)) {
+    const defaultSettings = {
+        server: 'Server name',
+        name: 'Nickname',
+        refreshInterval: 30,
+        welcome: false,
+        diskPaths: [
+            '/'
+        ]
+    };
+    fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
+}
+
 app.get('/api/links', async (req, res) => {
     fs.readFile(linksFile, 'utf8', async (err, data) => {
         if (err) return res.status(500).json({ error: 'Failed to read links' });
@@ -38,10 +57,10 @@ app.get('/api/system', async (req, res) => {
         const cpuLoad = await getCpuUsage();
         const mem = process.memoryUsage();
         const uptime = process.uptime();
+        const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 
-        const diskPaths = ['/', '/400GB', '/500GB_WD', '/250GB'];
         const diskInfo = {};
-        for (const p of diskPaths) {
+        for (const p of settings.diskPaths) {
             try {
                 const info = disk.checkSync(p);
                 diskInfo[p] = {
@@ -56,6 +75,8 @@ app.get('/api/system', async (req, res) => {
         }
 
         const cpuTemp = await getCpuTemp();
+        const network = await getNetworkInfo();
+        const appVersions = await getVersions();
 
         res.json({
             cpu_percent: cpuLoad,
@@ -69,8 +90,11 @@ app.get('/api/system', async (req, res) => {
             },
             uptime: formatUptime(uptime),
             cpu_temp: cpuTemp,
-            disk: diskInfo
+            disk: diskInfo,
+            network,
+            appVersions
         });
+
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -92,7 +116,7 @@ app.post('/api/links', express.json(), (req, res) => {
 
         links.push({ name, url, icon, category });
 
-        fs.writeFile(filePath, JSON.stringify(links, null, 2), (err) => {
+        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
             if (err) return res.status(500).json({ error: 'Failed to save link' });
             res.json({ success: true });
         });
@@ -112,7 +136,7 @@ app.delete('/api/links/:index', (req, res) => {
 
         links.splice(index, 1);
 
-        fs.writeFile(filePath, JSON.stringify(links, null, 2), (err) => {
+        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
             if (err) return res.status(500).json({ error: 'Failed to delete link' });
             res.json({ success: true });
         });
@@ -156,6 +180,30 @@ app.post('/api/links/:index/increment', (req, res) => {
     });
 });
 
+app.get('/api/settings', (req, res) => {
+    fs.readFile(settingsFile, 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading settings.json:", err);
+            return res.status(500).json({ error: 'Error reading settings.' });
+        }
+        try {
+            res.json(JSON.parse(data));
+        } catch (parseErr) {
+            console.error("Error parsing settings.json:", parseErr);
+            res.status(500).json({ error: 'Invalid settings format.' });
+        }
+    });
+});
+
+app.post('/api/settings', (req, res) => {
+    fs.writeFile(settingsFile, JSON.stringify(req.body, null, 2), (err) => {
+        if (err) {
+            console.error("Error writing settings.json:", err);
+            return res.status(500).json({ error: 'Error saving settings.' });
+        }
+        res.json({ success: true });
+    });
+});
 
 function getCpuUsage() {
     return new Promise((resolve) => {
@@ -180,6 +228,71 @@ function getCpuTemp() {
         });
     });
 }
+
+async function getVersions() {
+    const appVersions = {
+        local: 'N/A',
+        github: 'N/A'
+    };
+
+    try {
+        const packagePath = path.join(__dirname, 'package.json');
+        const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+        appVersions.local = packageData.version || 'N/A';
+
+        const githubUrl = 'https://raw.githubusercontent.com/MuxBH28/server-homepage/main/package.json';
+        const response = await axios.get(githubUrl);
+        const githubData = response.data;
+        appVersions.github = githubData.version || 'N/A';
+
+    } catch (err) {
+        console.error('Failed to get versions:', err.message);
+    }
+
+    return appVersions;
+}
+
+async function getNetworkInfo() {
+    const now = Date.now();
+
+    if (networkCache && (now - networkCacheTime < NETWORK_CACHE_TTL)) {
+        return networkCache;
+    }
+
+    const nets = os.networkInterfaces();
+    let localIP = null;
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+            if (net.family === 'IPv4' && !net.internal) {
+                localIP = net.address;
+                break;
+            }
+        }
+        if (localIP) break;
+    }
+
+    let publicIP = 'N/A';
+    let city = 'N/A';
+    let country = 'N/A';
+    let loc = 'N/A';
+
+    try {
+        const response = await axios.get('https://ipinfo.io/json');
+        const data = response.data;
+        publicIP = data.ip || publicIP;
+        city = data.city || city;
+        country = data.country || country;
+        loc = data.loc || loc;
+    } catch (err) {
+        console.error("Failed to fetch public IP info:", err.message);
+    }
+
+    networkCache = { local_ip: localIP, public_ip: publicIP, city, country, loc };
+    networkCacheTime = now;
+
+    return networkCache;
+}
+
 
 function formatUptime(seconds) {
     const d = Math.floor(seconds / (3600 * 24));

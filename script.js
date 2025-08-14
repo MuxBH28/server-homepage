@@ -4,7 +4,6 @@ $(document).ready(function () {
     const $settingsBtn = $('#settingsBtn');
     const $settingsModal = $('#settingsModal');
     const $closeSettings = $('#closeSettings');
-    const $cityInput = $('#cityInput');
     const $refreshIntervalInput = $('#refreshInterval');
     const $linksList = $('#linksList');
     const $addLinkForm = $('#addLinkForm');
@@ -14,22 +13,42 @@ $(document).ready(function () {
     const $linkUrlInput = $('#linkUrl');
     const $searchInput = $("#linkSearch");
     let cpuGauge, ramGauge, cpuTempGauge;
-    const $welcomeModal = $("#welcomeModal");
-    const $closeWelcomeBtn = $("#closeWelcome");
-    const $dontShowCheckbox = $("#dontShowWelcome");
+    const $diskPathsInput = $("#diskPathsInput");
+    const $currentDiskPaths = $("#currentDiskPaths");
 
     /*Misc */
-    const hideWelcome = localStorage.getItem("hideWelcomeScreen");
+    function initWelcomeModal() {
+        if (settings.server) {
+            $("#serverNameInput").val(settings.server);
+            $("#serverName").text(settings.server);
+        }
+        if (settings.name) {
+            $("#yourNameInput").val(settings.name);
+            $("#name").text(settings.name);
+        }
 
-    if (hideWelcome !== "true") {
-        $welcomeModal.removeClass("hidden");
+        if (!settings.welcome) {
+            $("#welcomeModal").removeClass("hidden");
+        }
     }
 
-    $closeWelcomeBtn.on("click", function () {
-        if ($dontShowCheckbox.is(":checked")) {
-            localStorage.setItem("hideWelcomeScreen", "true");
-        }
-        $welcomeModal.addClass("hidden");
+    $("#closeWelcome").on("click", function () {
+        settings.server = $("#serverNameInput").val().trim() || 'Server name';
+        settings.name = $("#yourNameInput").val().trim() || 'Usern';
+        settings.welcome = true;
+
+        saveSettings().then(function () {
+            $("#welcomeModal").addClass("hidden");
+
+            $("#serverName").text(settings.server);
+            $("#name").text(settings.name);
+
+            if ($("#dontShowWelcome").is(":checked")) {
+                localStorage.setItem("hideWelcomeScreen", "true");
+            }
+        }).catch(function (error) {
+            console.error("Failed to save settings:", error);
+        });
     });
 
     function initGauges() {
@@ -54,8 +73,8 @@ $(document).ready(function () {
             colorNumbers: '#f5f5f5',
             colorMajorTicks: '#f5f5f5',
             colorMinorTicks: '#aaa',
-            colorNeedle: 'rgba(255, 238, 88, 1)',
-            colorNeedleEnd: 'rgba(255, 200, 100, 0.9)',
+            colorNeedle: 'rgba(255, 0, 0, 1)',
+            colorNeedleEnd: 'rgba(255, 100, 100, 0.9)',
             titleFont: "18px sans-serif",
             titleFontWeight: "bold",
             titleShadow: false
@@ -118,22 +137,50 @@ $(document).ready(function () {
     }
 
     let settings = {
-        city: 'Sarajevo',
+        server: 'Server name',
+        name: 'User',
         refreshInterval: 30,
-        weatherRefreshInterval: 300,
-        links: []
+        welcome: false,
+        diskPaths: [
+            "/"
+        ]
     };
 
+    let links = {};
+
     function saveSettings() {
-        localStorage.setItem('monitorSettings', JSON.stringify(settings));
+        return $.ajax({
+            url: '/api/settings',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(settings),
+            success: function () {
+                console.log("Settings saved to backend.");
+            },
+            error: function (err) {
+                console.error("Failed to save settings:", err);
+            }
+        });
     }
 
+
     function loadSettings() {
-        const s = localStorage.getItem('monitorSettings');
-        if (s) {
-            settings = JSON.parse(s);
-        }
+        return $.ajax({
+            url: '/api/settings',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                if (data) {
+                    settings = data;
+                    $refreshIntervalInput.val(settings.refreshInterval);
+                }
+            },
+            error: function (err) {
+                console.error("Failed to load settings from backend:", err);
+            }
+        });
     }
+
 
     function updateDate() {
         const dt = new Date();
@@ -144,58 +191,6 @@ $(document).ready(function () {
         const minutes = String(dt.getMinutes()).padStart(2, '0');
         $("#time").text(`${hours}:${minutes}`);
     }
-
-    function fetchWeather(force = false) {
-        const weatherKey = "weatherData";
-        const weatherTimeKey = "weatherDataTime";
-        const now = Date.now();
-
-        if (!force) {
-            const cachedTime = localStorage.getItem(weatherTimeKey);
-            const cachedData = localStorage.getItem(weatherKey);
-            if (cachedData && cachedTime && (now - cachedTime) / 1000 < settings.weatherRefreshInterval) {
-                updateWeatherUI(JSON.parse(cachedData));
-                return $.Deferred().resolve().promise();
-            }
-        }
-
-        const weatherAPIKey = "1d6f2f389d424a848c6185910251002";
-        const weatherAPI = `https://api.weatherapi.com/v1/current.json?key=${weatherAPIKey}&q=${encodeURIComponent(settings.city)}&aqi=yes`;
-
-        return $.ajax({
-            url: weatherAPI,
-            method: 'GET',
-            success: function (data) {
-                localStorage.setItem(weatherKey, JSON.stringify(data));
-                localStorage.setItem(weatherTimeKey, now.toString());
-                updateWeatherUI(data);
-            },
-            error: function () {
-                $("#weatherBox").append('<p class="text-red-600 mt-2 text-sm">Unable to load weather data.</p>');
-            }
-        });
-    }
-
-    function updateWeatherUI(data) {
-        if (!data) return;
-        const aqi = data.current.air_quality["gb-defra-index"];
-        let aqiText = "";
-        if (aqi <= 3) aqiText = "Good 😊";
-        else if (aqi <= 6) aqiText = "Moderate 😐";
-        else if (aqi <= 9) aqiText = "Poor 😷";
-        else aqiText = "Very Poor ☠️";
-
-        $("#location-name").html(`<i class="bi bi-geo-alt"></i> ${data.location.name}`);
-        $("#temperature").html(`<i class="bi bi-thermometer-half"></i> ${data.current.temp_c}°C`);
-        $("#wind").html(`<i class="bi bi-wind"></i> ${data.current.wind_kph} km/h`);
-        $("#humidity").html(`<i class="bi bi-moisture"></i> ${data.current.humidity}%`);
-        $("#clouds").html(`<i class="bi bi-cloud-fog2"></i> ${data.current.cloud}%`);
-        $("#air-quality").html(`<i class="bi bi-lungs"></i> ${aqiText}`);
-    }
-
-    $cityInput.on('change', function () {
-        settings.city = $(this).val().trim() || 'Sarajevo';
-    });
 
     $refreshIntervalInput.on('change', function () {
         let val = parseInt($(this).val(), 10);
@@ -268,6 +263,21 @@ $(document).ready(function () {
                 ramGauge.update();
 
                 $("#uptime").text("Uptime: " + data.uptime);
+                $("#localIP").text(data.network.local_ip);
+                $("#publicIP").text(data.network.public_ip);
+                $("#city").text(data.network.city);
+                $("#country").text(data.network.country);
+                $("#loc").text(data.network.loc);
+
+                $("#appVersion").text(data.appVersions.local);
+                if (data.appVersions.local !== data.appVersions.github) {
+                    $("#appVersionUpdate").html(`
+    <a href="https://github.com/MuxBH28/server-homepage/" target="_blank" 
+       class="text-red-500 font-semibold hover:underline flashing">
+        | New version is available: ${data.appVersions.github}
+    </a>
+`);
+                }
 
                 const $diskDiv = $("#diskCharts");
                 $diskDiv.empty();
@@ -320,7 +330,7 @@ $(document).ready(function () {
             },
             error: function (e) {
                 console.error("Greška pri dohvaćanju sistemskih podataka:", e);
-                $("#systemInfo").text("Ne mogu dohvatiti sistemske podatke.");
+                $("#systemInfo").text("Error getting data. Try refreshing page.");
                 $preload.addClass("fade-out");
                 setTimeout(() => $preload.remove(), 500);
                 $main.removeClass("hidden");
@@ -357,7 +367,7 @@ $(document).ready(function () {
         const $container = $("#linksContainer");
         $container.empty();
 
-        if (settings.links.length === 0) {
+        if (links.length === 0) {
             $container.append(`
             <p class="text-center text-gray-400 italic mt-4">
                 No links available. Please visit settings to add one.
@@ -369,10 +379,10 @@ $(document).ready(function () {
             setIndicatorInactive('indicatorNoLinks');
         }
 
-        settings.links.forEach((link, idx) => link.globalIndex = idx);
+        links.forEach((link, idx) => link.globalIndex = idx);
 
         const grouped = {};
-        $.each(settings.links, function (_, link) {
+        $.each(links, function (_, link) {
             if (!grouped[link.category]) grouped[link.category] = [];
             grouped[link.category].push(link);
         });
@@ -416,16 +426,17 @@ $(document).ready(function () {
             url: "/api/links",
             method: 'GET',
             success: function (data) {
-                settings.links = data;
+                links = data;
                 renderLinksList();
                 renderLinksOnPage();
             },
             error: function () {
-                settings.links = [];
+                links = [];
                 renderLinksList();
             }
         });
     }
+
 
     function filterLinks() {
         const searchTerm = $searchInput.val().toLowerCase();
@@ -469,10 +480,10 @@ $(document).ready(function () {
 
     $settingsBtn.on('click', function () {
         loadSettings();
-        $cityInput.val(settings.city);
         $refreshIntervalInput.val(settings.refreshInterval);
         fetchLinks().then(function () {
             renderLinksList();
+            renderDiskPaths();
             $settingsModal.removeClass('hidden');
         });
     });
@@ -481,23 +492,24 @@ $(document).ready(function () {
         $settingsModal.addClass('hidden');
         saveSettings();
         fetchLinks();
-        fetchWeather(true);
+
         clearInterval(systemInterval);
-        systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
-        clearInterval(weatherInterval);
-        weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
+        systemInterval = setInterval(() => {
+            updateDate();
+            fetchSystemData();
+            fetchSystemProcess();
+        }, settings.refreshInterval * 1000);
     });
+
+
 
     $settingsModal.on('click', function (e) {
         if (e.target === this) {
             $(this).addClass('hidden');
             saveSettings();
             fetchLinks();
-            fetchWeather(true);
             clearInterval(systemInterval);
             systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
-            clearInterval(weatherInterval);
-            weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
         }
     });
 
@@ -550,7 +562,7 @@ $(document).ready(function () {
         const $linksList = $("#linksList");
         $linksList.empty();
 
-        if (settings.links.length === 0) {
+        if (links.length === 0) {
             $linksList.append(`
             <tr>
                 <td colspan="5" class="text-gray-400 text-center py-2">
@@ -561,7 +573,7 @@ $(document).ready(function () {
             return;
         }
 
-        $.each(settings.links, function (i, link) {
+        $.each(links, function (i, link) {
             $linksList.append(`
             <tr class="hover:bg-gray-700 transition">
                 <td class="px-2 py-1 flex items-center gap-2">
@@ -578,6 +590,43 @@ $(document).ready(function () {
         `);
         });
     }
+
+    function renderDiskPaths() {
+        $currentDiskPaths.empty();
+        settings.diskPaths.forEach((path, index) => {
+            const $li = $(`
+            <li class="flex justify-between items-center bg-gray-800 rounded px-3 py-1 mb-1">
+                <span>${path}</span>
+                <button class="text-red-500 hover:text-red-400" data-index="${index}" title="Remove">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </li>
+        `);
+            $currentDiskPaths.append($li);
+        });
+    }
+
+    $diskPathsInput.on("keypress", function (e) {
+        if (e.key === "Enter") {
+            const newPath = $diskPathsInput.val().trim();
+            if (newPath && !settings.diskPaths.includes(newPath)) {
+                settings.diskPaths.push(newPath);
+                renderDiskPaths();
+                saveSettings();
+            }
+            $diskPathsInput.val('');
+        }
+    });
+
+    // Brisanje disk path-a
+    $currentDiskPaths.on("click", "button", function () {
+        const index = $(this).data("index");
+        if (index !== undefined) {
+            settings.diskPaths.splice(index, 1);
+            renderDiskPaths();
+            saveSettings();
+        }
+    });
 
     /*System Process */
     function fetchSystemProcess() {
@@ -626,24 +675,26 @@ $(document).ready(function () {
     }
 
     initGauges();
-    loadSettings();
     updateDate();
 
     let systemInterval;
-    let weatherInterval;
-    let processInterval;
 
-    fetchLinks().then(function () {
-        fetchSystemData();
-        fetchWeather();
-        fetchSystemProcess();
+    loadSettings().then(() => {
+        updateDate();
+        initWelcomeModal();
 
-        systemInterval = setInterval(updateDate, settings.refreshInterval * 1000);
-        systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
-        weatherInterval = setInterval(fetchWeather, settings.weatherRefreshInterval * 1000);
-        processInterval = setInterval(
-            fetchSystemProcess,
-            settings.processRefreshInterval ? settings.processRefreshInterval * 1000 : 5000
-        );
+        fetchLinks().then(() => {
+            fetchSystemData();
+            fetchSystemProcess();
+
+            clearInterval(systemInterval);
+
+            systemInterval = setInterval(() => {
+                updateDate();
+                fetchSystemData();
+                fetchSystemProcess();
+            }, settings.refreshInterval * 1000);
+        });
     });
+
 });
