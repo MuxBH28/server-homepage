@@ -18,32 +18,73 @@ app.use(express.json());
 
 const linksFile = path.join(__dirname, 'json/links.json');
 const settingsFile = path.join(__dirname, 'json/settings.json');
+const serverLog = path.join(__dirname, 'server.log');
 
-if (!fs.existsSync(linksFile)) {
-    const defaultLinks = [
-        {
-            name: "msehic",
-            url: "https://msehic.com",
-            icon: "bi-link-45deg",
-            category: "External",
-            opened: 0
-        }
-    ];
-    fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
+function initFiles() {
+    if (!fs.existsSync(linksFile)) {
+        const defaultLinks = [
+            {
+                name: "msehic",
+                url: "https://msehic.com",
+                icon: "bi-link-45deg",
+                category: "External",
+                opened: 0
+            }
+        ];
+        fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
+    }
+
+    if (!fs.existsSync(settingsFile)) {
+        const defaultSettings = {
+            server: 'Server name',
+            name: 'Nickname',
+            refreshInterval: 30,
+            welcome: false,
+            bgPath: './assets/background.jpg',
+            diskPaths: [
+                '/'
+            ]
+        };
+        fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
+    }
+
+    if (!fs.existsSync(serverLog)) {
+        fs.writeFileSync(serverLog, `[${new Date().toISOString()}] Server log initialized\n`, 'utf8');
+    }
 }
 
-if (!fs.existsSync(settingsFile)) {
-    const defaultSettings = {
-        server: 'Server name',
-        name: 'Nickname',
-        refreshInterval: 30,
-        welcome: false,
-        bgPath: './assets/background.jpg',
-        diskPaths: [
-            '/'
-        ]
-    };
-    fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
+async function logSystemStats() {
+    try {
+        const cpuLoad = await getCpuUsage();
+        const cpuTemp = await getCpuTemp();
+
+        const totalMem = os.totalmem();
+        const usedMem = totalMem - os.freemem();
+        const memPercent = ((usedMem / totalMem) * 100).toFixed(2);
+        const cpuLoadNum = Number(cpuLoad) || 0;
+
+        const now = new Date();
+        const timestamp = now.toTimeString().split(' ')[0];
+
+        const logLine = `[${timestamp}] CPU: ${cpuLoadNum.toFixed(2)}% | RAM: ${memPercent}% | TEMP: ${cpuTemp || 'N/A'}°C`;
+
+        let lines = [];
+        if (fs.existsSync(serverLog)) {
+            const data = fs.readFileSync(serverLog, 'utf8');
+            lines = data.trim().split('\n');
+        }
+
+        lines.push(logLine);
+
+        const MAX_LINES = 60 * 12;
+        if (lines.length > MAX_LINES) {
+            lines = lines.slice(lines.length - MAX_LINES);
+        }
+
+        fs.writeFileSync(serverLog, lines.join('\n') + '\n', 'utf8');
+    } catch (err) {
+        console.error("Error logging system stats:", err.message);
+    }
 }
 
 app.get('/api/links', async (req, res) => {
@@ -207,6 +248,91 @@ app.post('/api/settings', (req, res) => {
     });
 });
 
+app.get('/api/logs', (req, res) => {
+    try {
+        if (!fs.existsSync(serverLog)) return res.json([]);
+
+        const data = fs.readFileSync(serverLog, 'utf8');
+        const lines = data
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .map(line => {
+                const match = line.match(/\[(.*?)\] CPU: ([\d.]+)% \| RAM: ([\d.]+)% \| TEMP: (.*)°C/);
+                if (match) {
+                    return {
+                        timestamp: match[1],
+                        cpu: parseFloat(match[2]),
+                        ram: parseFloat(match[3]),
+                        temp: match[4] === 'N/A' ? null : parseFloat(match[4])
+                    };
+                } else {
+                    return { raw: line };
+                }
+            });
+
+        res.json(lines);
+    } catch (err) {
+        console.error("Error reading server log:", err.message);
+        res.status(500).json({ error: "Failed to read server log." });
+    }
+});
+
+app.get('/api/info', async (req, res) => {
+    try {
+        const cpu = await si.cpu();
+        const mem = os.totalmem();
+        const osInfo = await si.osInfo();
+        const disk = await si.diskLayout();
+        const graphics = await si.graphics();
+        const network = await si.networkInterfaces();
+
+        const bytesToGB = (bytes) => +(bytes / 1024 / 1024 / 1024).toFixed(2);
+
+        res.json({
+            cpu: {
+                manufacturer: cpu.manufacturer,
+                brand: cpu.brand,
+                speed: cpu.speed,
+                cores: cpu.cores,
+                physicalCores: cpu.physicalCores,
+            },
+            memory: {
+                totalGB: bytesToGB(mem),
+            },
+            os: {
+                platform: osInfo.platform,
+                distro: osInfo.distro,
+                release: osInfo.release,
+                kernel: osInfo.kernel,
+                arch: osInfo.arch,
+                hostname: osInfo.hostname,
+            },
+            disk: disk.map(d => ({
+                device: d.device,
+                type: d.type,
+                sizeGB: bytesToGB(d.size),
+                name: d.name,
+                vendor: d.vendor
+            })),
+            graphics: graphics.controllers.map(g => ({
+                model: g.model,
+                vendor: g.vendor,
+                vramGB: bytesToGB(g.vram * 1024 * 1024)
+            })),
+            network: network.map(n => ({
+                iface: n.iface,
+                ip4: n.ip4,
+                ip6: n.ip6,
+                mac: n.mac,
+                internal: n.internal
+            }))
+        });
+    } catch (err) {
+        console.error('Error fetching system info:', err);
+        res.status(500).json({ error: 'Failed to fetch system info' });
+    }
+});
+
 function getCpuUsage() {
     return new Promise((resolve) => {
         const osu = require('os-utils');
@@ -325,7 +451,9 @@ app.listen(PORT, '0.0.0.0', (err) => {
     if (err) {
         console.error('Error starting server:', err);
     } else {
+        initFiles();
+        logSystemStats();
+        setInterval(logSystemStats, 60 * 1000);
         console.log(`Server running at http://0.0.0.0:${PORT}`);
     }
 });
-

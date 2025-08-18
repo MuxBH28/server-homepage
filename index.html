@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Server Homepage</title>
+    <title>Brahketov Server</title>
     <link rel="icon" href="/assets/favicon.ico" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css" />
@@ -14,7 +14,7 @@
 <body class="font-sans p-4 min-h-screen flex items-center justify-center bg-cover bg-center">
 
     <div id="preloader"
-        class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-50">
+        class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-100">
         <canvas id="preloadGaugeCanvas" width="200" height="200"></canvas>
     </div>
 
@@ -28,11 +28,18 @@
                         <i class="bi bi-activity"></i> <span id="serverName"></span>
                     </h2>
                     <p id="uptime" class="text-center text-sm text-red-600 mt-2">Uptime: N/A</p>
-                    <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings" title="Settings">
-                        <i class="bi bi-gear-fill text-2xl"></i>
-                    </button>
+                    <div class="flex gap-4">
+                        <button id="logsBtn" class="hover:text-red-600" aria-label="Open logs" title="Logs">
+                            <i class="bi bi-journal-text text-2xl"></i>
+                        </button>
+                        <button id="infoBtn" class="hover:text-red-600" aria-label="Open hardware info" title="Info">
+                            <i class="bi bi-info-circle text-2xl"></i>
+                        </button>
+                        <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings" title="Settings">
+                            <i class="bi bi-gear-fill text-2xl"></i>
+                        </button>
+                    </div>
                 </header>
-
 
                 <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 w-full">
 
@@ -71,6 +78,8 @@
                     </div>
 
                 </div>
+
+
 
                 <div id="diskCharts" class="flex flex-col md:flex-row items-center justify-between mt-6 gap-6"></div>
 
@@ -240,8 +249,13 @@
                 <form id="addLinkForm" class="flex flex-col space-y-2">
                     <input type="text" id="linkName" placeholder="Link Name" required
                         class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-                    <input type="text" id="linkIcon" placeholder="Link Icon" required
+                    <input type="text" id="linkIcon" placeholder="Link Icon e.g. bi-youtube" required
                         class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                    <p class="text-gray-400 text-xs">
+                        Use only <a href="https://icons.getbootstrap.com/" target="_blank"
+                            class="text-purple-500 underline">Bootstrap Icons</a>
+                        (e.g. <code>bi-youtube</code>, <code>bi-facebook</code>, <code>bi-github</code>).
+                    </p>
                     <select id="linkCategory" required
                         class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full">
                         <option value="">Select a category</option>
@@ -308,64 +322,21 @@
         </div>
     </div>
 
-    <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden p-4">
         <div
-            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-md shadow-lg border border-white/10 w-full max-w-4xl relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-center mb-4">
-                <img src="./assets/logo.png" alt="Server Logo" class="w-24 h-24">
-            </div>
-            <h2 class="text-2xl font-bold mb-4">Welcome to Server Homepage</h2>
-            <div class="space-y-3 text-sm">
-                <p>This is your server monitoring homepage. Here you can view:</p>
-                <ul class="list-disc list-inside ml-4">
-                    <li>CPU, RAM, and disk usage</li>
-                    <li>System processes</li>
-                    <li>Network information</li>
-                    <li>Quick links to your favorite tools or apps</li>
-                </ul>
-                <p>You can manage links and settings via the settings modal.</p>
-
-                <div class="flex gap-4 mt-4">
-                    <div class="flex-1">
-                        <label for="serverNameInput" class="block text-sm font-medium mb-1">Server name</label>
-                        <input type="text" id="serverNameInput" name="serverNameInput"
-                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500">
-                    </div>
-                    <div class="flex-1">
-                        <label for="yourNameInput" class="block text-sm font-medium mb-1">Your name</label>
-                        <input type="text" id="yourNameInput" name="yourNameInput"
-                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500">
-                    </div>
-                </div>
-
-                <hr class="border-gray-600 my-3">
-
-                <p>Useful links:</p>
-                <ul class="list-disc list-inside ml-4">
-                    <li><a href="https://github.com/MuxBH28/server-homepage/" target="_blank"
-                            class="text-red-500 hover:underline">GitHub Repository</a></li>
-                    <li><a href="https://msehic.com/" target="_blank" class="text-red-500 hover:underline">Author's
-                            website</a></li>
-                </ul>
-                <p> Please report ideas, suggestions, bugs or any issues directly in GitHub. </p>
-                <hr class="border-gray-600 my-3">
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="dontShowWelcome" class="accent-red-600">
-                    <label for="dontShowWelcome" class="text-sm">Don't show this welcome screen again</label>
-                </div>
-            </div>
-            <div class="mt-6 text-right">
-                <button id="closeWelcome"
-                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold">
-                    Close Welcome Screen
-                </button>
+            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-4xl shadow-lg border border-white/10 relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
+            <button id="closeModal" aria-label="Close modal"
+                class="absolute top-4 right-4 text-red-600 hover:text-red-500 text-3xl font-bold">&times;</button>
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4">Modal Title</h2>
+            <div id="modalContent" class="space-y-3">
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="modals.js"></script>
     <script src="script.js"></script>
 </body>
 

@@ -14,7 +14,7 @@ $(document).ready(function () {
     let cpuGauge, ramGauge, cpuTempGauge, preloadGauge;
     const $diskPathsInput = $("#diskPathsInput");
     const $currentDiskPaths = $("#currentDiskPaths");
-    let appVersion = 'v1.3.2';
+    let appVersion = 'v1.3.3';
     /*Misc */
     function initWelcomeModal() {
 
@@ -32,28 +32,25 @@ $(document).ready(function () {
         $('#bgPath').val(settings.bgPath);
 
         if (!settings.welcome) {
-            $("#welcomeModal").removeClass("hidden");
+            openModal('welcome');
         }
     }
 
-    $("#closeWelcome").on("click", function () {
-        settings.server = $("#serverNameInput").val().trim() || 'Server name';
-        settings.name = $("#yourNameInput").val().trim() || 'Usern';
-        settings.welcome = true;
+    $(document).on("click", "#closeWelcome", function () {
+        settings.server = $("#serverNameInput").val().trim() || "Server name";
+        settings.name = $("#yourNameInput").val().trim() || "User";
+        settings.welcome = $("#dontShowWelcome").is(":checked");
 
         saveSettings().then(function () {
-            $("#welcomeModal").addClass("hidden");
-
+            $("#modal").addClass("hidden");
             $("#serverName").text(settings.server);
             $("#name").text(settings.name);
-
-            if ($("#dontShowWelcome").is(":checked")) {
-                localStorage.setItem("hideWelcomeScreen", "true");
-            }
+            $("title").text(settings.server);
         }).catch(function (error) {
             console.error("Failed to save settings:", error);
         });
     });
+
 
     function initGauges() {
         const baseGaugeOptions = {
@@ -197,7 +194,6 @@ $(document).ready(function () {
         });
     }
 
-
     function loadSettings() {
         return $.ajax({
             url: '/api/settings',
@@ -214,7 +210,6 @@ $(document).ready(function () {
             }
         });
     }
-
 
     function updateDate() {
         const dt = new Date();
@@ -521,7 +516,6 @@ $(document).ready(function () {
 
 
     $searchInput.on("input", filterLinks);
-
     $settingsBtn.on('click', function () {
         loadSettings();
         $refreshIntervalInput.val(settings.refreshInterval);
@@ -715,6 +709,136 @@ $(document).ready(function () {
             error: function (err) {
                 console.error(err);
                 $('#processContainer').html('<p class="text-red-600">Failed to load processes.</p>');
+            }
+        });
+    }
+
+    /*Log*/
+    $('#logsBtn').on('click', function () {
+        openModal('logs');
+        fetchSystemLogs();
+    });
+
+    function fetchSystemLogs() {
+        $.ajax({
+            url: '/api/logs',
+            method: 'GET',
+            success: function (logs) {
+                if (!logs || logs.length === 0) {
+                    $('#logsChart').html('<p class="text-gray-400">No logs found.</p>');
+                    return;
+                }
+
+                const validLogs = logs.filter(log => log.cpu !== undefined && log.ram !== undefined && log.temp !== undefined);
+
+                if (validLogs.length === 0) {
+                    $('#logsChart').html('<p class="text-gray-400">No valid logs to display.</p>');
+                    return;
+                }
+
+                const labels = validLogs.map(log => log.timestamp);
+                const cpuData = validLogs.map(log => log.cpu);
+                const ramData = validLogs.map(log => log.ram);
+                const tempData = validLogs.map(log => log.temp);
+
+                const options = {
+                    chart: {
+                        type: 'line',
+                        height: 400,
+                        zoom: { enabled: true },
+                        toolbar: {
+                            show: true,
+                            tools: {
+                                download: true,
+                                selection: false,
+                                zoom: true,
+                                zoomin: true,
+                                zoomout: true,
+                                pan: true,
+                                reset: true
+                            }
+                        },
+                        foreColor: '#000'
+                    },
+                    theme: { mode: 'dark' },
+                    series: [
+                        { name: 'CPU %', data: cpuData, color: '#007bff' },
+                        { name: 'RAM %', data: ramData, color: '#28a745' },
+                        { name: 'Temperature °C', data: tempData, color: '#dc3545' }
+                    ],
+                    xaxis: {
+                        categories: labels,
+                        labels: { style: { colors: '#000' } }
+                    },
+                    yaxis: {
+                        min: 0,
+                        labels: { style: { colors: '#000' } }
+                    },
+                    stroke: { curve: 'smooth' },
+                    tooltip: { shared: true },
+                    legend: {
+                        position: 'top',
+                        labels: { colors: '#000' }
+                    }
+                };
+
+                $('#logsChart').empty();
+                new ApexCharts(document.querySelector("#logsChart"), options).render();
+            },
+            error: function (err) {
+                console.error(err);
+                $('#logsChart').html('<p class="text-red-600">Failed to load logs.</p>');
+            }
+        });
+    }
+
+    /* Info */
+    $('#infoBtn').on('click', function () {
+        openModal('info');
+        fetchSystemInfo();
+    });
+
+    function fetchSystemInfo() {
+        $.ajax({
+            url: '/api/info',
+            method: 'GET',
+            success: function (info) {
+                const $container = $('#infoContainer');
+                $container.empty();
+
+                if (!info) {
+                    $container.html('<p class="text-gray-400">No info found.</p>');
+                    return;
+                }
+
+                $container.append(`<p><strong>CPU:</strong> ${info.cpu.manufacturer} ${info.cpu.brand} (${info.cpu.cores} cores, ${info.cpu.physicalCores} physical, ${info.cpu.speed} GHz)</p>`);
+                $container.append(`<p><strong>Memory:</strong> Total: ${info.memory.totalGB} GB</p>`);
+                $container.append(`<p><strong>OS:</strong> ${info.os.distro} ${info.os.release} (${info.os.arch}), Hostname: ${info.os.hostname}</p>`);
+
+                if (info.disk && info.disk.length > 0) {
+                    $container.append('<p><strong>Disks:</strong></p>');
+                    info.disk.forEach(d => {
+                        $container.append(`<p>&nbsp;&nbsp;${d.device} - ${d.name} (${d.sizeGB} GB, ${d.type})</p>`);
+                    });
+                }
+
+                if (info.graphics && info.graphics.length > 0) {
+                    $container.append('<p><strong>Graphics:</strong></p>');
+                    info.graphics.forEach(g => {
+                        $container.append(`<p>&nbsp;&nbsp;${g.model} (${g.vendor}), VRAM: ${g.vramGB} GB</p>`);
+                    });
+                }
+
+                if (info.network && info.network.length > 0) {
+                    $container.append('<p><strong>Network Interfaces:</strong></p>');
+                    info.network.forEach(n => {
+                        $container.append(`<p>&nbsp;&nbsp;${n.iface} - IPv4: ${n.ip4}, MAC: ${n.mac}</p>`);
+                    });
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                $('#infoContainer').html('<p class="text-red-600">Failed to load info.</p>');
             }
         });
     }

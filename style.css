@@ -27,4 +27,15 @@
     animation: flash 3s infinite;
 }
 
+.apexcharts-toolbar {
+    background-color: #1e1e1e !important;
+    border-radius: 6px;
+}
+
+.apexcharts-toolbar .apexcharts-menu-item,
+.apexcharts-toolbar svg {
+    color: #fff !important;
+}
+
+
 /*Use this file to add a custom css*/

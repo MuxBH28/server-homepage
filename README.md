@@ -217,7 +217,7 @@ The SVG icons used in this project are proudly sourced from [SVG Repo](https://w
 - [X] Online available Demo
 - [ ] Ctrl+V to paste link
 - [ ] Telegram notifications for warnings
-- [ ] System logs with Chart.js
+- [X] System logs with ~~Chart.js~~ Apexcharts
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))
 
 ## Notes
