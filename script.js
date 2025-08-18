@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    const $preload = $('#preloader');
     const $main = $('#mainContent');
     const $settingsBtn = $('#settingsBtn');
     const $settingsModal = $('#settingsModal');
@@ -12,10 +11,10 @@ $(document).ready(function () {
     const $linkCategoryInput = $('#linkCategory');
     const $linkUrlInput = $('#linkUrl');
     const $searchInput = $("#linkSearch");
-    let cpuGauge, ramGauge, cpuTempGauge;
+    let cpuGauge, ramGauge, cpuTempGauge, preloadGauge;
     const $diskPathsInput = $("#diskPathsInput");
     const $currentDiskPaths = $("#currentDiskPaths");
-
+    let appVersion = 'v1.3.2';
     /*Misc */
     function initWelcomeModal() {
 
@@ -139,6 +138,27 @@ $(document).ready(function () {
             ],
             title: "CPU Temp"
         }).draw();
+
+        preloadGauge = new RadialGauge({
+            ...baseGaugeOptions,
+            renderTo: 'preloadGaugeCanvas',
+            width: 512,
+            height: 512,
+            units: 'HOMEPAGE',
+            minValue: 0,
+            maxValue: 100,
+            majorTicks: ['0', '20', '40', '60', '80', '100'],
+            minorTicks: 4,
+            highlights: [
+                { from: 0, to: 20, color: 'rgba(0, 200, 0, 0.7)' },
+                { from: 20, to: 60, color: 'rgba(0,0,0,0)' },
+                { from: 60, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
+                { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
+            ],
+            title: "SERVER",
+            valueBox: true,
+            valueText: appVersion
+        }).draw();
     }
 
     let settings = {
@@ -150,6 +170,15 @@ $(document).ready(function () {
             "/"
         ]
     };
+
+    function preloading() {
+        preloadGauge.value = 100;
+        const $preload = $('#preloader');
+        setTimeout(() => {
+            $preload.addClass("fade-out");
+            setTimeout(() => $preload.remove(), 1000);
+        }, 1200);
+    }
 
     let links = {};
 
@@ -244,6 +273,7 @@ $(document).ready(function () {
     }
 
     /*System Data */
+
     function fetchSystemData() {
         $.ajax({
             url: "/api/system",
@@ -281,11 +311,11 @@ $(document).ready(function () {
                 $("#appVersion").text(data.appVersions.local);
                 if (data.appVersions.local !== data.appVersions.github) {
                     $("#appVersionUpdate").html(`
-    <a href="https://github.com/MuxBH28/server-homepage/" target="_blank" 
-       class="text-red-500 font-semibold hover:underline flashing">
-        | New version is available: ${data.appVersions.github}
-    </a>
-`);
+                    <a href="https://github.com/MuxBH28/server-homepage/" target="_blank" 
+                       class="text-red-500 font-semibold hover:underline flashing">
+                        | New version is available: ${data.appVersions.github}
+                    </a>
+                `);
                 }
 
                 const $diskDiv = $("#diskCharts");
@@ -300,22 +330,20 @@ $(document).ready(function () {
                     const usedGB = (disk.used / 1024 / 1024 / 1024).toFixed(2);
                     const totalGB = (disk.total / 1024 / 1024 / 1024).toFixed(2);
                     $diskDiv.append(`
-                        <section class="mb-6">
-                            <h4 class="text-red-600 font-semibold mb-1">${path}</h4>
-                            <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
-                                <div class="h-5 bg-red-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
-                                <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
-                                <span>Used: ${usedPercent.toFixed(1)}%</span>
-                                <span>${usedGB} GB / ${totalGB} GB</span>
-                            </div>
-                        </section>
-                    `);
+                    <section class="mb-6">
+                        <h4 class="text-red-600 font-semibold mb-1">${path}</h4>
+                        <div class="w-full bg-gray-700 rounded-full h-5 overflow-hidden shadow-inner relative">
+                            <div class="h-5 bg-red-600 transition-all duration-500" style="width: ${usedPercent}%"></div>
+                            <div class="h-5 bg-gray-400 transition-all duration-500 absolute right-0 top-0" style="width: ${freePercent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-400 mt-1 px-1">
+                            <span>Used: ${usedPercent.toFixed(1)}%</span>
+                            <span>${usedGB} GB / ${totalGB} GB</span>
+                        </div>
+                    </section>
+                `);
                 });
 
-                $preload.addClass("fade-out");
-                setTimeout(() => $preload.remove(), 500);
                 $main.removeClass("hidden");
 
                 if (cpuTemp >= 80) setIndicatorActive('indicatorTemp', 'red');
@@ -338,10 +366,8 @@ $(document).ready(function () {
                 else setIndicatorInactive('indicatorStorage');
             },
             error: function (e) {
-                console.error("Greška pri dohvaćanju sistemskih podataka:", e);
+                console.error("Error getting data:", e);
                 $("#systemInfo").text("Error getting data. Try refreshing page.");
-                $preload.addClass("fade-out");
-                setTimeout(() => $preload.remove(), 500);
                 $main.removeClass("hidden");
             }
         });
@@ -693,12 +719,11 @@ $(document).ready(function () {
         });
     }
 
-    initGauges();
-    updateDate();
-
     let systemInterval;
 
     loadSettings().then(() => {
+        initGauges();
+        preloading();
         updateDate();
         initWelcomeModal();
 

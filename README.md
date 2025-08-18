@@ -1,4 +1,14 @@
-# Homepage Project
+# Server Homepage
+
+<p align="center">
+  <img src="assets/logo.png" alt="Logo"/>
+</p>
+
+<p align="center">
+  <em>A lightweight dashboard for your home server.</em>
+</p>
+
+---
 
 
 | Section       | Link                                  |
@@ -11,6 +21,8 @@
 | Usage         | [Go to Usage](#usage)                 |
 | Customization | [Go to Customization](#customization) |
 | Author        | [Go to Author](#author)               |
+
+<iframe src="https://github.com/sponsors/MuxBH28/button" title="Sponsor MuxBH28" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
 
 ---
 
@@ -29,21 +41,23 @@ The project is intended to be deployed on a Linux server and accessed locally or
 ## Preview
 
 Version 1.0:
-![Version 1.0](preview.png)
+![Version 1.0](extra/preview.png)
 [Release v1.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.0)
 
 Version 1.1+:
-![Version 1.1](preview2.png)
+![Version 1.1](extra/preview2.png)
 
 Version 1.1.3:
-![Version 1.1.3](preview1.3.1.png)
+![Version 1.1.3](extra/preview1.3.1.png)
 
 ## Installation
 
 Before continuing, first clone or upload all project files to your server:
+
 ```
 git clone https://github.com/MuxBH28/server-homepage
 ```
+
 After that, you have two options: either run the project using Node.js/PM2 or Docker.
 I personally use PM2 because I find it easier, and I also manage many other projects with PM2.
 
@@ -88,12 +102,10 @@ docker run -d -p 6969:6969 --name server-homepage server-homepage
 ```
 
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
-   
 
 ### Option 3: Using Prebuilt Docker Image
 
 1. Make sure you have [Docker](https://www.docker.com/get-started/) installed.
-
 2. Pull the latest image from GitHub Container Registry:
 
 ```bash
@@ -101,6 +113,7 @@ docker pull ghcr.io/muxbh28/server-homepage:latest
 ```
 
 3. Run the container:
+
 ```
 docker run -d -p 6969:6969 --name server-homepage ghcr.io/muxbh28/server-homepage:latest
 ```
@@ -108,6 +121,7 @@ docker run -d -p 6969:6969 --name server-homepage ghcr.io/muxbh28/server-homepag
 4. Access the homepage via http://your-server-ip:6969/ in your browser.
 
 #### Docker stop
+
 1. To stop the container:
 
 ```bash
@@ -124,7 +138,7 @@ docker rm server-homepage
 
 ## Arduino
 
-- The Arduino sketch (`arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server.
+- The Arduino sketch (`extra/arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server.
 - It visually indicates the server health status using LEDs: green for normal, yellow for warning, and red for critical conditions. A white LED briefly blinks each time fresh data is received successfully.
 - The sketch connects to WiFi and handles network errors gracefully.
 
@@ -134,10 +148,10 @@ I added this Arduino sketch as a test to explore how the ESP32 connects and inte
 
 ## Scriptable
 
-Server Homepage now includes **Scriptable widget integration**, allowing you to monitor your server’s status directly from your iOS home screen.  
-The widget displays key real-time metrics, including **CPU usage, RAM usage, CPU temperature, and network speeds (download & upload)**.  
+Server Homepage now includes **Scriptable widget integration**, allowing you to monitor your server’s status directly from your iOS home screen.
+The widget displays key real-time metrics, including **CPU usage, RAM usage, CPU temperature, and network speeds (download & upload)**.
 
-📖 Detailed installation and setup instructions are available in [scriptable/instructions.md](scriptable/instructions.md).  
+📖 Detailed installation and setup instructions are available in [scriptable/instructions.md](scriptable/instructions.md).
 
 ![Scriptable Widget Preview](scriptable/preview.jpg)
 
@@ -201,6 +215,7 @@ The SVG icons used in this project are proudly sourced from [SVG Repo](https://w
 - [X] Move settings from localStorage to json
 - [X] Make a Dockerfile
 - [X] Online available Demo
+- [ ] Ctrl+V to paste link
 - [ ] Telegram notifications for warnings
 - [ ] System logs with Chart.js
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))
