@@ -5,14 +5,8 @@ $(document).ready(function () {
     const $settingsModal = $('#settingsModal');
     const $closeSettings = $('#closeSettings');
     const $refreshIntervalInput = $('#refreshInterval');
-    const $linksList = $('#linksList');
-    const $addLinkForm = $('#addLinkForm');
-    const $linkNameInput = $('#linkName');
-    const $linkIconInput = $('#linkIcon');
-    const $linkCategoryInput = $('#linkCategory');
-    const $linkUrlInput = $('#linkUrl');
     const $searchInput = $("#linkSearch");
-    let cpuGauge, ramGauge, cpuTempGauge;
+    let cpuGauge, ramGauge, cpuTempGauge, preloadGauge;
     const $diskPathsInput = $("#diskPathsInput");
     const $currentDiskPaths = $("#currentDiskPaths");
 
@@ -67,7 +61,7 @@ $(document).ready(function () {
             borders: true,
             borderShadowWidth: 0,
             valueInt: 1,
-            colorPlate: '#2d2d3d',
+            colorPlate: '#00000005',
             colorUnits: '#f5f5f5',
             colorNumbers: '#f5f5f5',
             colorMajorTicks: '#f5f5f5',
@@ -133,6 +127,27 @@ $(document).ready(function () {
             ],
             title: "CPU Temp"
         }).draw();
+
+        preloadGauge = new RadialGauge({
+            ...baseGaugeOptions,
+            renderTo: 'preloadGaugeCanvas',
+            width: 512,
+            height: 512,
+            units: 'HOMEPAGE',
+            minValue: 0,
+            maxValue: 100,
+            majorTicks: ['0', '20', '40', '60', '80', '100'],
+            minorTicks: 4,
+            highlights: [
+                { from: 0, to: 20, color: 'rgba(0, 200, 0, 0.7)' },
+                { from: 20, to: 60, color: 'rgba(0,0,0,0)' },
+                { from: 60, to: 80, color: 'rgba(255, 255, 0, 0.7)' },
+                { from: 80, to: 100, color: 'rgba(255, 0, 0, 0.7)' }
+            ],
+            title: "SERVER",
+            valueBox: true,
+            valueText: "DEMO"
+        }).draw();
     }
 
     let settings = {
@@ -144,6 +159,15 @@ $(document).ready(function () {
             "/"
         ]
     };
+
+    function preloading() {
+        preloadGauge.value = 100;
+        const $preload = $('#preloader');
+        setTimeout(() => {
+            $preload.addClass("fade-out");
+            setTimeout(() => $preload.remove(), 1000);
+        }, 1200);
+    }
 
     let links = {};
 
@@ -276,8 +300,8 @@ $(document).ready(function () {
                     download_speed: (Math.random() * 10).toFixed(2) + " MB/s"
                 },
                 appVersions: {
-                    local: "1.3.1",
-                    github: "1.3.1"
+                    local: "1.3.2",
+                    github: "1.3.2"
                 }
             };
 
@@ -342,6 +366,8 @@ $(document).ready(function () {
             `);
             });
 
+            $main.removeClass("hidden");
+
             if (cpuTemp >= 80) setIndicatorActive('indicatorTemp', 'red');
             else if (cpuTemp >= 70) setIndicatorActive('indicatorTemp', 'red');
             else setIndicatorInactive('indicatorTemp');
@@ -360,10 +386,6 @@ $(document).ready(function () {
             });
             if (storageWarning) setIndicatorActive('indicatorStorage', 'red');
             else setIndicatorInactive('indicatorStorage');
-
-            $preload.addClass("fade-out");
-            setTimeout(() => $preload.remove(), 500);
-            $main.removeClass("hidden");
 
             resolve(data);
         });
@@ -679,13 +701,11 @@ $(document).ready(function () {
         });
     }
 
-
-    initGauges();
-    updateDate();
-
     let systemInterval;
 
     loadSettings().then(() => {
+        initGauges();
+        preloading();
         updateDate();
         initWelcomeModal();
 

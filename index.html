@@ -12,15 +12,10 @@
 </head>
 
 <body class="font-sans p-4 min-h-screen flex items-center justify-center bg-cover bg-center">
+
     <div id="preloader"
         class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-50">
-        <i class="bi bi-cpu-fill text-6xl animate-bounce mb-6"></i>
-        <div class="flex space-x-2">
-            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-150"></div>
-            <div class="w-3 h-3 bg-red-600 rounded-full animate-pulse delay-300"></div>
-        </div>
-        <p class="mt-4 text-lg animate-fade-in">Initializing Server Homepage...</p>
+        <canvas id="preloadGaugeCanvas" width="200" height="200"></canvas>
     </div>
 
     <article id="mainContent" class="max-w-7xl mx-auto hidden w-full flex-grow flex flex-col p-4">
@@ -316,32 +311,33 @@
     </div>
 
     <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-45 hidden">
         <div
             class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-md shadow-lg border border-white/10 w-full max-w-4xl relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
-            <h2 class="text-2xl font-bold mb-4">Welcome to the Demo Server Homepage</h2>
+            <div class="flex justify-center mb-4">
+                <img src="./assets/logo.png" alt="Server Logo" class="w-24 h-24">
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Welcome to Server Homepage</h2>
             <div class="space-y-3 text-sm">
-                <p>This is a <strong>demo version</strong> of your server monitoring homepage. Here you can view:</p>
+                <p>This is your server monitoring homepage. Here you can view:</p>
                 <ul class="list-disc list-inside ml-4">
-                    <li>CPU, RAM, and disk usage (simulated)</li>
-                    <li>System processes (simulated)</li>
-                    <li>Network information (simulated)</li>
+                    <li>CPU, RAM, and disk usage</li>
+                    <li>System processes</li>
+                    <li>Network information</li>
                     <li>Quick links to your favorite tools or apps</li>
                 </ul>
-                <p>You can manage links and settings via the settings modal (demo data only).</p>
+                <p>You can manage links and settings via the settings modal.</p>
 
                 <div class="flex gap-4 mt-4">
                     <div class="flex-1">
                         <label for="serverNameInput" class="block text-sm font-medium mb-1">Server name</label>
                         <input type="text" id="serverNameInput" name="serverNameInput"
-                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500"
-                            value="Demo Server">
+                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500">
                     </div>
                     <div class="flex-1">
                         <label for="yourNameInput" class="block text-sm font-medium mb-1">Your name</label>
                         <input type="text" id="yourNameInput" name="yourNameInput"
-                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500"
-                            value="Demo User">
+                            class="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-red-500">
                     </div>
                 </div>
 
@@ -354,10 +350,8 @@
                     <li><a href="https://msehic.com/" target="_blank" class="text-red-500 hover:underline">Author's
                             website</a></li>
                 </ul>
-                <p>Please report ideas, suggestions, bugs or any issues directly on GitHub.</p>
-
+                <p> Please report ideas, suggestions, bugs or any issues directly in GitHub. </p>
                 <hr class="border-gray-600 my-3">
-
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="dontShowWelcome" class="accent-red-600">
                     <label for="dontShowWelcome" class="text-sm">Don't show this welcome screen again</label>
@@ -371,8 +365,6 @@
             </div>
         </div>
     </div>
-
-
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
