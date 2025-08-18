@@ -7,6 +7,7 @@
 | Preview       | [Go to Preview](#preview)             |
 | Installation  | [Go to Installation](#installation)   |
 | Arduino       | [Go to Arduino](#arduino)             |
+| Scriptable    | [Go to Scriptable](#scriptable)       |
 | Usage         | [Go to Usage](#usage)                 |
 | Customization | [Go to Customization](#customization) |
 | Author        | [Go to Author](#author)               |
@@ -128,6 +129,17 @@ docker rm server-homepage
 - The sketch connects to WiFi and handles network errors gracefully.
 
 I added this Arduino sketch as a test to explore how the ESP32 connects and interacts with my server, so I can plan a mini wireless server hub with a display for temperature, buttons for controlling the display, and a server restart feature.
+
+---
+
+## Scriptable
+
+Server Homepage now includes **Scriptable widget integration**, allowing you to monitor your server’s status directly from your iOS home screen.  
+The widget displays key real-time metrics, including **CPU usage, RAM usage, CPU temperature, and network speeds (download & upload)**.  
+
+📖 Detailed installation and setup instructions are available in [scriptable/instructions.md](scriptable/instructions.md).  
+
+![Scriptable Widget Preview](scriptable/preview.jpg)
 
 ---
 

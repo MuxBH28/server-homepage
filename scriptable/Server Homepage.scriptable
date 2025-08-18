@@ -1,0 +1,12 @@
+{
+  "always_run_in_app" : false,
+  "icon" : {
+    "color" : "purple",
+    "glyph" : "server"
+  },
+  "name" : "Server Homepage",
+  "script" : "let url = \"http:\/\/192.168.1.50:6969\/api\/system\"\nlet req = new Request(url)\nlet data = await req.loadJSON()\n\nlet cpu = parseFloat(data.cpu_percent).toFixed(1) + \"%\"\nlet temp = data.cpu_temp + \"°C\"\nlet memPercent = ((data.memory.heapUsed \/ data.memory.totalMem) * 100).toFixed(1) + \"%\"\nlet down = data.network.download_speed\nlet up = data.network.upload_speed\n\nlet w = new ListWidget()\nw.setPadding(16, 16, 16, 16)\n\nlet gradient = new LinearGradient()\ngradient.colors = [new Color(\"#ffffff\", 0.15), new Color(\"#000000\", 0.25)]\ngradient.locations = [0, 1]\nw.backgroundGradient = gradient\nw.cornerRadius = 12\n\nfunction addLine(icon, title, value, color) {\n  let row = w.addStack()\n  row.layoutHorizontally()\n  row.centerAlignContent()\n\n  let i = row.addText(icon + \" \")\n  i.font = Font.mediumSystemFont(12)\n  i.textColor = Color.white()\n\n  let t = row.addText(title)\n  t.font = Font.mediumSystemFont(12)\n  t.textColor = new Color(\"#dddddd\")\n\n  row.addSpacer()\n\n  let v = row.addText(value)\n  v.font = Font.boldSystemFont(12)\n  v.textColor = new Color(color)\n\n  w.addSpacer(6)\n}\n\nlet header = w.addText(\"🖥 Server Homepage\")\nheader.font = Font.boldSystemFont(14)\nheader.textColor = Color.white()\nheader.centerAlignText()\n\nw.addSpacer(10)\n\naddLine(\"⚙️\", \"CPU\", cpu, \"#4ade80\")\naddLine(\"🌡\", \"Temp\", temp, \"#f87171\")\naddLine(\"💾\", \"RAM\", memPercent, \"#60a5fa\")\naddLine(\"⬇️\", \"Download\", down, \"#34d399\")\naddLine(\"⬆️\", \"Upload\", up, \"#fbbf24\")\n\nw.addSpacer()\n\nlet footer = w.addText(\"IP: \" + data.network.local_ip)\nfooter.font = Font.mediumSystemFont(9)\nfooter.textColor = new Color(\"#bbbbbb\")\nfooter.centerAlignText()\n\nScript.setWidget(w)\nw.presentMedium()\nScript.complete()",
+  "share_sheet_inputs" : [
+
+  ]
+}
