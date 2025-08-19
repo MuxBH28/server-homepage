@@ -14,10 +14,9 @@ $(document).ready(function () {
     let cpuGauge, ramGauge, cpuTempGauge, preloadGauge;
     const $diskPathsInput = $("#diskPathsInput");
     const $currentDiskPaths = $("#currentDiskPaths");
-    let appVersion = 'v1.3.3';
+    let appVersion = 'v1.3.4';
     /*Misc */
     function initWelcomeModal() {
-
         if (settings.server) {
             $("#serverNameInput").val(settings.server);
             $("#serverName").text(settings.server);
@@ -30,6 +29,14 @@ $(document).ready(function () {
 
         $('body').css('background-image', 'url(' + settings.bgPath + ')');
         $('#bgPath').val(settings.bgPath);
+        $('#rssUrl').val(settings.rss);
+
+        if (settings.login) {
+            const ok = checkAuth();
+            if (!ok) {
+                $('body').html('<p class="text-red-500 text-center mt-10">Access denied.</p>');
+            }
+        }
 
         if (!settings.welcome) {
             openModal('welcome');
@@ -163,6 +170,8 @@ $(document).ready(function () {
         name: 'User',
         refreshInterval: 30,
         welcome: false,
+        rss: 'https://hnrss.org/frontpage',
+        login: null,
         diskPaths: [
             "/"
         ]
@@ -514,7 +523,6 @@ $(document).ready(function () {
         }
     }
 
-
     $searchInput.on("input", filterLinks);
     $settingsBtn.on('click', function () {
         loadSettings();
@@ -526,9 +534,9 @@ $(document).ready(function () {
         });
     });
 
-    $closeSettings.on('click', function () {
-        $settingsModal.addClass('hidden');
+    function saveSettingsModal() {
         settings.bgPath = $('#bgPath').val().trim();
+        settings.rss = $('#rssUrl').val().trim();
 
         saveSettings();
         fetchLinks();
@@ -539,17 +547,44 @@ $(document).ready(function () {
             fetchSystemData();
             fetchSystemProcess();
         }, settings.refreshInterval * 1000);
-    });
 
+        $settingsModal.addClass('hidden');
+    }
 
+    $closeSettings.on('click', saveSettingsModal);
 
     $settingsModal.on('click', function (e) {
         if (e.target === this) {
-            $(this).addClass('hidden');
-            saveSettings();
-            fetchLinks();
-            clearInterval(systemInterval);
-            systemInterval = setInterval(fetchSystemData, settings.refreshInterval * 1000);
+            saveSettingsModal();
+        }
+    });
+
+    $('#authSubmit').on('click', async function () {
+        const pin = $('#authPin').val().trim();
+        const $msg = $('#authMessage');
+
+        if (!pin) {
+            $msg.text('No PIN entered. Authentication is disabled.').removeClass('hidden');
+            return;
+        }
+
+        try {
+            const response = await $.ajax({
+                url: '/api/set-login',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ pin })
+            });
+
+            if (response.success) {
+                $msg.text('PIN saved successfully!').removeClass('hidden').removeClass('text-red-500').addClass('text-green-500');
+                $('#authPin').val('');
+            } else {
+                $msg.text(response.error || 'Failed to save PIN.').removeClass('hidden').removeClass('text-green-500').addClass('text-red-500');
+            }
+        } catch (err) {
+            console.error(err);
+            $msg.text('Error communicating with server.').removeClass('hidden').removeClass('text-green-500').addClass('text-red-500');
         }
     });
 
@@ -667,13 +702,76 @@ $(document).ready(function () {
         }
     });
 
-    /*System Process */
+    /*Widget */
+    function loadWidget(type) {
+        clearWidgetInterval();
+        const $container = $('#widgetContainer');
+
+        switch (type) {
+            case 'process':
+                fetchSystemProcess();
+                widgetInterval = setInterval(fetchSystemProcess, settings.refreshInterval * 1000);
+                break;
+
+            case 'crypto':
+                fetchCryptoPrices();
+                widgetInterval = setInterval(fetchCryptoPrices, 60 * 1000);
+                break;
+
+            case 'notes':
+                fetchNotes();
+                $container.off('input', 'textarea#notesArea').on('input', 'textarea#notesArea', function () {
+                    saveNotes($(this).val());
+                });
+                break;
+
+            case 'rss':
+                fetchRSS();
+                widgetInterval = setInterval(fetchRSS, 10 * 60 * 1000);
+                break;
+
+            case 'power':
+                $container.html(`
+        <div class="flex flex-col justify-center items-center h-full gap-4 text-center">
+            <p class="text-yellow-400 mb-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Warning: Make sure you save your work before performing any action!
+            </p>
+            <div class="flex flex-col gap-3">
+                <button data-action="shutdown" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="bi bi-power"></i> Shutdown
+                </button>
+                <button data-action="restart" class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="bi bi-arrow-clockwise"></i> Restart
+                </button>
+                <button data-action="sleep" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="bi bi-moon-fill"></i> Sleep
+                </button>
+            </div>
+        </div>
+    `);
+
+                $container.off('click', 'button[data-action]').on('click', 'button[data-action]', function () {
+                    const action = $(this).data('action');
+                    if (!confirm(`Are you sure you want to ${action} the server?`)) return;
+
+                    $.post('/api/power', { action })
+                        .done(() => alert(`${action} command sent successfully.`))
+                        .fail(() => alert(`Failed to ${action}.`));
+                });
+                break;
+
+            default:
+                $container.html('<p class="text-gray-400">Select a widget.</p>');
+        }
+    }
+
     function fetchSystemProcess() {
         $.ajax({
             url: '/api/process',
             method: 'GET',
             success: function (processes) {
-                const $container = $('#processContainer');
+                const $container = $('#widgetContainer');
                 if (!processes || processes.length === 0) {
                     $container.html('<p class="text-gray-400">No processes found.</p>');
                     return;
@@ -708,10 +806,130 @@ $(document).ready(function () {
             },
             error: function (err) {
                 console.error(err);
-                $('#processContainer').html('<p class="text-red-600">Failed to load processes.</p>');
+                $('#widgetContainer').html('<p class="text-red-600">Failed to load processes.</p>');
             }
         });
     }
+
+    function fetchNotes() {
+        $.ajax({
+            url: '/api/notes',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                const text = data.notes || '';
+                $('#widgetContainer').html(`
+                <textarea id="notesArea" class="w-full h-96 p-2 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none">${text}</textarea>
+                <p class="text-gray-400 text-xs mt-2">Last edited: ${data.lastEdited ? new Date(data.lastEdited).toLocaleString() : 'N/A'}</p>
+            `);
+
+                let timeout = null;
+                $('#notesArea').on('input', function () {
+                    clearTimeout(timeout);
+                    const newText = $(this).val();
+                    timeout = setTimeout(() => saveNotes(newText), 1000);
+                });
+            },
+            error: function () {
+                $('#widgetContainer').html('<p class="text-red-600">Failed to load notes.</p>');
+            }
+        });
+    }
+
+    function saveNotes(notes) {
+        $.ajax({
+            url: '/api/notes',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ notes }),
+            success: function (res) {
+                console.log("Notes saved successfully", res);
+            },
+            error: function () {
+                console.error("Failed to save notes.");
+            }
+        });
+    }
+
+    function fetchCryptoPrices() {
+        const $container = $('#widgetContainer');
+        $container.html('<p class="text-gray-400">Loading crypto prices...</p>');
+
+        $.ajax({
+            url: '/api/crypto',
+            method: 'GET',
+            success: function (data) {
+                if (!data || Object.keys(data).length === 0) {
+                    $container.html('<p class="text-gray-400">No crypto data available.</p>');
+                    return;
+                }
+
+                let html = `
+                <table class="w-full text-left text-sm text-gray-300 border border-gray-700 rounded-lg">
+                    <thead class="bg-gray-800 sticky top-0">
+                        <tr>
+                            <th class="px-3 py-2 border-b border-gray-700">Coin</th>
+                            <th class="px-3 py-2 border-b border-gray-700">Price (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                for (const [coin, info] of Object.entries(data)) {
+                    html += `
+                    <tr class="hover:bg-gray-700">
+                        <td class="px-3 py-1 border-b border-gray-700">${coin.charAt(0).toUpperCase() + coin.slice(1)}</td>
+                        <td class="px-3 py-1 border-b border-gray-700">$${info.usd.toLocaleString()}</td>
+                    </tr>
+                `;
+                }
+
+                html += `</tbody></table>`;
+                $container.html(html);
+            },
+            error: function (err) {
+                console.error(err);
+                $container.html('<p class="text-red-600">Failed to load crypto prices.</p>');
+            }
+        });
+    }
+    function
+        fetchRSS() {
+        const $container = $('#widgetContainer');
+        $container.html('<p class="text-gray-400">Loading RSS feed...</p>');
+
+        $.get('/api/rss', function (items) {
+            if (!items || items.length === 0) {
+                $container.html('<p class="text-gray-400">No RSS items found.</p>');
+                return;
+            }
+
+            let html = '<ul class="space-y-2 overflow-auto">';
+            items.forEach(item => {
+                html += `
+                <li class="border border-red-700 rounded-lg shadow p-3 hover:bg-gray-700 transition">
+                    <a href="${item.link}" target="_blank" class="flex items-center gap-2 text-white">
+                        <i class="bi bi-link-45deg"></i>
+                        <span class="font-medium">${item.title}</span>
+                    </a>
+                    <p class="text-gray-400 text-xs mt-1">${new Date(item.pubDate).toLocaleString()}</p>
+                </li>
+            `;
+            });
+            html += '</ul>';
+
+            $container.html(html);
+        }).fail(() => {
+            $container.html('<p class="text-red-600">Failed to load RSS feed.</p>');
+            console.error("Failed to fetch RSS feed.");
+        });
+    }
+
+    $('#widgetSelect').on('change', function () {
+        const selected = $(this).val();
+        localStorage.setItem('widget', selected);
+        loadWidget(selected);
+    });
 
     /*Log*/
     $('#logsBtn').on('click', function () {
@@ -843,7 +1061,70 @@ $(document).ready(function () {
         });
     }
 
-    let systemInterval;
+    /*basic auth */
+    function checkAuth() {
+        const savedPin = localStorage.getItem('authPin');
+        if (!settings.login) return true;
+
+        let authorized = false;
+
+        if (savedPin) {
+            $.ajax({
+                url: '/api/check-login',
+                method: 'POST',
+                async: false,
+                contentType: 'application/json',
+                data: JSON.stringify({ pin: savedPin }),
+                success: function (res) {
+                    if (res.success) {
+                        authorized = true;
+                    } else {
+                        localStorage.removeItem('authPin');
+                    }
+                },
+                error: function () {
+                    alert('Error verifying saved PIN. Please try again.');
+                }
+            });
+        }
+
+        while (!authorized) {
+            const input = prompt('Enter PIN to access the server homepage:');
+            if (input === null) break;
+
+            $.ajax({
+                url: '/api/check-login',
+                method: 'POST',
+                async: false,
+                contentType: 'application/json',
+                data: JSON.stringify({ pin: input }),
+                success: function (res) {
+                    if (res.success) {
+                        authorized = true;
+                        localStorage.setItem('authPin', input);
+                    } else {
+                        alert('Incorrect PIN. Please try again.');
+                    }
+                },
+                error: function () {
+                    alert('Error verifying PIN. Please try again.');
+                }
+            });
+        }
+
+        return authorized;
+    }
+
+    let systemInterval = null;
+    let widgetInterval = null;
+    let lastWidget = localStorage.getItem('widget') || 'process';
+
+    function clearWidgetInterval() {
+        if (widgetInterval) {
+            clearInterval(widgetInterval);
+            widgetInterval = null;
+        }
+    }
 
     loadSettings().then(() => {
         initGauges();
@@ -853,14 +1134,12 @@ $(document).ready(function () {
 
         fetchLinks().then(() => {
             fetchSystemData();
-            fetchSystemProcess();
+            loadWidget(lastWidget);
 
             clearInterval(systemInterval);
-
             systemInterval = setInterval(() => {
                 updateDate();
                 fetchSystemData();
-                fetchSystemProcess();
             }, settings.refreshInterval * 1000);
         });
     });

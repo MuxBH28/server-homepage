@@ -6,5 +6,6 @@
     "bgPath": "./assets/background.jpg",
     "diskPaths": [
         "/"
-    ]
+    ],
+    "rss": "https://hnrss.org/frontpage"
 }

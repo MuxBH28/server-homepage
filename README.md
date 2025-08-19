@@ -206,6 +206,24 @@ The dashboard includes several indicators to help monitor the server's status:
 
 The SVG icons used in this project are proudly sourced from [SVG Repo](https://www.svgrepo.com/collection/car-parts-2/) collection *Car Parts 2*.
 
+### Widgets
+
+The Server Homepage comes with an integrated widget system that allows you to view and interact with different information directly on the main page.  
+Currently available widgets:
+
+- **Process Viewer** – Displays all active processes on the server, including PID, CPU usage, and memory.
+- **Notes** – Allows you to keep personal notes directly on the server. All changes are saved automatically.
+- **Crypto Prices** – Shows the current prices of popular cryptocurrencies (Bitcoin, Ethereum, and others as configured).
+- **RSS Reader** – Displays the latest articles from a selected RSS feed.
+- **Power Options** – Provides basic server commands: Shutdown, Restart, and Sleep.
+
+Widgets can be switched using the **select dropdown** at the top of the widget section. The selected widget is loaded and automatically refreshed according to configured intervals:  
+
+- Process Viewer and Crypto Prices refresh every minute or according to the configured interval.  
+- Notes are loaded only once, and changes are saved immediately when edited.  
+- RSS Reader refreshes every 10 minutes.  
+- Power Options do not require automatic refreshing.
+
 ### To Do
 
 - [X] Status indicator

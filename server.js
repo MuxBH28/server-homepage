@@ -5,6 +5,9 @@ const path = require('path');
 const si = require('systeminformation');
 const { exec } = require('child_process');
 const axios = require('axios');
+const bcrypt = require('bcrypt');
+const Parser = require('rss-parser');
+const parser = new Parser();
 
 const app = express();
 const PORT = 6969;
@@ -18,7 +21,9 @@ app.use(express.json());
 
 const linksFile = path.join(__dirname, 'json/links.json');
 const settingsFile = path.join(__dirname, 'json/settings.json');
+let settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 const serverLog = path.join(__dirname, 'server.log');
+const notesFile = path.join(__dirname, 'json/notes.json');
 
 function initFiles() {
     if (!fs.existsSync(linksFile)) {
@@ -41,15 +46,29 @@ function initFiles() {
             refreshInterval: 30,
             welcome: false,
             bgPath: './assets/background.jpg',
+            rss: 'https://hnrss.org/frontpage',
+            login: '',
             diskPaths: [
                 '/'
             ]
         };
         fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
+        settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
     }
 
     if (!fs.existsSync(serverLog)) {
         fs.writeFileSync(serverLog, `[${new Date().toISOString()}] Server log initialized\n`, 'utf8');
+    }
+
+    if (!fs.existsSync(notesFile)) {
+        fs.writeFileSync(
+            notesFile,
+            JSON.stringify({
+                notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
+                lastEdited: new Date().toISOString()
+            }, null, 2),
+            'utf8'
+        );
     }
 }
 
@@ -330,6 +349,140 @@ app.get('/api/info', async (req, res) => {
     } catch (err) {
         console.error('Error fetching system info:', err);
         res.status(500).json({ error: 'Failed to fetch system info' });
+    }
+});
+
+app.get('/api/crypto', async (req, res) => {
+    try {
+        const resp = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+            params: {
+                ids: 'bitcoin,ethereum,dogecoin,litecoin,cardano,solana,polkadot',
+                vs_currencies: 'usd'
+            }
+        });
+        res.json(resp.data);
+    } catch (err) {
+        console.error("Error fetching crypto:", err.message);
+        res.status(500).json({ error: "Failed to fetch crypto data." });
+    }
+});
+
+app.get('/api/notes', (req, res) => {
+    try {
+        if (!fs.existsSync(notesFile)) return res.json({ notes: "", lastEdited: null });
+        const data = JSON.parse(fs.readFileSync(notesFile, 'utf8'));
+        res.json(data);
+    } catch (err) {
+        console.error("Error reading notes:", err.message);
+        res.status(500).json({ error: "Failed to read notes." });
+    }
+});
+
+app.post('/api/notes', (req, res) => {
+    try {
+        const notes = req.body.notes || "";
+        const data = { notes, lastEdited: new Date().toISOString() };
+        fs.writeFileSync(notesFile, JSON.stringify(data, null, 2), 'utf8');
+        res.json({ success: true, data });
+    } catch (err) {
+        console.error("Error saving notes:", err.message);
+        res.status(500).json({ error: "Failed to save notes." });
+    }
+});
+
+app.post('/api/power', (req, res) => {
+    const action = req.body.action;
+
+    if (!['shutdown', 'restart', 'sleep'].includes(action)) {
+        return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    let cmd = '';
+    switch (action) {
+        case 'shutdown':
+            cmd = 'shutdown -h now';
+            break;
+        case 'restart':
+            cmd = 'shutdown -r now';
+            break;
+        case 'sleep':
+            cmd = 'systemctl suspend';
+            break;
+    }
+
+    exec(cmd, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing ${action}:`, error);
+            return res.status(500).json({ error: `Failed to ${action}` });
+        }
+        res.json({ success: true, action });
+    });
+});
+
+app.get('/api/rss', async (req, res) => {
+    try {
+        const feedUrl = settings.rss || 'https://hnrss.org/frontpage';
+        const feed = await parser.parseURL(feedUrl);
+
+        const items = feed.items.slice(0, 5).map(item => ({
+            title: item.title,
+            link: item.link,
+            pubDate: item.pubDate
+        }));
+
+        res.json(items);
+    } catch (err) {
+        console.error("Error fetching RSS:", err.message);
+        res.status(500).json({ error: "Failed to fetch RSS feed." });
+    }
+});
+
+app.post('/api/set-login', async (req, res) => {
+    try {
+        const pin = req.body.pin || '';
+        if (!pin || pin.length < 4) {
+            return res.status(400).json({ error: 'PIN must be at least 4 characters long.' });
+        }
+
+        const hashedPin = await bcrypt.hash(pin, 10);
+
+        if (!fs.existsSync(settingsFile)) {
+            return res.status(500).json({ error: 'Settings file not found.' });
+        }
+
+        const settingsData = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        settingsData.login = hashedPin;
+        fs.writeFileSync(settingsFile, JSON.stringify(settingsData, null, 2), 'utf8');
+
+        settings.login = hashedPin;
+
+        res.json({ success: true, message: 'PIN saved successfully.' });
+    } catch (err) {
+        console.error('Error setting login PIN:', err.message);
+        res.status(500).json({ error: 'Failed to set login PIN.' });
+    }
+});
+
+app.post('/api/check-login', (req, res) => {
+    try {
+        const inputPin = req.body.pin;
+
+        if (!settings.login || !inputPin) {
+            return res.json({ success: false });
+        }
+
+        bcrypt.compare(inputPin, settings.login, (err, result) => {
+            if (err) {
+                console.error('Error comparing PIN:', err.message);
+                return res.status(500).json({ success: false, error: 'Server error' });
+            }
+
+            res.json({ success: result });
+        });
+
+    } catch (err) {
+        console.error('Error in check-login:', err.message);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
