@@ -1,0 +1,42 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature]: "
+labels: [enhancement]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea to improve the project? Let us know!
+
+  - type: input
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why do you want this feature?
+      placeholder: "It would help users by..."
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe your idea in detail
+      placeholder: "I suggest adding a widget that..."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered other approaches?
+      placeholder: "I also thought about..."
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched existing issues
+          required: true
+        - label: I understand this may not be accepted
+          required: true

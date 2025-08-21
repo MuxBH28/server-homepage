@@ -1,0 +1,53 @@
+name: Bug Report
+description: Report a reproducible bug or unexpected behavior
+title: "[Bug]: "
+labels: [bug]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the details below.
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, device, or Docker setup
+      placeholder: "e.g. Windows 11, Chrome 115, Raspberry Pi 4"
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Describe how to reproduce the issue step-by-step
+      placeholder: |
+        1. Go to homepage
+        2. Click on widget selector
+        3. See error
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened instead?
+      placeholder: "The widget should load without errors."
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs or Screenshots
+      description: Paste any error messages or screenshots here
+      placeholder: "Paste logs or drag screenshots"
+      render: bash
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched existing issues
+          required: true
+        - label: I have described the bug clearly
+          required: true

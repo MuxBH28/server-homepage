@@ -1,0 +1,33 @@
+name: General Question
+description: Ask a question or request help
+title: "[Question]: "
+labels: [question]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help or have a general question? Ask here.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Describe what you're trying to understand or solve
+      placeholder: "How do I configure the homepage layout?"
+
+  - type: input
+    id: context
+    attributes:
+      label: Context
+      description: Any relevant setup or background info
+      placeholder: "Using Docker on Raspberry Pi"
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched existing issues and discussions
+          required: true
