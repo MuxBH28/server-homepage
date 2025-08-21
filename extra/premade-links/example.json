@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Plex",
+        "icon": "bi-tv",
+        "category": "Media",
+        "url": "http://192.168.1.50:32400",
+        "opened": 0
+    },
+    {
+        "name": "ImmichFrame",
+        "url": "https://immichframe.online/",
+        "icon": "bi-image",
+        "category": "Files",
+        "opened": 0
+    },
+    {
+        "name": "Router",
+        "url": "http://192.168.1.1",
+        "icon": "bi-hdd-network",
+        "category": "Infrastructure",
+        "opened": 0
+    },
+    {
+        "name": "msehic",
+        "url": "https://msehic.com",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "Notes",
+        "url": "http://192.168.1.50:7887/",
+        "icon": "bi-pen",
+        "category": "Development",
+        "opened": 0
+    }
+]

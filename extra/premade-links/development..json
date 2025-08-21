@@ -1,0 +1,72 @@
+[
+    {
+        "name": "GitHub",
+        "url": "https://github.com/",
+        "icon": "bi-github",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "Stack Overflow",
+        "url": "https://stackoverflow.com/",
+        "icon": "bi-question-circle",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "Visual Studio Code",
+        "url": "https://code.visualstudio.com/",
+        "icon": "bi-code-slash",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "MDN Web Docs",
+        "url": "https://developer.mozilla.org/",
+        "icon": "bi-book",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "React",
+        "url": "https://react.dev/",
+        "icon": "bi-file-code",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "Node.js",
+        "url": "https://nodejs.org/",
+        "icon": "bi-node-plus",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "Postman",
+        "url": "https://www.postman.com/",
+        "icon": "bi-box-seam",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "Docker",
+        "url": "https://www.docker.com/",
+        "icon": "bi-box",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "StackBlitz",
+        "url": "https://stackblitz.com/",
+        "icon": "bi-laptop",
+        "category": "Development",
+        "opened": 0
+    },
+    {
+        "name": "CodePen",
+        "url": "https://codepen.io/",
+        "icon": "bi-code-slash",
+        "category": "Development",
+        "opened": 0
+    }
+]

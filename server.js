@@ -8,6 +8,7 @@ const axios = require('axios');
 const bcrypt = require('bcrypt');
 const Parser = require('rss-parser');
 const parser = new Parser();
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = 6969;
@@ -483,6 +484,38 @@ app.post('/api/check-login', (req, res) => {
     } catch (err) {
         console.error('Error in check-login:', err.message);
         res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.post('/api/linksFile', (req, res) => {
+    const newLinks = req.body;
+
+    if (!newLinks) return res.status(400).json({ error: 'No data provided' });
+
+    fs.writeFile(linksFile, JSON.stringify(newLinks, null, 2), 'utf8', (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to write links' });
+        res.json({ message: 'Links updated successfully' });
+    });
+});
+
+app.post('/api/urltoqrl', async (req, res) => {
+    const { text, type, width, color, bgColor } = req.body;
+    const qrPath = path.join(__dirname, 'assets', `qrcode.${type}`);
+
+    try {
+        await QRCode.toFile(qrPath, text, {
+            type,
+            width,
+            margin: 2,
+            color: {
+                dark: color,
+                light: bgColor
+            }
+        });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to generate QR code' });
     }
 });
 

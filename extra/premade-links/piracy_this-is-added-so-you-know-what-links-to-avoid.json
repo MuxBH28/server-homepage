@@ -1,0 +1,58 @@
+[
+    {
+        "name": "1337x",
+        "url": "https://1337x.to/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "RARBG",
+        "url": "https://rarbg.to/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "The Pirate Bay",
+        "url": "https://thepiratebay.org/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "r/piracy",
+        "url": "https://www.reddit.com/r/piracy/",
+        "icon": "bi-reddit",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "r/piracy Megathread",
+        "url": "https://www.reddit.com/r/piracy/wiki/index",
+        "icon": "bi-reddit",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "FMyH",
+        "url": "https://fmhy.me/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "LimeTorrents",
+        "url": "https://www.limetorrents.info/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    },
+    {
+        "name": "TorLock",
+        "url": "https://www.torlock.com/",
+        "icon": "bi-link-45deg",
+        "category": "External",
+        "opened": 0
+    }
+]

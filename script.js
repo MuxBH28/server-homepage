@@ -14,7 +14,9 @@ $(document).ready(function () {
     let cpuGauge, ramGauge, cpuTempGauge, preloadGauge;
     const $diskPathsInput = $("#diskPathsInput");
     const $currentDiskPaths = $("#currentDiskPaths");
-    let appVersion = 'v1.3.4';
+    const $widgetSelect = $('#widgetSelect');
+    let lastWidget = localStorage.getItem('widget') || 'process';
+    let appVersion = 'v1.3.5';
     /*Misc */
     function initWelcomeModal() {
         if (settings.server) {
@@ -30,6 +32,7 @@ $(document).ready(function () {
         $('body').css('background-image', 'url(' + settings.bgPath + ')');
         $('#bgPath').val(settings.bgPath);
         $('#rssUrl').val(settings.rss);
+        $widgetSelect.val(lastWidget);
 
         if (settings.login) {
             const ok = checkAuth();
@@ -704,7 +707,11 @@ $(document).ready(function () {
 
     /*Widget */
     function loadWidget(type) {
-        clearWidgetInterval();
+        if (widgetInterval) {
+            clearInterval(widgetInterval);
+            widgetInterval = null;
+        }
+
         const $container = $('#widgetContainer');
 
         switch (type) {
@@ -728,6 +735,14 @@ $(document).ready(function () {
             case 'rss':
                 fetchRSS();
                 widgetInterval = setInterval(fetchRSS, 10 * 60 * 1000);
+                break;
+
+            case 'qr':
+                URLtoQR();
+                break;
+
+            case 'hardware':
+                fetchSystemInfo();
                 break;
 
             case 'power':
@@ -893,8 +908,8 @@ $(document).ready(function () {
             }
         });
     }
-    function
-        fetchRSS() {
+
+    function fetchRSS() {
         const $container = $('#widgetContainer');
         $container.html('<p class="text-gray-400">Loading RSS feed...</p>');
 
@@ -925,7 +940,174 @@ $(document).ready(function () {
         });
     }
 
-    $('#widgetSelect').on('change', function () {
+    function URLtoQR() {
+        const $container = $('#widgetContainer');
+
+        $container.html(`
+        <div class="flex flex-col justify-center items-center space-y-4 w-full h-full min-h-[350px] text-center">
+            <h2 class="text-red-600 text-2xl font-semibold"><i class="bi bi-qr-code"></i> QR Code Generator</h2>
+            <p class="text-gray-300 text-sm max-w-md">
+                Enter any text or URL below to generate a QR code. Customize type, size, colors and light/dark mode.
+            </p>
+            <input type="text" id="qrInput" placeholder="Enter text or URL" 
+                class="mb-4 w-full rounded-lg px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 shadow-lg transition-all w-72" />
+
+            <div class="flex gap-2 w-72 justify-center">
+                <select id="qrType" class="flex-1 mb-4 w-full rounded-lg px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 shadow-lg transition-all cursor-pointer">
+                    <option value="png" selected>PNG</option>
+                    <option value="svg">SVG</option>
+                </select>
+                <select id="qrWidth" class="w-24 mb-4 w-full rounded-lg px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 shadow-lg transition-all cursor-pointer">
+                    <option value="128">128 px</option>
+                    <option value="256" selected>256 px</option>
+                    <option value="512">512 px</option>
+                    <option value="1024">1024 px</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2 items-center justify-center">
+                <label class="flex flex-col items-center gap-1">
+                    <span class="text-gray-300 text-sm">QR Color</span>
+                    <input type="color" id="qrColor" value="#000000" class="w-20 h-10 p-1 rounded-lg border border-gray-700" />
+                </label>
+                <label class="flex flex-col items-center gap-1">
+                    <span class="text-gray-300 text-sm">Background Color</span>
+                    <input type="color" id="qrBgColor" value="#ffffff" class="w-20 h-10 p-1 rounded-lg border border-gray-700" />
+                </label>
+            </div>
+
+            <button id="generateQR" 
+                class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg w-72">
+                <i class="bi bi-arrow-right-square-fill"></i> Generate QR
+            </button>
+
+            <p class="text-gray-400 text-xs">
+                QR Code is always stored in "./assets/" folder.
+            </p>
+        </div>
+    `);
+
+        $('#generateQR').on('click', function () {
+            let text = $('#qrInput').val().trim();
+            const type = $('#qrType').val();
+            const width = parseInt($('#qrWidth').val()) || 300;
+            const bgColor = $('#qrBgColor').val();
+            const color = $('#qrColor').val();
+
+            // Funny fallback jokes for empty QR codes.
+            // If you think some of these should be removed or replaced, feel free to open a Pull Request or Issue.
+            const randomJokes = [
+                "Why are you reading this empty QR Code?\nNext time please add some text or URL!\nSincerely,\nServer Homepage",
+                "https://youtu.be/XfELJU1mRMg",
+                "I am Buzz Aldrin. Second man to step on the moon.\nNeil before me.",
+                "How many Trump supporters does it take to change a lightbulb?\nNone. Trump says it's done and they all cheer in the dark.",
+                "What genre are national anthems?\nCountry.",
+                "“DO NOT TOUCH” must be one of the most terrifying things to read in braille.",
+                "Superglue can also be used for cleaning your computer keyboarddddddddddddddddddddddddddddddddddddddddddd",
+                "Chameleons are supposed to blend well, but I think it's ruined this smoothie.",
+                "Man addicted to drinking brake fluid claims he can stop anytime he wants.",
+                "I asked Tom Hanks for his autograph, but all he wrote was thanks.",
+                "Together, I can beat schizophrenia.",
+                "Tequila won't fix your life but it's worth a shot.",
+                "Say what you want about waitresses but they bring a lot to the table",
+                "The thief who stole my iPhone could face time.",
+                "Today I went for a walk with a girl, she noticed me, so we went for a run.",
+                "The urge to sing The Lion Sleeps Tonight is only ever a whim away."
+            ];
+
+            if (!text) {
+                text = randomJokes[Math.floor(Math.random() * randomJokes.length)];
+            }
+
+            $container.html('<p class="text-gray-400 text-center">Generating QR code...</p>');
+
+            $.ajax({
+                url: '/api/urltoqrl',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    text,
+                    type,
+                    width,
+                    color,
+                    bgColor
+                }),
+                success: function () {
+                    $container.html(`
+                    <div class="flex flex-col justify-center items-center space-y-2 w-full h-full min-h-[300px]">
+                        <h2 class="text-red-600 text-2xl font-semibold"><i class="bi bi-qr-code"></i> QR Code is ready:</h2>
+                        <img src="/assets/qrcode.png?ts=${Date.now()}" alt="QR Code" class="border rounded-md" />
+                        <div class="flex gap-2">
+                            <a href="/assets/qrcode.png" download class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg">
+                                <i class="bi bi-file-earmark-arrow-down"></i> Download QR
+                            </a>
+                            <button id="newQR" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg">
+                                <i class="bi bi-arrow-repeat"></i> Make One More
+                            </button>
+                        </div>
+                    </div>
+                `);
+
+                    $('#newQR').on('click', function () {
+                        URLtoQR();
+                    });
+                },
+                error: function () {
+                    $container.html('<p class="text-red-600 text-center">Failed to generate QR code.</p>');
+                    console.error("Failed to generate QR code.");
+                }
+            });
+        });
+    }
+
+    function fetchSystemInfo() {
+        const $container = $('#widgetContainer');
+        $container.html('<p class="text-gray-400">Loading Hardware information...</p>');
+
+        $.ajax({
+            url: '/api/info',
+            method: 'GET',
+            success: function (info) {
+                $container.empty();
+
+                if (!info) {
+                    $container.html('<p class="text-gray-400">No info found.</p>');
+                    return;
+                }
+
+                $container.append(`<p><strong>CPU:</strong> ${info.cpu.manufacturer} ${info.cpu.brand} (${info.cpu.cores} cores, ${info.cpu.physicalCores} physical, ${info.cpu.speed} GHz)</p>`);
+                $container.append(`<p><strong>Memory:</strong> Total: ${info.memory.totalGB} GB</p>`);
+                $container.append(`<p><strong>OS:</strong> ${info.os.distro} ${info.os.release} (${info.os.arch}), Hostname: ${info.os.hostname}</p>`);
+
+                if (info.disk && info.disk.length > 0) {
+                    $container.append('<p><strong>Disks:</strong></p>');
+                    info.disk.forEach(d => {
+                        $container.append(`<p>&nbsp;&nbsp;${d.device} - ${d.name} (${d.sizeGB} GB, ${d.type})</p>`);
+                    });
+                }
+
+                if (info.graphics && info.graphics.length > 0) {
+                    $container.append('<p><strong>Graphics:</strong></p>');
+                    info.graphics.forEach(g => {
+                        $container.append(`<p>&nbsp;&nbsp;${g.model} (${g.vendor}), VRAM: ${g.vramGB} GB</p>`);
+                    });
+                }
+
+                if (info.network && info.network.length > 0) {
+                    $container.append('<p><strong>Network Interfaces:</strong></p>');
+                    info.network.forEach(n => {
+                        $container.append(`<p>&nbsp;&nbsp;${n.iface} - IPv4: ${n.ip4}, MAC: ${n.mac}</p>`);
+                    });
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                $('#infoContainer').html('<p class="text-red-600">Failed to load info.</p>');
+            }
+        });
+    }
+
+    $widgetSelect.on('change', function () {
         const selected = $(this).val();
         localStorage.setItem('widget', selected);
         loadWidget(selected);
@@ -1013,53 +1195,7 @@ $(document).ready(function () {
     /* Info */
     $('#infoBtn').on('click', function () {
         openModal('info');
-        fetchSystemInfo();
     });
-
-    function fetchSystemInfo() {
-        $.ajax({
-            url: '/api/info',
-            method: 'GET',
-            success: function (info) {
-                const $container = $('#infoContainer');
-                $container.empty();
-
-                if (!info) {
-                    $container.html('<p class="text-gray-400">No info found.</p>');
-                    return;
-                }
-
-                $container.append(`<p><strong>CPU:</strong> ${info.cpu.manufacturer} ${info.cpu.brand} (${info.cpu.cores} cores, ${info.cpu.physicalCores} physical, ${info.cpu.speed} GHz)</p>`);
-                $container.append(`<p><strong>Memory:</strong> Total: ${info.memory.totalGB} GB</p>`);
-                $container.append(`<p><strong>OS:</strong> ${info.os.distro} ${info.os.release} (${info.os.arch}), Hostname: ${info.os.hostname}</p>`);
-
-                if (info.disk && info.disk.length > 0) {
-                    $container.append('<p><strong>Disks:</strong></p>');
-                    info.disk.forEach(d => {
-                        $container.append(`<p>&nbsp;&nbsp;${d.device} - ${d.name} (${d.sizeGB} GB, ${d.type})</p>`);
-                    });
-                }
-
-                if (info.graphics && info.graphics.length > 0) {
-                    $container.append('<p><strong>Graphics:</strong></p>');
-                    info.graphics.forEach(g => {
-                        $container.append(`<p>&nbsp;&nbsp;${g.model} (${g.vendor}), VRAM: ${g.vramGB} GB</p>`);
-                    });
-                }
-
-                if (info.network && info.network.length > 0) {
-                    $container.append('<p><strong>Network Interfaces:</strong></p>');
-                    info.network.forEach(n => {
-                        $container.append(`<p>&nbsp;&nbsp;${n.iface} - IPv4: ${n.ip4}, MAC: ${n.mac}</p>`);
-                    });
-                }
-            },
-            error: function (err) {
-                console.error(err);
-                $('#infoContainer').html('<p class="text-red-600">Failed to load info.</p>');
-            }
-        });
-    }
 
     /*basic auth */
     function checkAuth() {
@@ -1115,16 +1251,50 @@ $(document).ready(function () {
         return authorized;
     }
 
+    /*Download/upload links.json */
+    $('#downloadLinks').on('click', function () {
+        $.get('/api/links', function (data) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'links.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    });
+
+    $('#uploadLinks').on('change', function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const jsonData = JSON.parse(e.target.result);
+
+                $.ajax({
+                    url: '/api/linksFile',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(jsonData),
+                    success: function () {
+                        alert('Links uploaded successfully!');
+                    },
+                    error: function () {
+                        alert('Failed to upload links!');
+                    }
+                });
+
+            } catch (err) {
+                alert('Invalid JSON file!');
+            }
+        };
+        reader.readAsText(file);
+    });
+
     let systemInterval = null;
     let widgetInterval = null;
-    let lastWidget = localStorage.getItem('widget') || 'process';
-
-    function clearWidgetInterval() {
-        if (widgetInterval) {
-            clearInterval(widgetInterval);
-            widgetInterval = null;
-        }
-    }
 
     loadSettings().then(() => {
         initGauges();

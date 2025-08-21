@@ -8,6 +8,23 @@
   <em>A lightweight dashboard for your home server.</em>
 </p>
 
+<p align="center">
+  <a href="https://github.com/MuxBH28/server-homepage/">
+    <img src="https://img.shields.io/github/stars/MuxBH28/server-homepage?color=232323&label=server-homepage&logo=github&labelColor=232323" alt="View server-homepage on GitHub" />
+  </a>
+  <a href="https://github.com/sponsors/MuxBH28">
+    <img src="https://img.shields.io/badge/Sponsor-b820f9?labelColor=b820f9&logo=githubsponsors&logoColor=fff" alt="Sponsor MuxBH28" />
+  </a>
+  <img src="https://github.com/MuxBH28/server-homepage/actions/workflows/docker-image.yml/badge.svg" alt="Build Status" />
+  <img src="https://img.shields.io/badge/Docker%20Pulls-latest-blue?style=flat-square&logo=docker&link=https%3A%2F%2Fghcr.io%2Fmuxbh28%2Fserver-homepage" alt="Docker Pulls" />
+  <img src="https://img.shields.io/github/license/muxbh28/server-homepage" alt="License" />
+  <img src="https://img.shields.io/github/v/release/muxbh28/server-homepage" alt="Release" />
+</p>
+
+<p align="center">
+   <a href="https://server-homepage.msehic.com/" target="_blank">Demo available here!</a>
+</p>
+
 ---
 
 
@@ -22,11 +39,7 @@
 | Customization | [Go to Customization](#customization) |
 | Author        | [Go to Author](#author)               |
 
-<iframe src="https://github.com/sponsors/MuxBH28/button" title="Sponsor MuxBH28" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
-
 ---
-
-# [- Server Homepage | Demo available here -](https://server-homepage.msehic.com/)
 
 ## About
 
@@ -47,32 +60,35 @@ Version 1.0:
 Version 1.1+:
 ![Version 1.1](extra/preview2.png)
 
-Version 1.1.3:
-![Version 1.1.3](extra/preview1.3.1.png)
+Version 1.3.1:
+![Version 1.3.1](extra/preview1.3.1.png)
+
+Version 1.3.5:
+![Version 1.3.5](extra/preview1.3.5.png)
 
 ## Installation
 
-Before continuing, first clone or upload all project files to your server:
-
-```
-git clone https://github.com/MuxBH28/server-homepage
-```
-
-After that, you have two options: either run the project using Node.js/PM2 or Docker.
-I personally use PM2 because I find it easier, and I also manage many other projects with PM2.
+You have three options to run **Server Homepage**: using Node.js/PM2, building from Dockerfile, or using the prebuilt Docker image. Cloning the repository is only necessary if you want to modify the source code.
 
 If you get stuck or encounter any issues, feel free to reach out by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
 
 ### Option 1: Using Node.js / PM2
 
 1. Make sure you have [Node.js](https://nodejs.org/) installed (version 16+ recommended).
-2. In the project folder, install dependencies:
+2. Clone the repository:
+
+```bash
+git clone https://github.com/MuxBH28/server-homepage
+cd server-homepage
+```
+
+3. In the project folder, install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Start the server:
+4. Start the server:
 
 ```bash
 node server.js
@@ -84,24 +100,31 @@ or better, use [PM2](https://pm2.keymetrics.io/) to manage the process:
 pm2 start server.js
 ```
 
-4. Access the homepage via `http://your-server-ip:6969/` in your browser.
+5. Access the homepage via `http://your-server-ip:6969/` in your browser.
 
 ### Option 2: Using Dockerfile
 
 1. Make sure you have [Docker](https://www.docker.com/get-started/) installed.
-2. Build the Docker image:
+2. Clone the repository:
+
+```bash
+git clone https://github.com/MuxBH28/server-homepage
+cd server-homepage
+```
+
+3. Build the Docker image:
 
 ```bash
 docker build -t server-homepage .
 ```
 
-3. Run the container:
+4. Run the container:
 
 ```bash
 docker run -d -p 6969:6969 --name server-homepage server-homepage
 ```
 
-4. Access the homepage via http://your-server-ip:6969/ in your browser.
+5. Access the homepage via http://your-server-ip:6969/ in your browser.
 
 ### Option 3: Using Prebuilt Docker Image
 
@@ -114,7 +137,7 @@ docker pull ghcr.io/muxbh28/server-homepage:latest
 
 3. Run the container:
 
-```
+```bash
 docker run -d -p 6969:6969 --name server-homepage ghcr.io/muxbh28/server-homepage:latest
 ```
 
@@ -151,7 +174,7 @@ I added this Arduino sketch as a test to explore how the ESP32 connects and inte
 Server Homepage now includes **Scriptable widget integration**, allowing you to monitor your server’s status directly from your iOS home screen.
 The widget displays key real-time metrics, including **CPU usage, RAM usage, CPU temperature, and network speeds (download & upload)**.
 
-📖 Detailed installation and setup instructions are available in [scriptable/instructions.md](scriptable/instructions.md).
+Detailed installation and setup instructions are available in [scriptable/instructions.md](scriptable/instructions.md).
 
 ![Scriptable Widget Preview](scriptable/preview.jpg)
 
@@ -185,6 +208,8 @@ Current default background is by [Manuela](https://pixabay.com/users/sinnesreich
 
 Custom links are stored in `json/links.json` on the server. You can edit this file manually or use the web UI to add/remove links.
 
+The `extra/premade-links` folder contains predefined JSON files that can be used or copied.
+
 ### Settings
 
 Settings are stored in `json/settings.json`. You can edit them manually, but using the web UI is **recommended** to avoid errors.
@@ -208,21 +233,24 @@ The SVG icons used in this project are proudly sourced from [SVG Repo](https://w
 
 ### Widgets
 
-The Server Homepage comes with an integrated widget system that allows you to view and interact with different information directly on the main page.  
+The Server Homepage comes with an integrated widget system that allows you to view and interact with different information directly on the main page.
 Currently available widgets:
 
 - **Process Viewer** – Displays all active processes on the server, including PID, CPU usage, and memory.
-- **Notes** – Allows you to keep personal notes directly on the server. All changes are saved automatically.
-- **Crypto Prices** – Shows the current prices of popular cryptocurrencies (Bitcoin, Ethereum, and others as configured).
-- **RSS Reader** – Displays the latest articles from a selected RSS feed.
 - **Power Options** – Provides basic server commands: Shutdown, Restart, and Sleep.
+- **Notes** – Allows you to keep personal notes directly on the server. All changes are saved automatically.
+- **URL to QR** – Generates a QR code from any text or URL. You can customize size, colors, and download the generated QR.
+- **RSS Reader** – Displays the latest articles from a selected RSS feed.
+- **Crypto Prices** – Shows the current prices of popular cryptocurrencies (Bitcoin, Ethereum, and others as configured).
+- **Hardware Info** – Displays detailed hardware information about the server (CPU, RAM, Storage, and more).
 
-Widgets can be switched using the **select dropdown** at the top of the widget section. The selected widget is loaded and automatically refreshed according to configured intervals:  
+Widgets can be switched using the **select dropdown** at the top of the widget section. The selected widget is loaded and automatically refreshed according to configured intervals:
 
-- Process Viewer and Crypto Prices refresh every minute or according to the configured interval.  
-- Notes are loaded only once, and changes are saved immediately when edited.  
-- RSS Reader refreshes every 10 minutes.  
-- Power Options do not require automatic refreshing.
+- Process Viewer and Crypto Prices refresh every minute or according to the configured interval.
+- Notes are loaded only once, and changes are saved immediately when edited.
+- RSS Reader refreshes every 10 minutes.
+- Hardware info is only fetched on load.
+- Power Options and URL to QR do not require automatic refreshing.
 
 ### To Do
 
@@ -233,16 +261,16 @@ Widgets can be switched using the **select dropdown** at the top of the widget s
 - [X] Move settings from localStorage to json
 - [X] Make a Dockerfile
 - [X] Online available Demo
+- [X] System logs with ~~Chart.js~~ Apexcharts
 - [ ] Ctrl+V to paste link
 - [ ] Telegram notifications for warnings
-- [X] System logs with ~~Chart.js~~ Apexcharts
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))
 
 ## Notes
 
-Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
-Public network information is retrieved from [ipinfo.io](https://ipinfo.io/json).
-
+ - Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
+ - Public network information is retrieved from [ipinfo.io](https://ipinfo.io/json).
+ - The available demo is provided for reference purposes and may not reflect the most recent version of the project.
 ---
 
 ## Author

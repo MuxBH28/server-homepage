@@ -208,8 +208,10 @@
                             <option value="process">Process Viewer</option>
                             <option value="power">Power options</option>
                             <option value="notes">Notes</option>
+                            <option value="qr">URL to QR</option>
                             <option value="rss">RSS Reader</option>
                             <option value="crypto">Crypto Prices</option>
+                            <option value="hardware">Hardware Info</option>
                         </select>
 
                         <div id="widgetContainer" class="flex-grow text-gray-300 overflow-auto"></div>
@@ -237,104 +239,130 @@
                 <span id="appVersionUpdate" class="font-semibold">|</span>
             </p>
         </footer>
-
-
     </article>
 
     <div id="settingsModal"
         class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4">
         <div
-            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-4xl shadow-lg border border-white/10 w-full max-w-4xl relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
-
+            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-5xl shadow-lg border border-white/10 relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
             <button id="closeSettings" aria-label="Close settings"
                 class="absolute top-3 right-3 text-red-600 hover:text-red-500 text-3xl font-bold">&times;</button>
 
             <h2 class="text-red-600 text-2xl font-semibold text-center">Settings</h2>
-            <p class="text-gray-400 text-xs">Note: Some changes are visible after refreshing page.</p>
+            <p class="text-gray-400 text-xs text-center">Note: Some changes are visible <strong>after</strong>
+                refreshing page.</p>
 
-            <section class="flex flex-col space-y-3">
-                <h3 class="text-red-600 font-semibold text-lg">Login Auth</h3>
+            <section class="grid grid-cols-3 gap-6">
+                <article class="space-y-2 col-span-1">
+                    <h3 class="text-red-600 font-semibold text-lg">Login Auth</h3>
+                    <div class="flex gap-2 items-center">
+                        <input type="password" id="authPin" placeholder="Enter PIN"
+                            class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        <button id="authSubmit"
+                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2">
+                            <i class="bi bi-lock-fill"></i> Enter
+                        </button>
+                    </div>
+                    <p class="text-gray-400 text-xs">
+                        Leave empty if you don't want authentication on login.
+                    </p>
+                    <p id="authMessage" class="text-yellow-500 text-sm hidden"></p>
+                </article>
 
-                <div class="flex gap-2 items-center">
-                    <input type="password" id="authPin" placeholder="Enter PIN"
-                        class="flex-1 p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                <div class="col-span-2 grid grid-cols-3 gap-6">
+                    <div class="space-y-2 col-span-1">
+                        <label for="refreshInterval" class="block text-red-600 font-semibold">Refresh Interval</label>
+                        <input type="number" id="refreshInterval" min="5" max="3600" step="1"
+                            class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        <p class="text-gray-400 text-xs">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
+                    </div>
 
-                    <button id="authSubmit"
-                        class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center justify-center gap-2">
-                        <i class="bi bi-lock-fill"></i> Enter
-                    </button>
+                    <div class="space-y-2 col-span-2">
+                        <h3 class="text-red-600 font-semibold text-lg">Manage Links File</h3>
+                        <div class="flex gap-2 justify-center">
+                            <label
+                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 cursor-pointer">
+                                <i class="bi bi-upload"></i> Upload
+                                <input id="uploadLinks" type="file" accept=".json" class="hidden" />
+                            </label>
+                            <button id="downloadLinks"
+                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2">
+                                <i class="bi bi-download"></i> Download
+                            </button>
+                        </div>
+                        <p class="text-gray-400 text-xs">
+                            Use "<span class="text-red-500">Upload</span>" to replace the current links with a new
+                            JSON file.<br />
+                            Use "<span class="text-red-500">Download</span>" to save the current links to your
+                            device.<br />
+                            See also
+                            <a href="https://github.com/MuxBH28/server-homepage/tree/main/extra" target="_blank"
+                                class="underline text-purple-400">premade links.json</a>.
+                        </p>
+                    </div>
                 </div>
-
-                <p class="text-gray-400 text-xs">Note: Leave empty if you don't want authentication on login.</p>
-                <p id="authMessage" class="text-yellow-500 text-sm hidden"></p>
             </section>
 
-            <section class="flex flex-col space-y-3">
+            <section class="grid grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="rssUrl" class="block text-red-600 font-semibold mb-1">RSS Feed URL</label>
+                        <input type="text" id="rssUrl" placeholder="https://hnrss.org/frontpage"
+                            class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    </div>
+
+                    <div>
+                        <label for="bgPath" class="block text-red-600 font-semibold mb-1">Path for Background
+                            Image</label>
+                        <input type="text" id="bgPath"
+                            class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label for="diskPathsInput" class="block text-red-600 font-semibold mb-1">Disk Paths</label>
+                        <input type="text" id="diskPathsInput" placeholder="e.g /250GB"
+                            class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    </div>
+                    <ul id="currentDiskPaths" class="space-y-1"></ul>
+                    <p class="text-gray-400 text-xs">Press Enter to add a new path</p>
+                </div>
+            </section>
+
+            <section class="space-y-3">
                 <h3 class="text-red-600 font-semibold text-lg">Add Link</h3>
                 <form id="addLinkForm" class="flex flex-col space-y-2">
-                    <input type="text" id="linkName" placeholder="Link Name" required
-                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-                    <input type="text" id="linkIcon" placeholder="Link Icon e.g. bi-youtube" required
-                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                    <div class="flex gap-2">
+                        <input type="text" id="linkName" placeholder="Link Name" required
+                            class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                        <select id="linkCategory" required
+                            class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full">
+                            <option value="">Select a category</option>
+                            <option value="Media">Media</option>
+                            <option value="Files">Files</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Development">Development</option>
+                            <option value="External">External</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" id="linkIcon" placeholder="Link Icon e.g. bi-youtube" required
+                            class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="url" id="linkUrl" placeholder="Link URL" required
+                            class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
+                        <button type="submit"
+                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 w-1/5">
+                            <i class="bi bi-plus-circle"></i> Add Link
+                        </button>
+                    </div>
                     <p class="text-gray-400 text-xs">
                         Use only <a href="https://icons.getbootstrap.com/" target="_blank"
                             class="text-purple-500 underline">Bootstrap Icons</a>
                         (e.g. <code>bi-youtube</code>, <code>bi-facebook</code>, <code>bi-github</code>).
                     </p>
-                    <select id="linkCategory" required
-                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full">
-                        <option value="">Select a category</option>
-                        <option value="Media">Media</option>
-                        <option value="Files">Files</option>
-                        <option value="Infrastructure">Infrastructure</option>
-                        <option value="Development">Development</option>
-                        <option value="External">External</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <input type="url" id="linkUrl" placeholder="Link URL" required
-                        class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-                    <button type="submit"
-                        class="bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition-colors w-full">
-                        Add Link
-                    </button>
                 </form>
-            </section>
-
-            <section class="flex flex-col space-y-2">
-                <label for="diskPathsInput" class="text-red-600 font-semibold">Enter new disk path</label>
-                <input type="text" id="diskPathsInput" placeholder="e.g /250GB"
-                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-                <ul id="currentDiskPaths">
-
-                </ul>
-                <p class="text-gray-400 text-xs">Press enter to add a new path</p>
-
-            </section>
-
-            <section class="flex flex-col space-y-1">
-                <label for="bgPath" class="text-red-600 font-semibold">
-                    Path for a background image
-                </label>
-                <input type="text" id="bgPath"
-                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-            </section>
-
-            <section class="flex flex-col space-y-1">
-                <label for="rssUrl" class="text-red-600 font-semibold">
-                    RSS Feed URL
-                </label>
-                <input type="text" id="rssUrl"
-                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full"
-                    placeholder="https://hnrss.org/frontpage" />
-            </section>
-
-            <section class="flex flex-col space-y-1">
-                <label for="refreshInterval" class="text-red-600 font-semibold">
-                    System Refresh Interval (seconds)
-                </label>
-                <input type="number" id="refreshInterval" min="5" max="3600" step="1"
-                    class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
-                <p class="text-gray-400 text-xs">Minimum 5 seconds, maximum 3600 seconds (1 hour)</p>
             </section>
 
             <section class="flex flex-col space-y-2">
@@ -355,6 +383,7 @@
 
         </div>
     </div>
+
 
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden p-4">
         <div

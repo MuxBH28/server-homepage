@@ -1,0 +1,93 @@
+[
+    {
+        "name": "Plex",
+        "icon": "bi-tv",
+        "category": "Media",
+        "url": "https://www.plex.tv/",
+        "opened": 0
+    },
+    {
+        "name": "Jellyfin",
+        "icon": "bi-tv",
+        "category": "Media",
+        "url": "https://jellyfin.org/",
+        "opened": 0
+    },
+    {
+        "name": "qBittorrent",
+        "icon": "bi-download",
+        "category": "Media",
+        "url": "https://www.qbittorrent.org/",
+        "opened": 0
+    },
+    {
+        "name": "Sonarr",
+        "icon": "bi-film",
+        "category": "Media",
+        "url": "https://sonarr.tv/",
+        "opened": 0
+    },
+    {
+        "name": "Radarr",
+        "icon": "bi-film",
+        "category": "Media",
+        "url": "https://radarr.video/",
+        "opened": 0
+    },
+    {
+        "name": "Lidarr",
+        "icon": "bi-music-note-list",
+        "category": "Media",
+        "url": "https://lidarr.audio/",
+        "opened": 0
+    },
+    {
+        "name": "Bazarr",
+        "icon": "bi-subtract",
+        "category": "Media",
+        "url": "https://www.bazarr.media/",
+        "opened": 0
+    },
+    {
+        "name": "Jackett",
+        "icon": "bi-search",
+        "category": "Media",
+        "url": "https://github.com/Jackett/Jackett",
+        "opened": 0
+    },
+    {
+        "name": "YouTube",
+        "icon": "bi-youtube",
+        "category": "Media",
+        "url": "https://www.youtube.com/",
+        "opened": 0
+    },
+    {
+        "name": "Netflix",
+        "icon": "bi-film",
+        "category": "Media",
+        "url": "https://www.netflix.com/",
+        "opened": 0
+    },
+    {
+        "name": "Vimeo",
+        "icon": "bi-camera-video",
+        "category": "Media",
+        "url": "https://vimeo.com/",
+        "opened": 0
+    },
+    {
+        "name": "SoundCloud",
+        "icon": "bi-music-note",
+        "category": "Media",
+        "url": "https://soundcloud.com/",
+        "opened": 0
+    },
+    {
+        "name": "ImmichFrame",
+        "url": "https://immichframe.online/",
+        "icon": "bi-image",
+        "category": "Media",
+        "opened": 0
+    }
+]
