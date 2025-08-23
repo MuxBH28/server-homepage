@@ -6,6 +6,29 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.3.6](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.6) – Latest [8/23/25]
+
+### Improvements
+- **Mobile Design Overhaul** – Redesign of mobile layout for improved usability and aesthetics.
+- **Settings Panel Fixes (Mobile)** – Reworked the previously broken and unresponsive settings UI on mobile devices.
+- **Mobile Loading Responsivness** – Page loading was not the best on mobile devices.
+
+### Repository Enhancements
+- **Issue Templates Added**  
+  Introduced structured templates for better community contributions:
+  - `bug_report.yml`
+  - `feature_request.yml`
+  - `question.yml`
+- **Pull Request Template** – Added `pull_request_template.md` to guide contributors through PR submissions.
+- **Changelog Introduced** – Created `CHANGELOG.md` for tracking version history and updates.
+- **Code of Conduct** – Added a formal code of conduct to foster a respectful and inclusive environment.
+- **Contributing Guidelines** – Added `CONTRIBUTING.md` to help new contributors get started.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.3.6
+
+---
 
 # [v1.3.5](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.5) – Latest [8/22/25]
 

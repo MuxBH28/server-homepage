@@ -11,86 +11,76 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 </head>
 
-<body class="font-sans p-4 min-h-screen flex items-center justify-center bg-cover bg-center">
+<body class="font-sans min-h-screen flex items-center justify-center bg-cover bg-center">
 
     <div id="preloader"
         class="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-red-600 z-100">
         <canvas id="preloadGaugeCanvas" width="200" height="200"></canvas>
     </div>
 
-    <article id="mainContent" class="max-w-7xl mx-auto hidden w-full flex-grow flex flex-col p-4">
-        <div class="w-full mb-6">
+    <article id="mainContent" class="w-full flex-grow flex flex-col p-4 md:max-w-7xl md:mx-auto hidden">
+        <div class="w-full mb-3">
             <section id="systemInfo"
-                class="shadow-lg rounded-2xl p-6 mt-10 md:mt-0 md:p-8 bg-black/40 backdrop-blur-md border border-white/20">
+                class="shadow-lg rounded-xl p-4 sm:p-6 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 w-full">
                 <header
-                    class="flex justify-between items-center mb-8 relative pb-6 border-b border-red-600/30 text-red-600">
-                    <h2 class="text-xl font-semibold flex items-center gap-2">
-                        <i class="bi bi-activity"></i> <span id="serverName"></span>
+                    class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 relative pb-6 border-b border-red-600/30 text-red-600 text-center md:text-left gap-4">
+                    <h2 class="text-xl font-semibold flex items-center justify-center md:justify-start gap-2">
+                        <i class="bi bi-activity"></i><span id="serverName"></span>
                     </h2>
-                    <p id="uptime" class="text-center text-sm text-red-600 mt-2">Uptime: N/A</p>
-                    <div class="flex gap-4">
-                        <button id="logsBtn" class="hover:text-red-600" aria-label="Open logs" title="Logs">
-                            <i class="bi bi-journal-text text-2xl"></i>
-                        </button>
-                        <button id="infoBtn" class="hover:text-red-600" aria-label="Open hardware info" title="Info">
-                            <i class="bi bi-info-circle text-2xl"></i>
-                        </button>
-                        <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings" title="Settings">
-                            <i class="bi bi-gear-fill text-2xl"></i>
-                        </button>
+                    <p id="uptime" class="text-sm text-red-600">Uptime: N/A</p>
+                    <div class="flex gap-4 justify-center md:justify-end">
+                        <button id="logsBtn" class="hover:text-red-600" aria-label="Open logs" title="Logs"><i
+                                class="bi bi-journal-text text-2xl"></i></button>
+                        <button id="infoBtn" class="hover:text-red-600" aria-label="Open hardware info" title="Info"><i
+                                class="bi bi-info-circle text-2xl"></i></button>
+                        <button id="settingsBtn" class="hover:text-red-600" aria-label="Open settings"
+                            title="Settings"><i class="bi bi-gear-fill text-2xl"></i></button>
                     </div>
                 </header>
 
-                <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 w-full">
+                <div class="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 w-full">
 
-                    <div class="flex flex-col items-center w-full md:w-auto">
-                        <canvas id="cpuGauge" width="250" height="250" title="CPU Usage"></canvas>
-                    </div>
-
-                    <div class="flex flex-col items-center gap-4 w-full md:w-auto">
-                        <canvas id="cpuTempGauge" width="150" height="150" title="CPU Temperature"></canvas>
-
+                    <div class="flex flex-col items-center gap-6 w-full md:w-auto order-1 md:order-2">
+                        <canvas id="cpuTempGauge" class="w-28 sm:w-32 md:w-[150px] md:h-[150px]"
+                            title="CPU Temperature"></canvas>
                         <div
-                            class="grid grid-cols-3 gap-3 p-4 border border-red-700 rounded-lg shadow w-full md:w-auto justify-items-center">
-                            <div id="indicatorBattery" class="w-8 h-8 opacity-40" title="Server connected">
-                                <img src="./assets/battery.svg" alt="Battery" class="w-full h-full">
-                            </div>
-                            <div id="indicatorTemp" class="w-8 h-8 opacity-40" title="CPU Temperature is high">
-                                <img src="./assets/temperature.svg" alt="CPU Temp" class="w-full h-full">
-                            </div>
-                            <div id="indicatorRam" class="w-8 h-8 opacity-40" title="RAM Usage High">
-                                <img src="./assets/ram-high.svg" alt="RAM High" class="w-full h-full">
-                            </div>
-                            <div id="indicatorWarning" class="w-8 h-8 opacity-40" title="System Warning">
-                                <img src="./assets/check-engine.svg" alt="Check Engine" class="w-full h-full">
-                            </div>
+                            class="grid grid-cols-3 gap-4 p-4 border border-red-700 rounded-lg shadow w-full max-w-sm md:w-auto justify-items-center">
+                            <div id="indicatorBattery" class="w-8 h-8 opacity-40" title="Server connected"><img
+                                    src="./assets/battery.svg" alt="Battery" class="w-full h-full"></div>
+                            <div id="indicatorTemp" class="w-8 h-8 opacity-40" title="CPU Temperature is high"><img
+                                    src="./assets/temperature.svg" alt="CPU Temp" class="w-full h-full"></div>
+                            <div id="indicatorRam" class="w-8 h-8 opacity-40" title="RAM Usage High"><img
+                                    src="./assets/ram-high.svg" alt="RAM High" class="w-full h-full"></div>
+                            <div id="indicatorWarning" class="w-8 h-8 opacity-40" title="System Warning"><img
+                                    src="./assets/check-engine.svg" alt="Check Engine" class="w-full h-full"></div>
                             <div id="indicatorNoLinks" class="w-8 h-8 opacity-40" title="There are no links available">
                                 <img src="./assets/no-links.svg" alt="No Links" class="w-full h-full">
                             </div>
-                            <div id="indicatorStorage" class="w-8 h-8 opacity-40" title="Storage is almost full">
-                                <img src="./assets/storage.svg" alt="Storage" class="w-full h-full">
-                            </div>
+                            <div id="indicatorStorage" class="w-8 h-8 opacity-40" title="Storage is almost full"><img
+                                    src="./assets/storage.svg" alt="Storage" class="w-full h-full"></div>
                         </div>
                     </div>
 
-                    <div class="flex flex-col items-center w-full md:w-auto">
-                        <canvas id="ramGauge" width="250" height="250" title="RAM Usage"></canvas>
+                    <div class="flex flex-col items-center w-full md:w-auto order-2 md:order-1">
+                        <canvas id="cpuGauge" class="w-48 sm:w-56 md:w-[250px] md:h-[250px]" title="CPU Usage"></canvas>
+                    </div>
+
+                    <div class="flex flex-col items-center w-full md:w-auto order-3">
+                        <canvas id="ramGauge" class="w-48 sm:w-56 md:w-[250px] md:h-[250px]" title="RAM Usage"></canvas>
                     </div>
 
                 </div>
 
 
-
                 <div id="diskCharts" class="flex flex-col md:flex-row items-center justify-between mt-6 gap-6"></div>
-
             </section>
         </div>
 
-        <section class="flex flex-col gap-6 flex-1 w-full">
-            <article class="flex flex-col md:flex-row gap-6 w-full">
+        <section class="flex flex-col gap-3 flex-1 w-full">
+            <article class="flex flex-col md:flex-row gap-3 w-full">
                 <div class="w-full md:w-1/3 flex flex-col gap-6">
                     <section
-                        class="shadow-lg rounded-2xl p-6 mt-10 md:mt-0 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 w-full h-full">
+                        class="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 w-full h-full">
                         <article class="flex flex-col md:flex-row justify-between items-stretch gap-6 w-full h-full">
                             <article class="flex flex-col gap-3 flex-1">
                                 <h1 class="text-2xl font-bold text-red-600">Welcome, <span id="name"></span></h1>
@@ -111,8 +101,8 @@
 
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
                     <section
-                        class="shadow-lg rounded-2xl p-6 mt-10 md:mt-0 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full h-full">
-                        <h1 class="text-red-500 font-semibold text-xl mb-4"><i class="bi bi-router-fill"></i> Network
+                        class="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full h-full">
+                        <h1 class="text-red-500 font-semibold text-xl mb-3"><i class="bi bi-router-fill"></i> Network
                             Info</h1>
                         <article
                             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-gray-300 text-sm h-full">
@@ -193,18 +183,18 @@
 
             </article>
 
-            <article class="flex flex-col md:flex-row gap-6 flex-1 w-full">
+            <article class="flex flex-col md:flex-row gap-3 flex-1 w-full">
                 <div class="w-full md:w-2/3 flex flex-col gap-6">
                     <section id="linksContainer"
-                        class="flex-1 overflow-auto shadow-lg rounded-2xl p-6 mt-10 md:mt-0 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 w-full">
+                        class="flex-1 overflow-auto shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 w-full">
                     </section>
                 </div>
 
                 <div class="w-full md:w-1/3 flex flex-col gap-6">
                     <section
-                        class="shadow-lg rounded-2xl p-6 mt-10 md:mt-0 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 h-full flex flex-col w-full">
+                        class="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 h-full flex flex-col w-full">
                         <select id="widgetSelect"
-                            class="mb-4 w-full rounded-lg px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 shadow-lg transition-all cursor-pointer">
+                            class="mb-3 w-full rounded-lg px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 shadow-lg transition-all cursor-pointer">
                             <option value="process">Process Viewer</option>
                             <option value="power">Power options</option>
                             <option value="notes">Notes</option>
@@ -244,7 +234,7 @@
     <div id="settingsModal"
         class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden p-4">
         <div
-            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-5xl shadow-lg border border-white/10 relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh]">
+            class="bg-[#3f5466]/60 backdrop-blur-lg text-[#f2eee7] rounded-xl p-6 w-full max-w-5xl shadow-lg border border-white/10 relative flex flex-col space-y-6 overflow-y-auto max-h-[90vh] md:p-8">
             <button id="closeSettings" aria-label="Close settings"
                 class="absolute top-3 right-3 text-red-600 hover:text-red-500 text-3xl font-bold">&times;</button>
 
@@ -252,24 +242,21 @@
             <p class="text-gray-400 text-xs text-center">Note: Some changes are visible <strong>after</strong>
                 refreshing page.</p>
 
-            <section class="grid grid-cols-3 gap-6">
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <article class="space-y-2 col-span-1">
                     <h3 class="text-red-600 font-semibold text-lg">Login Auth</h3>
-                    <div class="flex gap-2 items-center">
+                    <div class="flex flex-col sm:flex-row gap-2 items-center">
                         <input type="password" id="authPin" placeholder="Enter PIN"
                             class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
                         <button id="authSubmit"
-                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2">
-                            <i class="bi bi-lock-fill"></i> Enter
-                        </button>
+                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2"><i
+                                class="bi bi-lock-fill"></i> Enter</button>
                     </div>
-                    <p class="text-gray-400 text-xs">
-                        Leave empty if you don't want authentication on login.
-                    </p>
+                    <p class="text-gray-400 text-xs">Leave empty if you don't want authentication on login.</p>
                     <p id="authMessage" class="text-yellow-500 text-sm hidden"></p>
                 </article>
 
-                <div class="col-span-2 grid grid-cols-3 gap-6">
+                <div class="col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div class="space-y-2 col-span-1">
                         <label for="refreshInterval" class="block text-red-600 font-semibold">Refresh Interval</label>
                         <input type="number" id="refreshInterval" min="5" max="3600" step="1"
@@ -279,38 +266,32 @@
 
                     <div class="space-y-2 col-span-2">
                         <h3 class="text-red-600 font-semibold text-lg">Manage Links File</h3>
-                        <div class="flex gap-2 justify-center">
+                        <div class="flex flex-col sm:flex-row gap-2 justify-center">
                             <label
-                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 cursor-pointer">
-                                <i class="bi bi-upload"></i> Upload
+                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 cursor-pointer"><i
+                                    class="bi bi-upload"></i> Upload
                                 <input id="uploadLinks" type="file" accept=".json" class="hidden" />
                             </label>
                             <button id="downloadLinks"
-                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2">
-                                <i class="bi bi-download"></i> Download
-                            </button>
+                                class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2"><i
+                                    class="bi bi-download"></i> Download</button>
                         </div>
-                        <p class="text-gray-400 text-xs">
-                            Use "<span class="text-red-500">Upload</span>" to replace the current links with a new
-                            JSON file.<br />
-                            Use "<span class="text-red-500">Download</span>" to save the current links to your
-                            device.<br />
-                            See also
-                            <a href="https://github.com/MuxBH28/server-homepage/tree/main/extra" target="_blank"
-                                class="underline text-purple-400">premade links.json</a>.
-                        </p>
+                        <p class="text-gray-400 text-xs">Use "<span class="text-red-500">Upload</span>" to replace the
+                            current links with a new JSON file.<br />Use "<span class="text-red-500">Download</span>" to
+                            save the current links to your device.<br />See also <a
+                                href="https://github.com/MuxBH28/server-homepage/tree/main/extra" target="_blank"
+                                class="underline text-purple-400">premade links.json</a>.</p>
                     </div>
                 </div>
             </section>
 
-            <section class="grid grid-cols-2 gap-6">
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
                     <div>
                         <label for="rssUrl" class="block text-red-600 font-semibold mb-1">RSS Feed URL</label>
                         <input type="text" id="rssUrl" placeholder="https://hnrss.org/frontpage"
                             class="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
                     </div>
-
                     <div>
                         <label for="bgPath" class="block text-red-600 font-semibold mb-1">Path for Background
                             Image</label>
@@ -333,7 +314,7 @@
             <section class="space-y-3">
                 <h3 class="text-red-600 font-semibold text-lg">Add Link</h3>
                 <form id="addLinkForm" class="flex flex-col space-y-2">
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" id="linkName" placeholder="Link Name" required
                             class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
                         <select id="linkCategory" required
@@ -349,41 +330,43 @@
                         <input type="text" id="linkIcon" placeholder="Link Icon e.g. bi-youtube" required
                             class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600" />
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="url" id="linkUrl" placeholder="Link URL" required
                             class="p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600 w-full" />
                         <button type="submit"
-                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 w-1/5">
-                            <i class="bi bi-plus-circle"></i> Add Link
+                            class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 sm:w-auto w-full justify-center">
+                            <i class="bi bi-plus-circle"></i> Add
                         </button>
                     </div>
-                    <p class="text-gray-400 text-xs">
-                        Use only <a href="https://icons.getbootstrap.com/" target="_blank"
-                            class="text-purple-500 underline">Bootstrap Icons</a>
-                        (e.g. <code>bi-youtube</code>, <code>bi-facebook</code>, <code>bi-github</code>).
+                    <p class="text-gray-400 text-xs">Use only <a href="https://icons.getbootstrap.com/" target="_blank"
+                            class="text-purple-500 underline">Bootstrap Icons</a> (e.g. <code>bi-youtube</code>,
+                        <code>bi-facebook</code>, <code>bi-github</code>).
                     </p>
                 </form>
             </section>
 
             <section class="flex flex-col space-y-2">
                 <h3 class="text-red-600 font-semibold text-lg">Manage Links</h3>
-                <table class="w-full max-h-48 overflow-y-auto text-white text-sm">
-                    <thead class="bg-gray-800 sticky top-0">
-                        <tr>
-                            <th class="px-2 py-1 text-left text-red-600">Name</th>
-                            <th class="px-2 py-1 text-left text-red-600">Category</th>
-                            <th class="px-2 py-1 text-center text-red-600">Opened</th>
-                            <th class="px-2 py-1 text-left text-red-600">URL</th>
-                            <th class="px-2 py-1 text-center text-red-600">Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody id="linksList"></tbody>
-                </table>
-            </section>
 
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full max-h-48 overflow-y-auto text-white text-sm">
+                        <thead class="bg-gray-800 sticky top-0">
+                            <tr>
+                                <th class="px-2 py-1 text-left text-red-600">Name</th>
+                                <th class="px-2 py-1 text-left text-red-600">Category</th>
+                                <th class="px-2 py-1 text-center text-red-600">Opened</th>
+                                <th class="px-2 py-1 text-left text-red-600">URL</th>
+                                <th class="px-2 py-1 text-center text-red-600">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="linksListTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="flex flex-col gap-4 md:hidden" id="linksListCards"></div>
+            </section>
         </div>
     </div>
-
 
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden p-4">
         <div

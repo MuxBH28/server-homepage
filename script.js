@@ -16,7 +16,9 @@ $(document).ready(function () {
     const $currentDiskPaths = $("#currentDiskPaths");
     const $widgetSelect = $('#widgetSelect');
     let lastWidget = localStorage.getItem('widget') || 'process';
-    let appVersion = 'v1.3.5';
+    let appVersion = 'v1.3.6';
+    const isMobile = window.innerWidth < 768;
+
     /*Misc */
     function initWelcomeModal() {
         if (settings.server) {
@@ -32,6 +34,7 @@ $(document).ready(function () {
         $('body').css('background-image', 'url(' + settings.bgPath + ')');
         $('#bgPath').val(settings.bgPath);
         $('#rssUrl').val(settings.rss);
+
         $widgetSelect.val(lastWidget);
 
         if (settings.login) {
@@ -64,8 +67,8 @@ $(document).ready(function () {
 
     function initGauges() {
         const baseGaugeOptions = {
-            width: 250,
-            height: 250,
+            width: isMobile ? 180 : 250,
+            height: isMobile ? 180 : 250,
             strokeTicks: true,
             needleType: 'arrow',
             needleWidth: 2,
@@ -86,7 +89,7 @@ $(document).ready(function () {
             colorMinorTicks: '#aaa',
             colorNeedle: 'rgba(255, 0, 0, 1)',
             colorNeedleEnd: 'rgba(255, 100, 100, 0.9)',
-            titleFont: "18px sans-serif",
+            titleFont: isMobile ? "14px sans-serif" : "18px sans-serif",
             titleFontWeight: "bold",
             titleShadow: false
         };
@@ -149,8 +152,8 @@ $(document).ready(function () {
         preloadGauge = new RadialGauge({
             ...baseGaugeOptions,
             renderTo: 'preloadGaugeCanvas',
-            width: 512,
-            height: 512,
+            width: 300,
+            height: 300,
             units: 'HOMEPAGE',
             minValue: 0,
             maxValue: 100,
@@ -637,37 +640,46 @@ $(document).ready(function () {
     });
 
     function renderLinksList() {
-        const $linksList = $("#linksList");
-        $linksList.empty();
+        const $linksListTable = $('#linksListTable');
+        const $linksListCards = $('#linksListCards');
 
-        if (links.length === 0) {
-            $linksList.append(`
-            <tr>
-                <td colspan="5" class="text-gray-400 text-center py-2">
-                    No links added yet.
-                </td>
-            </tr>
-        `);
-            return;
+        if (isMobile) {
+            $linksListCards.empty();
+            if (links.length === 0) {
+                $linksListCards.append(`<div class="text-gray-400 text-center py-2">No links added yet.</div>`);
+                return;
+            }
+            links.forEach((link, i) => {
+                $linksListCards.append(`
+        <div class="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex flex-col gap-1">
+          <div class="flex items-center gap-2"><i class="bi ${link.icon} text-red-600"></i><span class="font-semibold">${link.name}</span></div>
+          <div>Category: <span class="text-white">${link.category}</span></div>
+          <div>Opened: <span class="text-white">${link.opened}</span></div>
+          <div>URL: <a href="${link.url}" target="_blank" class="underline text-purple-400 break-all">${link.url}</a></div>
+          <button data-index="${i}" class="mt-2 text-red-500 hover:text-red-600 font-bold text-lg self-end" aria-label="Delete link">&times;</button>
+        </div>
+      `);
+            });
+        } else {
+            $linksListTable.empty();
+            if (links.length === 0) {
+                $linksListTable.append(`<tr><td colspan="5" class="text-gray-400 text-center py-2">No links added yet.</td></tr>`);
+                return;
+            }
+            links.forEach((link, i) => {
+                $linksListTable.append(`
+        <tr class="hover:bg-gray-700 transition">
+          <td class="px-2 py-1 flex items-center gap-2"><i class="bi ${link.icon} text-red-600"></i>${link.name}</td>
+          <td class="px-2 py-1">${link.category}</td>
+          <td class="px-2 py-1 text-center">${link.opened}</td>
+          <td class="px-2 py-1 break-all">${link.url}</td>
+          <td class="px-2 py-1 text-center"><button data-index="${i}" class="text-red-500 hover:text-red-600 font-bold text-lg" aria-label="Delete link">&times;</button></td>
+        </tr>
+      `);
+            });
         }
-
-        $.each(links, function (i, link) {
-            $linksList.append(`
-            <tr class="hover:bg-gray-700 transition">
-                <td class="px-2 py-1 flex items-center gap-2">
-                    <i class="bi ${link.icon} text-red-600"></i>
-                    ${link.name}
-                </td>
-                <td class="px-2 py-1">${link.category}</td>
-                <td class="px-2 py-1 text-center">${link.opened}</td>
-                <td class="px-2 py-1 break-all">${link.url}</td>
-                <td class="px-2 py-1 text-center">
-                    <button data-index="${i}" class="text-red-500 hover:text-red-600 font-bold text-lg" aria-label="Delete link">&times;</button>
-                </td>
-            </tr>
-        `);
-        });
     }
+
 
     function renderDiskPaths() {
         $currentDiskPaths.empty();
@@ -1252,6 +1264,7 @@ $(document).ready(function () {
     }
 
     /*Download/upload links.json */
+
     $('#downloadLinks').on('click', function () {
         $.get('/api/links', function (data) {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
