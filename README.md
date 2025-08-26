@@ -161,13 +161,28 @@ docker rm server-homepage
 
 ## Arduino
 
-- The Arduino sketch (`extra/arduino.ino`) runs on an ESP32 and monitors the status of a home server by periodically fetching system metrics (CPU load, temperature, RAM usage) from a REST API hosted on the server.
-- It visually indicates the server health status using LEDs: green for normal, yellow for warning, and red for critical conditions. A white LED briefly blinks each time fresh data is received successfully.
-- The sketch connects to WiFi and handles network errors gracefully.
+### `arduino.ino` – LED Server Health Monitor
 
-I added this Arduino sketch as a test to explore how the ESP32 connects and interacts with my server, so I can plan a mini wireless server hub with a display for temperature, buttons for controlling the display, and a server restart feature.
+This sketch runs on an ESP32 and serves as a visual indicator of your home server's overall health. It fetches system metrics—CPU load, temperature, and RAM usage—from a REST API and uses LEDs to represent the status:
 
----
+- **Green**: Normal operation  
+- **Yellow**: Warning thresholds  
+- **Red**: Critical condition  
+- **White blink**: Successful data fetch
+
+The ESP32 connects to WiFi and includes error handling for network issues.  
+This project was created as an initial test to evaluate ESP32’s ability to communicate with the server, with future plans to expand into a wireless hub featuring a display, control buttons, and server restart functionality.
+
+### `arduino-gauge.ino` – CPU Temperature Servo Gauge
+
+This sketch also runs on an ESP32 but focuses solely on visualizing CPU temperature. It retrieves temperature data from the server’s REST API and drives a micro servo to move a needle across a printed gauge face.
+
+- The gauge background (`example_of_gauge_background.png`) is designed for 180° servo rotation and can be printed for physical use.
+- The needle updates every minute, and the sketch includes robust WiFi connectivity and error handling.
+
+This setup was built to test ESP32’s ability to drive physical indicators based on server data, laying the groundwork for a compact, analog-style temperature monitor.
+
+**Note**: It is recommended to use an external power supply for the servo motor (5VDC), with a shared ground connection to the ESP32 to ensure stable operation and avoid electrical interference.
 
 ## Scriptable
 
