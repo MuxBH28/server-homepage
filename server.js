@@ -519,6 +519,19 @@ app.post('/api/urltoqrl', async (req, res) => {
     }
 });
 
+app.get('/api/temperature', async (req, res) => {
+    try {
+        const temp = await getCpuTemp();
+        const hours = new Date().getHours();
+        res.json({
+            temperature: temp,
+            hour: hours
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to get CPU temperature' });
+    }
+});
+
 function getCpuUsage() {
     return new Promise((resolve) => {
         const osu = require('os-utils');
