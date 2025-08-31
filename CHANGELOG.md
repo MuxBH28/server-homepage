@@ -6,6 +6,37 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.3.7](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.7) – Latest [8/31/25]
+
+### Major Changes
+- **Frontend Migration to React + Vite** – Replaced the old static HTML/CSS/JS setup with a modern React architecture powered by Vite for faster builds and improved developer experience.
+- **Complete Dashboard Redesign** – Introduced a fresh, responsive layout with better UX, cleaner visuals, and modular components.
+- **Tailwind Refactor** – Styling fully restructured using Tailwind utility classes for consistency and maintainability.
+
+### Performance & UX
+- **Improved Responsiveness** – Layout now adapts seamlessly across devices, including tablets and ultra-wide screens.
+- **Better State Handling** – System data and link management now use React hooks for smoother updates and fewer glitches.
+
+### Codebase Enhancements
+- **Modular Component Structure** – Easier to maintain and extend with reusable React components.
+- **Cleaner API Integration** – Refactored frontend API calls for better error handling and scalability.
+
+### Known Issues & Notes
+- **Possible Bugs** – As this is the first version using React + Vite, some components may behave unexpectedly or break under edge cases.
+- **Performance Variability** – Initial load times may be slower on some devices due to unoptimized assets and lack of caching.
+- **Experimental Layouts** – The new dashboard design is still being tested across screen sizes and may require further tuning.
+- **Ongoing Refactoring** – Some legacy code paths are still being cleaned up, which could affect stability in certain views.
+
+---
+
+![Version 1.3.7](https://github.com/MuxBH28/server-homepage/blob/main/extra/preview1.3.7.png)
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.3.7
+
+---
+
 # [v1.3.6](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.6) – Latest [8/23/25]
 
 ### Improvements

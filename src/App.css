@@ -1,3 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+    line-height: 25px;
+    background-color: #fff5fa;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-color: #0a0b0b #fff5fa;
+}
+
+::selection {
+    background-color: #b399c8;
+    color: #585858;
+}
+
+img {
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+}
+
 @keyframes fadeOut {
     to {
         opacity: 0;
@@ -36,6 +64,3 @@
 .apexcharts-toolbar svg {
     color: #fff !important;
 }
-
-
-/*Use this file to add a custom css*/

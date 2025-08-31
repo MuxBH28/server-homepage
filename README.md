@@ -9,20 +9,22 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MuxBH28/server-homepage/">
-    <img src="https://img.shields.io/github/stars/MuxBH28/server-homepage?color=232323&label=server-homepage&logo=github&labelColor=232323" alt="View server-homepage on GitHub" />
-  </a>
-  <a href="https://github.com/sponsors/MuxBH28">
-    <img src="https://img.shields.io/badge/Sponsor-b820f9?labelColor=b820f9&logo=githubsponsors&logoColor=fff" alt="Sponsor MuxBH28" />
-  </a>
-  <img src="https://github.com/MuxBH28/server-homepage/actions/workflows/docker-image.yml/badge.svg" alt="Build Status" />
+  <img src="https://img.shields.io/github/stars/MuxBH28/server-homepage?color=232323&label=server-homepage&logo=github&labelColor=232323" alt="View server-homepage on GitHub" />
+  <img src="https://img.shields.io/badge/Sponsor-b820f9?labelColor=b820f9&logo=githubsponsors&logoColor=fff" alt="Sponsor MuxBH28" />
   <img src="https://img.shields.io/badge/Docker%20Pulls-latest-blue?style=flat-square&logo=docker&link=https%3A%2F%2Fghcr.io%2Fmuxbh28%2Fserver-homepage" alt="Docker Pulls" />
   <img src="https://img.shields.io/github/license/muxbh28/server-homepage" alt="License" />
   <img src="https://img.shields.io/github/v/release/muxbh28/server-homepage" alt="Release" />
+  <img src="https://img.shields.io/github/commit-activity/m/MuxBH28/server-homepage" alt="Commit Activity" />
+  <a href="https://github.com/MuxBH28/server-homepage/pkgs/container/server-homepage" target="_blank">
+    <img src="https://img.shields.io/badge/Download-Docker-blue" alt="Download" />
+  </a>
 </p>
 
 <p align="center">
    <a href="https://server-homepage.msehic.com/" target="_blank">Demo available here!</a>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Demo-old_version-orange" alt="Demo" />
 </p>
 
 ---
@@ -43,7 +45,7 @@
 
 ## About
 
-This is a minimalist personal homepage project built with **Node.js (Express)** backend and a **static frontend** with HTML, CSS (Tailwind), and vanilla JS.
+This is a minimalist personal homepage project built with **Node.js (Express)** backend and a **React + Vite** frontend styled with Tailwind CSS.
 
 It serves system monitoring data (CPU, RAM, Disk, uptime), manages custom links via API, and shows network information.
 
@@ -66,9 +68,17 @@ Version 1.3.1:
 Version 1.3.5:
 ![Version 1.3.5](extra/preview1.3.5.png)
 
-## Installation
+Version 1.3.7:
+![Version 1.3.7](extra/preview1.3.7.png)
 
-You have three options to run **Server Homepage**: using Node.js/PM2, building from Dockerfile, or using the prebuilt Docker image. Cloning the repository is only necessary if you want to modify the source code.
+## Installation
+<a href="https://github.com/MuxBH28/server-homepage/pkgs/container/server-homepage" target="_blank">
+    <img src="https://img.shields.io/badge/Download-Docker-blue" alt="Download" />
+</a>
+
+You have three options to run **Server Homepage**: using Node.js/PM2, building from Dockerfile, or using the prebuilt Docker image. 
+
+Cloning the repository is only necessary if you want to modify the source code.
 
 If you get stuck or encounter any issues, feel free to reach out by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
 
@@ -165,12 +175,12 @@ docker rm server-homepage
 
 This sketch runs on an ESP32 and serves as a visual indicator of your home server's overall health. It fetches system metrics—CPU load, temperature, and RAM usage—from a REST API and uses LEDs to represent the status:
 
-- **Green**: Normal operation  
-- **Yellow**: Warning thresholds  
-- **Red**: Critical condition  
+- **Green**: Normal operation
+- **Yellow**: Warning thresholds
+- **Red**: Critical condition
 - **White blink**: Successful data fetch
 
-The ESP32 connects to WiFi and includes error handling for network issues.  
+The ESP32 connects to WiFi and includes error handling for network issues.
 This project was created as an initial test to evaluate ESP32’s ability to communicate with the server, with future plans to expand into a wireless hub featuring a display, control buttons, and server restart functionality.
 
 ### `arduino-gauge.ino` – CPU Temperature Servo Gauge
@@ -269,26 +279,26 @@ Widgets can be switched using the **select dropdown** at the top of the widget s
 
 ### To Do
 
-- [X] Status indicator
-- [X] Better loading screen
-- [X] Process viewer
-- [X] Welcome screen
-- [X] Move settings from localStorage to json
-- [X] Make a Dockerfile
-- [X] Online available Demo
-- [X] System logs with ~~Chart.js~~ Apexcharts
+- [ ] Improve mobile responsiveness
+- [ ] Fix layout issues on smaller screens
+- [ ] Optimize load time (Vite + lazy loading)
+- [ ] Add loading indicators for system stats
+- [ ] Improve accessibility (ARIA roles, keyboard navigation)
+- [ ] Polish UI animations and transitions
 - [ ] Ctrl+V to paste link
 - [ ] Telegram notifications for warnings
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))
 
 ## Notes
 
- - Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
- - Public network information is retrieved from [ipinfo.io](https://ipinfo.io/json).
- - The available demo is provided for reference purposes and may not reflect the most recent version of the project.
+- Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
+- Public network information is retrieved from [ipinfo.io](https://ipinfo.io/json).
+- The available demo is provided for reference purposes and may not reflect the most recent version of the project.
+
 ---
 
 ## Author
+<img src="https://img.shields.io/badge/Sponsor-b820f9?labelColor=b820f9&logo=githubsponsors&logoColor=fff" alt="Sponsor MuxBH28" />
 
 - Created by: **MuxBH28**
 - Website: [https://msehic.com](https://msehic.com)

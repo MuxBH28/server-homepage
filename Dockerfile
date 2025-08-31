@@ -1,21 +1,37 @@
-# 1. Base image
-FROM node:20
+# 1. Build stage
+FROM node:20 AS builder
 
-# 2. Set working directory
 WORKDIR /app
 
-# 3. Copy package.json and package-lock.json
+# Copy package files and install dependencies
 COPY package*.json ./
+RUN npm install
 
-# 4. Install dependencies
-RUN npm install --production
-
-# 5. Copy rest of the project
+# Copy the rest of the project
 COPY . .
 
-# 6. Exposing port
-###[CHANGE PORT HERE]
+# Build Vite frontend
+RUN npm run build
+
+# ------------------------
+# Production stage
+# ------------------------
+FROM node:20-slim
+
+WORKDIR /app
+
+# Copy backend files
+COPY server.js ./
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --production
+
+# Copy built frontend
+COPY --from=builder /app/dist ./dist
+
+# Expose port
 EXPOSE 6969
 
-# 7. Starting our server
+# Start server
 CMD ["node", "server.js"]

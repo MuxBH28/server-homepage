@@ -1,15 +1,16 @@
-const express = require('express');
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const si = require('systeminformation');
-const { exec } = require('child_process');
-const axios = require('axios');
-const bcrypt = require('bcrypt');
-const Parser = require('rss-parser');
-const parser = new Parser();
-const QRCode = require('qrcode');
+import express from 'express';
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import si from 'systeminformation';
+import { exec } from 'child_process';
+import axios from 'axios';
+import bcrypt from 'bcrypt';
+import Parser from 'rss-parser';
+import QRCode from 'qrcode';
+import osu from 'os-utils';
 
+const parser = new Parser();
 const app = express();
 const PORT = 6969;
 
@@ -17,13 +18,19 @@ let networkCache = null;
 let networkCacheTime = 0;
 const NETWORK_CACHE_TTL = 5 * 60 * 1000;
 
-app.use(express.static(path.join(__dirname)));
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+app.use(express.static(path.join(__dirname, "dist")));
 app.use(express.json());
 
 const linksFile = path.join(__dirname, 'json/links.json');
 const settingsFile = path.join(__dirname, 'json/settings.json');
 let settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 const serverLog = path.join(__dirname, 'server.log');
+const networkLog = path.join(__dirname, 'network.log');
 const notesFile = path.join(__dirname, 'json/notes.json');
 
 function initFiles() {
@@ -60,6 +67,9 @@ function initFiles() {
     if (!fs.existsSync(serverLog)) {
         fs.writeFileSync(serverLog, `[${new Date().toISOString()}] Server log initialized\n`, 'utf8');
     }
+    if (!fs.existsSync(networkLog)) {
+        fs.writeFileSync(networkLog, `[${new Date().toISOString()}] Network log initialized\n`, 'utf8');
+    }
 
     if (!fs.existsSync(notesFile)) {
         fs.writeFileSync(
@@ -84,26 +94,47 @@ async function logSystemStats() {
         const cpuLoadNum = Number(cpuLoad) || 0;
 
         const now = new Date();
-        const timestamp = now.toTimeString().split(' ')[0];
+        const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const logLine = `[${timestamp}] CPU: ${cpuLoadNum.toFixed(2)}% | RAM: ${memPercent}% | TEMP: ${cpuTemp || 'N/A'}°C`;
 
-        let lines = [];
+        let systemLines = [];
         if (fs.existsSync(serverLog)) {
-            const data = fs.readFileSync(serverLog, 'utf8');
-            lines = data.trim().split('\n');
+            const data = fs.readFileSync(serverLog, "utf8");
+            systemLines = data.trim().split("\n");
         }
 
-        lines.push(logLine);
+        systemLines.push(logLine);
 
         const MAX_LINES = 60 * 12;
-        if (lines.length > MAX_LINES) {
-            lines = lines.slice(lines.length - MAX_LINES);
+        if (systemLines.length > MAX_LINES) {
+            systemLines = systemLines.slice(systemLines.length - MAX_LINES);
         }
 
-        fs.writeFileSync(serverLog, lines.join('\n') + '\n', 'utf8');
+        fs.writeFileSync(serverLog, systemLines.join("\n") + "\n", "utf8");
+
+        const netStats = await si.networkStats();
+        const downloadSpeed = (netStats[0].rx_sec / 1024 / 1024).toFixed(2) + " MB/s";
+        const uploadSpeed = (netStats[0].tx_sec / 1024 / 1024).toFixed(2) + " MB/s";
+
+        const netLogLine = `[${timestamp}] UP: ${uploadSpeed} | DOWN: ${downloadSpeed}`;
+
+        let netLines = [];
+        if (fs.existsSync(networkLog)) {
+            const netData = fs.readFileSync(networkLog, "utf8");
+            netLines = netData.trim().split("\n");
+        }
+
+        netLines.push(netLogLine);
+
+        if (netLines.length > MAX_LINES) {
+            netLines = netLines.slice(netLines.length - MAX_LINES);
+        }
+
+        fs.writeFileSync(networkLog, netLines.join("\n") + "\n", "utf8");
+
     } catch (err) {
-        console.error("Error logging system stats:", err.message);
+        console.error("Error logging system or network stats:", err.message);
     }
 }
 
@@ -119,7 +150,6 @@ app.get('/api/system', async (req, res) => {
         const cpuLoad = await getCpuUsage();
         const mem = process.memoryUsage();
         const uptime = process.uptime();
-        const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 
         const fsData = await si.fsSize();
         const diskInfo = {};
@@ -138,8 +168,6 @@ app.get('/api/system', async (req, res) => {
         }
 
         const cpuTemp = await getCpuTemp();
-        const network = await getNetworkInfo();
-        const appVersions = await getVersions();
 
         res.json({
             cpu_percent: cpuLoad,
@@ -154,8 +182,6 @@ app.get('/api/system', async (req, res) => {
             uptime: formatUptime(uptime),
             cpu_temp: cpuTemp,
             disk: diskInfo,
-            network,
-            appVersions
         });
 
     } catch (e) {
@@ -226,36 +252,40 @@ app.get('/api/process', async (req, res) => {
     }
 });
 
-app.post('/api/links/:index/increment', (req, res) => {
-    const index = parseInt(req.params.index);
+app.post('/api/links/:encodedUrl/increment', (req, res) => {
+    const url = decodeURIComponent(req.params.encodedUrl);
+
     fs.readFile(linksFile, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ error: 'Failed to read links' });
-        let links = [];
-        try { links = JSON.parse(data); } catch { return res.status(500).json({ error: 'Corrupt links data' }); }
-        if (index < 0 || index >= links.length) return res.status(400).json({ error: 'Invalid index' });
 
-        links[index].opened = (links[index].opened || 0) + 1;
+        let links = [];
+        try { links = JSON.parse(data); } catch {
+            return res.status(500).json({ error: 'Corrupt links data' });
+        }
+
+        const link = links.find(l => l.url === url);
+        if (!link) return res.status(400).json({ error: 'Invalid link URL' });
+
+        link.opened = (link.opened || 0) + 1;
 
         fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
             if (err) return res.status(500).json({ error: 'Failed to save link' });
-            res.json({ success: true, opened: links[index].opened });
+            res.json({ success: true, opened: link.opened });
         });
     });
 });
 
-app.get('/api/settings', (req, res) => {
-    fs.readFile(settingsFile, 'utf8', (err, data) => {
-        if (err) {
-            console.error("Error reading settings.json:", err);
-            return res.status(500).json({ error: 'Error reading settings.' });
-        }
-        try {
-            res.json(JSON.parse(data));
-        } catch (parseErr) {
-            console.error("Error parsing settings.json:", parseErr);
-            res.status(500).json({ error: 'Invalid settings format.' });
-        }
-    });
+app.get("/api/settings", async (req, res) => {
+    try {
+        const data = fs.readFileSync(settingsFile, "utf8");
+        const settings = JSON.parse(data);
+        const appVersions = await getVersion();
+        settings.appVersions = appVersions;
+        res.json(settings);
+    } catch (err) {
+        console.error("Error reading settings or versions:", err);
+        res.status(500).json({ error: "Failed to load settings or versions." });
+    }
 });
 
 app.post('/api/settings', (req, res) => {
@@ -294,6 +324,34 @@ app.get('/api/logs', (req, res) => {
     } catch (err) {
         console.error("Error reading server log:", err.message);
         res.status(500).json({ error: "Failed to read server log." });
+    }
+});
+
+app.get('/api/network-logs', (req, res) => {
+    try {
+        if (!fs.existsSync(networkLog)) return res.json([]);
+
+        const data = fs.readFileSync(networkLog, 'utf8');
+        const lines = data
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .map(line => {
+                const match = line.match(/\[(.*?)\] UP: ([\d.]+) MB\/s \| DOWN: ([\d.]+) MB\/s/);
+                if (match) {
+                    return {
+                        timestamp: match[1],
+                        upload: parseFloat(match[2]),
+                        download: parseFloat(match[3])
+                    };
+                } else {
+                    return { raw: line };
+                }
+            });
+
+        res.json(lines);
+    } catch (err) {
+        console.error("Error reading network log:", err.message);
+        res.status(500).json({ error: "Failed to read network log." });
     }
 });
 
@@ -425,7 +483,7 @@ app.get('/api/rss', async (req, res) => {
         const feedUrl = settings.rss || 'https://hnrss.org/frontpage';
         const feed = await parser.parseURL(feedUrl);
 
-        const items = feed.items.slice(0, 5).map(item => ({
+        const items = feed.items.slice(0, 12).map(item => ({
             title: item.title,
             link: item.link,
             pubDate: item.pubDate
@@ -519,44 +577,7 @@ app.post('/api/urltoqrl', async (req, res) => {
     }
 });
 
-app.get('/api/temperature', async (req, res) => {
-    try {
-        const temp = await getCpuTemp();
-        const hours = new Date().getHours();
-        res.json({
-            temperature: temp,
-            hour: hours
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to get CPU temperature' });
-    }
-});
-
-function getCpuUsage() {
-    return new Promise((resolve) => {
-        const osu = require('os-utils');
-        osu.cpuUsage((v) => {
-            resolve((v * 100).toFixed(2));
-        });
-    });
-}
-
-function getCpuTemp() {
-    return new Promise((resolve) => {
-        exec('sensors', (err, stdout) => {
-            if (err) return resolve(null);
-
-            const match = stdout.match(/Core 0:\s+\+([\d.]+)°C/);
-            if (match && match[1]) {
-                resolve(parseFloat(match[1]).toFixed(1));
-            } else {
-                resolve(null);
-            }
-        });
-    });
-}
-
-async function getVersions() {
+async function getVersion() {
     const appVersions = {
         local: 'N/A',
         github: 'N/A'
@@ -579,7 +600,7 @@ async function getVersions() {
     return appVersions;
 }
 
-async function getNetworkInfo() {
+app.get('/api/network', async (req, res) => {
     const now = Date.now();
 
     if (!networkCache || (now - networkCacheTime >= NETWORK_CACHE_TTL)) {
@@ -631,11 +652,49 @@ async function getNetworkInfo() {
     const downloadSpeed = (netStats[0].rx_sec / 1024 / 1024).toFixed(2) + " MB/s";
     const uploadSpeed = (netStats[0].tx_sec / 1024 / 1024).toFixed(2) + " MB/s";
 
-    return {
+    res.json({
         ...networkCache,
         download_speed: downloadSpeed,
         upload_speed: uploadSpeed
-    };
+    });
+});
+
+app.get('/api/temperature', async (req, res) => {
+    try {
+        const temp = await getCpuTemp();
+        const hours = new Date().getHours();
+
+        res.json({
+            temperature: temp,
+            hour: hours
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to get CPU temperature' });
+    }
+
+});
+
+function getCpuUsage() {
+    return new Promise((resolve) => {
+        osu.cpuUsage((v) => {
+            resolve((v * 100).toFixed(2));
+        });
+    });
+}
+
+function getCpuTemp() {
+    return new Promise((resolve) => {
+        exec('sensors', (err, stdout) => {
+            if (err) return resolve(null);
+
+            const match = stdout.match(/Core 0:\s+\+([\d.]+)°C/);
+            if (match && match[1]) {
+                resolve(parseFloat(match[1]).toFixed(1));
+            } else {
+                resolve(null);
+            }
+        });
+    });
 }
 
 function formatUptime(seconds) {
