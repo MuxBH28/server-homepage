@@ -28,12 +28,20 @@ app.use(express.json());
 
 const linksFile = path.join(__dirname, 'json/links.json');
 const settingsFile = path.join(__dirname, 'json/settings.json');
-let settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 const serverLog = path.join(__dirname, 'server.log');
 const networkLog = path.join(__dirname, 'network.log');
 const notesFile = path.join(__dirname, 'json/notes.json');
 
+let settings = {};
+let links = [];
+let notes = {};
+
 function initFiles() {
+    const jsonDir = path.join(__dirname, 'json');
+    if (!fs.existsSync(jsonDir)) {
+        fs.mkdirSync(jsonDir, { recursive: true });
+    }
+
     if (!fs.existsSync(linksFile)) {
         const defaultLinks = [
             {
@@ -45,6 +53,9 @@ function initFiles() {
             }
         ];
         fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
+        links = defaultLinks;
+    } else {
+        links = JSON.parse(fs.readFileSync(linksFile, 'utf8'));
     }
 
     if (!fs.existsSync(settingsFile)) {
@@ -56,30 +67,31 @@ function initFiles() {
             bgPath: './assets/background.jpg',
             rss: 'https://hnrss.org/frontpage',
             login: '',
-            diskPaths: [
-                '/'
-            ]
+            diskPaths: ['/']
         };
         fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
+        settings = defaultSettings;
+    } else {
         settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
     }
 
     if (!fs.existsSync(serverLog)) {
         fs.writeFileSync(serverLog, `[${new Date().toISOString()}] Server log initialized\n`, 'utf8');
     }
+
     if (!fs.existsSync(networkLog)) {
         fs.writeFileSync(networkLog, `[${new Date().toISOString()}] Network log initialized\n`, 'utf8');
     }
 
     if (!fs.existsSync(notesFile)) {
-        fs.writeFileSync(
-            notesFile,
-            JSON.stringify({
-                notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
-                lastEdited: new Date().toISOString()
-            }, null, 2),
-            'utf8'
-        );
+        const defaultNotes = {
+            notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
+            lastEdited: new Date().toISOString()
+        };
+        fs.writeFileSync(notesFile, JSON.stringify(defaultNotes, null, 2), 'utf8');
+        notes = defaultNotes;
+    } else {
+        notes = JSON.parse(fs.readFileSync(notesFile, 'utf8'));
     }
 }
 
