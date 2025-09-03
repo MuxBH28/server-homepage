@@ -1,4 +1,5 @@
-import express from 'express';
+import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
@@ -9,39 +10,42 @@ import bcrypt from 'bcrypt';
 import Parser from 'rss-parser';
 import QRCode from 'qrcode';
 import osu from 'os-utils';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const parser = new Parser();
-const app = express();
+const fastify = Fastify({ logger: { level: 'error' } });
 const PORT = 6969;
 
 let networkCache = null;
 let networkCacheTime = 0;
 const NETWORK_CACHE_TTL = 5 * 60 * 1000;
 
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(express.static(path.join(__dirname, "dist")));
-app.use(express.json());
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, 'dist'),
+    prefix: '/',
+});
+
+fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+    try {
+        const json = JSON.parse(body);
+        done(null, json);
+    } catch (err) {
+        done(err, undefined);
+    }
+});
 
 const linksFile = path.join(__dirname, 'json/links.json');
 const settingsFile = path.join(__dirname, 'json/settings.json');
+let settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 const serverLog = path.join(__dirname, 'server.log');
 const networkLog = path.join(__dirname, 'network.log');
 const notesFile = path.join(__dirname, 'json/notes.json');
 
-let settings = {};
-let links = [];
-let notes = {};
-
 function initFiles() {
-    const jsonDir = path.join(__dirname, 'json');
-    if (!fs.existsSync(jsonDir)) {
-        fs.mkdirSync(jsonDir, { recursive: true });
-    }
-
     if (!fs.existsSync(linksFile)) {
         const defaultLinks = [
             {
@@ -53,9 +57,6 @@ function initFiles() {
             }
         ];
         fs.writeFileSync(linksFile, JSON.stringify(defaultLinks, null, 2), 'utf8');
-        links = defaultLinks;
-    } else {
-        links = JSON.parse(fs.readFileSync(linksFile, 'utf8'));
     }
 
     if (!fs.existsSync(settingsFile)) {
@@ -67,11 +68,19 @@ function initFiles() {
             bgPath: './assets/background.jpg',
             rss: 'https://hnrss.org/frontpage',
             login: '',
-            diskPaths: ['/']
+            diskPaths: ['/'],
+            tools: {
+                Process: true,
+                Crypto: true,
+                Notes: true,
+                RSS: true,
+                Power: true,
+                Hardware: true,
+                QR: true
+            }
         };
+
         fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), 'utf8');
-        settings = defaultSettings;
-    } else {
         settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
     }
 
@@ -84,14 +93,14 @@ function initFiles() {
     }
 
     if (!fs.existsSync(notesFile)) {
-        const defaultNotes = {
-            notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
-            lastEdited: new Date().toISOString()
-        };
-        fs.writeFileSync(notesFile, JSON.stringify(defaultNotes, null, 2), 'utf8');
-        notes = defaultNotes;
-    } else {
-        notes = JSON.parse(fs.readFileSync(notesFile, 'utf8'));
+        fs.writeFileSync(
+            notesFile,
+            JSON.stringify({
+                notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
+                lastEdited: new Date().toISOString()
+            }, null, 2),
+            'utf8'
+        );
     }
 }
 
@@ -118,7 +127,8 @@ async function logSystemStats() {
 
         systemLines.push(logLine);
 
-        const MAX_LINES = 60 * 12;
+        const MAX_LINES = 60 * 8;
+
         if (systemLines.length > MAX_LINES) {
             systemLines = systemLines.slice(systemLines.length - MAX_LINES);
         }
@@ -144,20 +154,21 @@ async function logSystemStats() {
         }
 
         fs.writeFileSync(networkLog, netLines.join("\n") + "\n", "utf8");
-
     } catch (err) {
         console.error("Error logging system or network stats:", err.message);
     }
 }
 
-app.get('/api/links', async (req, res) => {
-    fs.readFile(linksFile, 'utf8', async (err, data) => {
-        if (err) return res.status(500).json({ error: 'Failed to read links' });
-        res.json(JSON.parse(data));
-    });
+fastify.get('/api/links', async (request, reply) => {
+    try {
+        const data = await fs.promises.readFile(linksFile, 'utf8');
+        reply.send(JSON.parse(data));
+    } catch (err) {
+        reply.status(500).send({ error: 'Failed to read links' });
+    }
 });
 
-app.get('/api/system', async (req, res) => {
+fastify.get('/api/system', async (request, reply) => {
     try {
         const cpuLoad = await getCpuUsage();
         const mem = process.memoryUsage();
@@ -181,7 +192,7 @@ app.get('/api/system', async (req, res) => {
 
         const cpuTemp = await getCpuTemp();
 
-        res.json({
+        reply.send({
             cpu_percent: cpuLoad,
             memory: {
                 rss: mem.rss,
@@ -193,131 +204,121 @@ app.get('/api/system', async (req, res) => {
             },
             uptime: formatUptime(uptime),
             cpu_temp: cpuTemp,
-            disk: diskInfo,
+            disk: diskInfo
         });
-
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        reply.status(500).send({ error: e.message });
     }
 });
 
+fastify.post('/api/links', async (request, reply) => {
+    const { name, url, icon = 'bi-link-45deg', category = 'Custom' } = request.body;
+    if (!name || !url) return reply.status(400).send({ error: "Name and URL are required" });
 
-app.post('/api/links', express.json(), (req, res) => {
-    const { name, url, icon = 'bi-link-45deg', category = 'Custom' } = req.body;
-    if (!name || !url) return res.status(400).json({ error: "Name and URL are required" });
-
-    fs.readFile(linksFile, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ error: 'Failed to read links' });
-
+    try {
+        const data = await fs.promises.readFile(linksFile, 'utf8');
         let links = [];
         try {
             links = JSON.parse(data);
         } catch (e) {
-            return res.status(500).json({ error: 'Corrupt links data' });
+            return reply.status(500).send({ error: 'Corrupt links data' });
         }
 
         links.push({ name, url, icon, category });
-
-        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
-            if (err) return res.status(500).json({ error: 'Failed to save link' });
-            res.json({ success: true });
-        });
-    });
+        await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
+        reply.send({ success: true });
+    } catch (err) {
+        reply.status(500).send({ error: 'Failed to save link' });
+    }
 });
 
-app.delete('/api/links/:index', (req, res) => {
-    const index = parseInt(req.params.index);
-
-    fs.readFile(linksFile, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ error: 'Failed to read links' });
-
+fastify.delete('/api/links/:index', async (request, reply) => {
+    const index = parseInt(request.params.index);
+    try {
+        const data = await fs.promises.readFile(linksFile, 'utf8');
         let links = JSON.parse(data);
         if (index < 0 || index >= links.length) {
-            return res.status(400).json({ error: 'Invalid index' });
+            return reply.status(400).send({ error: 'Invalid index' });
         }
 
         links.splice(index, 1);
-
-        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
-            if (err) return res.status(500).json({ error: 'Failed to delete link' });
-            res.json({ success: true });
-        });
-    });
+        await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
+        reply.send({ success: true });
+    } catch (err) {
+        reply.status(500).send({ error: 'Failed to delete link' });
+    }
 });
 
-app.get('/api/process', async (req, res) => {
+fastify.get('/api/process', async (request, reply) => {
     try {
         const data = await si.processes();
-
         const sorted = data.list.sort((a, b) => b.cpu - a.cpu);
-
         const topProcesses = sorted.slice(0, 15).map(proc => ({
             pid: proc.pid,
             name: proc.name,
             cpu: proc.cpu.toFixed(1),
             memory: proc.memRss
         }));
-
-        res.json(topProcesses);
+        reply.send(topProcesses);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        reply.status(500).send({ error: err.message });
     }
 });
 
-app.post('/api/links/:encodedUrl/increment', (req, res) => {
-    const url = decodeURIComponent(req.params.encodedUrl);
+fastify.post('/api/links/:encodedUrl/increment', async (request, reply) => {
+    const url = decodeURIComponent(request.params.encodedUrl);
 
-    fs.readFile(linksFile, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ error: 'Failed to read links' });
-
+    try {
+        const data = await fs.promises.readFile(linksFile, 'utf8');
         let links = [];
-        try { links = JSON.parse(data); } catch {
-            return res.status(500).json({ error: 'Corrupt links data' });
+        try {
+            links = JSON.parse(data);
+        } catch {
+            return reply.status(500).send({ error: 'Corrupt links data' });
         }
 
         const link = links.find(l => l.url === url);
-        if (!link) return res.status(400).json({ error: 'Invalid link URL' });
+        if (!link) return reply.status(400).send({ error: 'Invalid link URL' });
 
         link.opened = (link.opened || 0) + 1;
-
-        fs.writeFile(linksFile, JSON.stringify(links, null, 2), (err) => {
-            if (err) return res.status(500).json({ error: 'Failed to save link' });
-            res.json({ success: true, opened: link.opened });
-        });
-    });
-});
-
-app.get("/api/settings", async (req, res) => {
-    try {
-        const data = fs.readFileSync(settingsFile, "utf8");
-        const settings = JSON.parse(data);
-        const appVersions = await getVersion();
-        settings.appVersions = appVersions;
-        res.json(settings);
+        await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
+        reply.send({ success: true, opened: link.opened });
     } catch (err) {
-        console.error("Error reading settings or versions:", err);
-        res.status(500).json({ error: "Failed to load settings or versions." });
+        reply.status(500).send({ error: 'Failed to save link' });
     }
 });
 
-app.post('/api/settings', (req, res) => {
-    fs.writeFile(settingsFile, JSON.stringify(req.body, null, 2), (err) => {
-        if (err) {
-            console.error("Error writing settings.json:", err);
-            return res.status(500).json({ error: 'Error saving settings.' });
-        }
-        res.json({ success: true });
-    });
+fastify.get("/api/settings", async (request, reply) => {
+    try {
+        const data = await fs.promises.readFile(settingsFile, "utf8");
+        const settings = JSON.parse(data);
+        const appVersions = await getVersion();
+        settings.appVersions = appVersions;
+        reply.send(settings);
+    } catch (err) {
+        console.error("Error reading settings or versions:", err);
+        reply.status(500).send({ error: "Failed to load settings or versions." });
+    }
 });
 
-app.get('/api/logs', (req, res) => {
+fastify.post("/api/settings", async (request, reply) => {
     try {
-        if (!fs.existsSync(serverLog)) return res.json([]);
+        await fs.promises.writeFile(settingsFile, JSON.stringify(request.body, null, 2), "utf8");
+        reply.send({ success: true });
+    } catch (err) {
+        console.error("Error writing settings.json:", err);
+        reply.status(500).send({ error: "Error saving settings." });
+    }
+});
 
-        const data = fs.readFileSync(serverLog, 'utf8');
+fastify.get("/api/logs", async (request, reply) => {
+    try {
+        if (!fs.existsSync(serverLog)) return reply.send([]);
+
+        const data = await fs.promises.readFile(serverLog, "utf8");
         const lines = data
-            .split('\n')
-            .filter(line => line.trim() !== '')
+            .split("\n")
+            .filter(line => line.trim() !== "")
             .map(line => {
                 const match = line.match(/\[(.*?)\] CPU: ([\d.]+)% \| RAM: ([\d.]+)% \| TEMP: (.*)°C/);
                 if (match) {
@@ -325,28 +326,28 @@ app.get('/api/logs', (req, res) => {
                         timestamp: match[1],
                         cpu: parseFloat(match[2]),
                         ram: parseFloat(match[3]),
-                        temp: match[4] === 'N/A' ? null : parseFloat(match[4])
+                        temp: match[4] === "N/A" ? null : parseFloat(match[4])
                     };
                 } else {
                     return { raw: line };
                 }
             });
 
-        res.json(lines);
+        reply.send(lines);
     } catch (err) {
         console.error("Error reading server log:", err.message);
-        res.status(500).json({ error: "Failed to read server log." });
+        reply.status(500).send({ error: "Failed to read server log." });
     }
 });
 
-app.get('/api/network-logs', (req, res) => {
+fastify.get("/api/network-logs", async (request, reply) => {
     try {
-        if (!fs.existsSync(networkLog)) return res.json([]);
+        if (!fs.existsSync(networkLog)) return reply.send([]);
 
-        const data = fs.readFileSync(networkLog, 'utf8');
+        const data = await fs.promises.readFile(networkLog, "utf8");
         const lines = data
-            .split('\n')
-            .filter(line => line.trim() !== '')
+            .split("\n")
+            .filter(line => line.trim() !== "")
             .map(line => {
                 const match = line.match(/\[(.*?)\] UP: ([\d.]+) MB\/s \| DOWN: ([\d.]+) MB\/s/);
                 if (match) {
@@ -360,14 +361,14 @@ app.get('/api/network-logs', (req, res) => {
                 }
             });
 
-        res.json(lines);
+        reply.send(lines);
     } catch (err) {
         console.error("Error reading network log:", err.message);
-        res.status(500).json({ error: "Failed to read network log." });
+        reply.status(500).send({ error: "Failed to read network log." });
     }
 });
 
-app.get('/api/info', async (req, res) => {
+fastify.get("/api/info", async (request, reply) => {
     try {
         const cpu = await si.cpu();
         const mem = os.totalmem();
@@ -378,7 +379,7 @@ app.get('/api/info', async (req, res) => {
 
         const bytesToGB = (bytes) => +(bytes / 1024 / 1024 / 1024).toFixed(2);
 
-        res.json({
+        reply.send({
             cpu: {
                 manufacturer: cpu.manufacturer,
                 brand: cpu.brand,
@@ -418,159 +419,164 @@ app.get('/api/info', async (req, res) => {
             }))
         });
     } catch (err) {
-        console.error('Error fetching system info:', err);
-        res.status(500).json({ error: 'Failed to fetch system info' });
+        console.error("Error fetching system info:", err);
+        reply.status(500).send({ error: "Failed to fetch system info" });
     }
 });
 
-app.get('/api/crypto', async (req, res) => {
+fastify.get("/api/crypto", async (request, reply) => {
     try {
-        const resp = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+        const resp = await axios.get("https://api.coingecko.com/api/v3/simple/price", {
             params: {
-                ids: 'bitcoin,ethereum,dogecoin,litecoin,cardano,solana,polkadot',
-                vs_currencies: 'usd'
+                ids: "bitcoin,ethereum,dogecoin,litecoin,cardano,solana,polkadot",
+                vs_currencies: "usd"
             }
         });
-        res.json(resp.data);
+        reply.send(resp.data);
     } catch (err) {
         console.error("Error fetching crypto:", err.message);
-        res.status(500).json({ error: "Failed to fetch crypto data." });
+        reply.status(500).send({ error: "Failed to fetch crypto data." });
     }
 });
 
-app.get('/api/notes', (req, res) => {
+fastify.get("/api/notes", async (request, reply) => {
     try {
-        if (!fs.existsSync(notesFile)) return res.json({ notes: "", lastEdited: null });
-        const data = JSON.parse(fs.readFileSync(notesFile, 'utf8'));
-        res.json(data);
+        if (!fs.existsSync(notesFile)) return reply.send({ notes: "", lastEdited: null });
+        const data = JSON.parse(fs.readFileSync(notesFile, "utf8"));
+        reply.send(data);
     } catch (err) {
         console.error("Error reading notes:", err.message);
-        res.status(500).json({ error: "Failed to read notes." });
+        reply.status(500).send({ error: "Failed to read notes." });
     }
 });
 
-app.post('/api/notes', (req, res) => {
+fastify.post("/api/notes", async (request, reply) => {
     try {
-        const notes = req.body.notes || "";
+        const notes = request.body.notes || "";
         const data = { notes, lastEdited: new Date().toISOString() };
-        fs.writeFileSync(notesFile, JSON.stringify(data, null, 2), 'utf8');
-        res.json({ success: true, data });
+        fs.writeFileSync(notesFile, JSON.stringify(data, null, 2), "utf8");
+        reply.send({ success: true, data });
     } catch (err) {
         console.error("Error saving notes:", err.message);
-        res.status(500).json({ error: "Failed to save notes." });
+        reply.status(500).send({ error: "Failed to save notes." });
     }
 });
 
-app.post('/api/power', (req, res) => {
-    const action = req.body.action;
+fastify.post("/api/power", async (request, reply) => {
+    const action = request.body.action;
 
-    if (!['shutdown', 'restart', 'sleep'].includes(action)) {
-        return res.status(400).json({ error: 'Invalid action' });
+    if (!["shutdown", "restart", "sleep"].includes(action)) {
+        return reply.status(400).send({ error: "Invalid action" });
     }
 
-    let cmd = '';
+    let cmd = "";
     switch (action) {
-        case 'shutdown':
-            cmd = 'shutdown -h now';
+        case "shutdown":
+            cmd = "shutdown -h now";
             break;
-        case 'restart':
-            cmd = 'shutdown -r now';
+        case "restart":
+            cmd = "shutdown -r now";
             break;
-        case 'sleep':
-            cmd = 'systemctl suspend';
+        case "sleep":
+            cmd = "systemctl suspend";
             break;
     }
 
     exec(cmd, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing ${action}:`, error);
-            return res.status(500).json({ error: `Failed to ${action}` });
+            return reply.status(500).send({ error: `Failed to ${action}` });
         }
-        res.json({ success: true, action });
+        reply.send({ success: true, action });
     });
 });
 
-app.get('/api/rss', async (req, res) => {
+fastify.get("/api/rss", async (request, reply) => {
     try {
-        const feedUrl = settings.rss || 'https://hnrss.org/frontpage';
+        const feedUrl = settings.rss || "https://hnrss.org/frontpage";
         const feed = await parser.parseURL(feedUrl);
 
-        const items = feed.items.slice(0, 12).map(item => ({
+        const items = feed.items.slice(0, 12).map((item) => ({
             title: item.title,
             link: item.link,
             pubDate: item.pubDate
         }));
 
-        res.json(items);
+        reply.send(items);
     } catch (err) {
         console.error("Error fetching RSS:", err.message);
-        res.status(500).json({ error: "Failed to fetch RSS feed." });
+        reply.status(500).send({ error: "Failed to fetch RSS feed." });
     }
 });
 
-app.post('/api/set-login', async (req, res) => {
+fastify.post("/api/set-login", async (request, reply) => {
     try {
-        const pin = req.body.pin || '';
+        const pin = request.body.pin || "";
         if (!pin || pin.length < 4) {
-            return res.status(400).json({ error: 'PIN must be at least 4 characters long.' });
+            return reply
+                .status(400)
+                .send({ error: "PIN must be at least 4 characters long." });
         }
 
         const hashedPin = await bcrypt.hash(pin, 10);
 
         if (!fs.existsSync(settingsFile)) {
-            return res.status(500).json({ error: 'Settings file not found.' });
+            return reply.status(500).send({ error: "Settings file not found." });
         }
 
-        const settingsData = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        const settingsData = JSON.parse(fs.readFileSync(settingsFile, "utf8"));
         settingsData.login = hashedPin;
-        fs.writeFileSync(settingsFile, JSON.stringify(settingsData, null, 2), 'utf8');
+        fs.writeFileSync(settingsFile, JSON.stringify(settingsData, null, 2), "utf8");
 
         settings.login = hashedPin;
 
-        res.json({ success: true, message: 'PIN saved successfully.' });
+        reply.send({ success: true, message: "PIN saved successfully." });
     } catch (err) {
-        console.error('Error setting login PIN:', err.message);
-        res.status(500).json({ error: 'Failed to set login PIN.' });
+        console.error("Error setting login PIN:", err.message);
+        reply.status(500).send({ error: "Failed to set login PIN." });
     }
 });
 
-app.post('/api/check-login', (req, res) => {
+fastify.post("/api/check-login", async (request, reply) => {
     try {
-        const inputPin = req.body.pin;
+        const inputPin = request.body.pin;
 
         if (!settings.login || !inputPin) {
-            return res.json({ success: false });
+            return reply.send({ success: false });
         }
 
         bcrypt.compare(inputPin, settings.login, (err, result) => {
             if (err) {
-                console.error('Error comparing PIN:', err.message);
-                return res.status(500).json({ success: false, error: 'Server error' });
+                console.error("Error comparing PIN:", err.message);
+                return reply.status(500).send({ success: false, error: "Server error" });
             }
 
-            res.json({ success: result });
+            reply.send({ success: result });
         });
-
     } catch (err) {
-        console.error('Error in check-login:', err.message);
-        res.status(500).json({ success: false, error: 'Server error' });
+        console.error("Error in check-login:", err.message);
+        reply.status(500).send({ success: false, error: "Server error" });
     }
 });
 
-app.post('/api/linksFile', (req, res) => {
-    const newLinks = req.body;
+fastify.post("/api/linksFile", async (request, reply) => {
+    const newLinks = request.body;
 
-    if (!newLinks) return res.status(400).json({ error: 'No data provided' });
+    if (!newLinks) {
+        return reply.status(400).send({ error: "No data provided" });
+    }
 
-    fs.writeFile(linksFile, JSON.stringify(newLinks, null, 2), 'utf8', (err) => {
-        if (err) return res.status(500).json({ error: 'Failed to write links' });
-        res.json({ message: 'Links updated successfully' });
-    });
+    try {
+        fs.writeFileSync(linksFile, JSON.stringify(newLinks, null, 2), "utf8");
+        reply.send({ message: "Links updated successfully" });
+    } catch (err) {
+        reply.status(500).send({ error: "Failed to write links" });
+    }
 });
 
-app.post('/api/urltoqrl', async (req, res) => {
-    const { text, type, width, color, bgColor } = req.body;
-    const qrPath = path.join(__dirname, 'assets', `qrcode.${type}`);
+fastify.post("/api/urltoqrl", async (request, reply) => {
+    const { text, type, width, color, bgColor } = request.body;
+    const qrPath = path.join(__dirname, "assets", `qrcode.${type}`);
 
     try {
         await QRCode.toFile(qrPath, text, {
@@ -579,43 +585,21 @@ app.post('/api/urltoqrl', async (req, res) => {
             margin: 2,
             color: {
                 dark: color,
-                light: bgColor
-            }
+                light: bgColor,
+            },
         });
-        res.json({ success: true });
+
+        reply.send({ success: true });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to generate QR code' });
+        console.error("QR code generation error:", err.message);
+        reply.status(500).send({ error: "Failed to generate QR code" });
     }
 });
 
-async function getVersion() {
-    const appVersions = {
-        local: 'N/A',
-        github: 'N/A'
-    };
-
-    try {
-        const packagePath = path.join(__dirname, 'package.json');
-        const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-        appVersions.local = packageData.version || 'N/A';
-
-        const githubUrl = 'https://raw.githubusercontent.com/MuxBH28/server-homepage/main/package.json';
-        const response = await axios.get(githubUrl);
-        const githubData = response.data;
-        appVersions.github = githubData.version || 'N/A';
-
-    } catch (err) {
-        console.error('Failed to get versions:', err.message);
-    }
-
-    return appVersions;
-}
-
-app.get('/api/network', async (req, res) => {
+fastify.get("/api/network", async (request, reply) => {
     const now = Date.now();
 
-    if (!networkCache || (now - networkCacheTime >= NETWORK_CACHE_TTL)) {
+    if (!networkCache || now - networkCacheTime >= NETWORK_CACHE_TTL) {
         const nets = os.networkInterfaces();
         let localIP = null;
         let ifaceName = null;
@@ -623,29 +607,30 @@ app.get('/api/network', async (req, res) => {
 
         for (const name of Object.keys(nets)) {
             for (const net of nets[name]) {
-                if (net.family === 'IPv4' && !net.internal) {
+                if (net.family === "IPv4" && !net.internal) {
                     localIP = net.address;
                     ifaceName = name;
-                    state = net.mac ? 'up' : 'down';
+                    state = net.mac ? "up" : "down";
                     break;
                 }
             }
             if (localIP) break;
         }
 
-        let publicIP = 'N/A';
-        let city = 'N/A';
-        let country = 'N/A';
-        let loc = 'N/A';
+        let publicIP = "N/A";
+        let city = "N/A";
+        let country = "N/A";
+        let loc = "N/A";
+
         try {
-            const response = await axios.get('https://ipinfo.io/json');
+            const response = await axios.get("https://ipinfo.io/json");
             const data = response.data;
             publicIP = data.ip || publicIP;
             city = data.city || city;
             country = data.country || country;
             loc = data.loc || loc;
         } catch (err) {
-            console.error("Failed to fetch public IP info:", err.message);
+            fastify.log.error("Failed to fetch public IP info:", err.message);
         }
 
         networkCache = {
@@ -655,36 +640,59 @@ app.get('/api/network', async (req, res) => {
             public_ip: publicIP,
             city,
             country,
-            loc
+            loc,
         };
         networkCacheTime = now;
     }
 
     const netStats = await si.networkStats();
-    const downloadSpeed = (netStats[0].rx_sec / 1024 / 1024).toFixed(2) + " MB/s";
-    const uploadSpeed = (netStats[0].tx_sec / 1024 / 1024).toFixed(2) + " MB/s";
+    const downloadSpeed =
+        (netStats[0].rx_sec / 1024 / 1024).toFixed(2) + " MB/s";
+    const uploadSpeed =
+        (netStats[0].tx_sec / 1024 / 1024).toFixed(2) + " MB/s";
 
-    res.json({
+    reply.send({
         ...networkCache,
         download_speed: downloadSpeed,
-        upload_speed: uploadSpeed
+        upload_speed: uploadSpeed,
     });
 });
 
-app.get('/api/temperature', async (req, res) => {
+fastify.get("/api/temperature", async (request, reply) => {
     try {
         const temp = await getCpuTemp();
         const hours = new Date().getHours();
 
-        res.json({
+        reply.send({
             temperature: temp,
-            hour: hours
+            hour: hours,
         });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to get CPU temperature' });
+        reply.status(500).send({ error: "Failed to get CPU temperature" });
+    }
+});
+
+async function getVersion() {
+    const appVersions = {
+        local: "N/A",
+        github: "N/A",
+    };
+
+    try {
+        const packagePath = path.join(__dirname, "package.json");
+        const packageData = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+        appVersions.local = packageData.version || "N/A";
+
+        const githubUrl = "https://raw.githubusercontent.com/MuxBH28/server-homepage/main/package.json";
+        const response = await axios.get(githubUrl);
+        const githubData = response.data;
+        appVersions.github = githubData.version || "N/A";
+    } catch (err) {
+        console.error("Failed to get versions:", err.message);
     }
 
-});
+    return appVersions;
+}
 
 function getCpuUsage() {
     return new Promise((resolve) => {
@@ -717,13 +725,22 @@ function formatUptime(seconds) {
     return `${d}d ${h}h ${m}m ${s}s`;
 }
 
-app.listen(PORT, '0.0.0.0', (err) => {
-    if (err) {
-        console.error('Error starting server:', err);
-    } else {
+fastify.setNotFoundHandler((request, reply) => {
+    reply.sendFile("index.html");
+});
+
+const start = async () => {
+    try {
         initFiles();
         logSystemStats();
         setInterval(logSystemStats, 60 * 1000);
+
+        await fastify.listen({ port: PORT, host: "0.0.0.0" });
         console.log(`Server running at http://0.0.0.0:${PORT}`);
+    } catch (err) {
+        console.error("Error starting server:", err);
+        process.exit(1);
     }
-});
+};
+
+start();

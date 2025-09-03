@@ -43,6 +43,22 @@ export default function Info() {
                 The project is designed to run on a Linux server and can be accessed locally or over a LAN.
             </p>
 
+            <p className="text-gray-400 text-sm sm:text-base mb-5 text-center sm:text-left">
+                <span className="font-semibold">Author Message:</span><br />
+                <span className="italic">
+                    Thank you for checking out Server Homepage.
+                    I originally made this just for myself, to keep an eye on my server and have everything in one place.
+                    I honestly didn't expect anyone else to find it useful or interesting.
+
+                    Everything you see here is built and maintained by me alone — there are no contributors or sponsors (yet).
+                    If you ever run into problems, have questions, ideas, or suggestions, please feel free to open a GitHub issue or reach out in any way that works for you.
+
+                    As for the name “Server Homepage”... yeah, I know — it's pretty basic and generic.
+                    One day it might get a new name, but for now, it stays as it is.
+                    Thanks again for stopping by and giving it a try.
+                </span>
+            </p>
+
             <div className="space-y-2 text-gray-300 text-sm sm:text-base mb-6">
                 <p>
                     <strong>Author:</strong>{" "}
@@ -64,24 +80,6 @@ export default function Info() {
                         className="underline text-red-500"
                     >
                         View Scriptable Widget
-                    </a>
-                </p>
-                <p>
-                    <strong>Default Background:</strong> by{" "}
-                    <a
-                        href="https://pixabay.com/users/sinnesreich-2779296/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1759179"
-                        target="_blank"
-                        className="underline text-red-500"
-                    >
-                        Manuela
-                    </a>{" "}
-                    from{" "}
-                    <a
-                        href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1759179"
-                        target="_blank"
-                        className="underline text-red-500"
-                    >
-                        Pixabay
                     </a>
                 </p>
                 <p>

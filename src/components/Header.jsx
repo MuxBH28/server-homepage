@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 
-export default function Header({ name }) {
+export default function Header({ name, onMobileToggle }) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [burgerOpen, setBurgerOpen] = useState(false);
+    const [welcomeMsg, setWelcomeMsg] = useState("");
+    const isMobile = window.innerWidth < 768;
 
     const welcomeMessages = [
         "Have a productive day!",
@@ -13,7 +15,14 @@ export default function Header({ name }) {
         "Time to shine!",
         "Another day, another opportunity!"
     ];
-    const [welcomeMsg, setWelcomeMsg] = useState("");
+
+    const handleBurgerClick = () => {
+        if (isMobile && onMobileToggle) {
+            onMobileToggle();
+        } else {
+            setBurgerOpen(!burgerOpen);
+        }
+    };
 
     useEffect(() => {
         const randomIndex = Math.floor(Math.random() * welcomeMessages.length);
@@ -44,7 +53,7 @@ export default function Header({ name }) {
                             {formatTime(currentTime)}
                         </div>
                         <button
-                            onClick={() => setBurgerOpen(!burgerOpen)}
+                            onClick={handleBurgerClick}
                             className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
                         >
                             <i className={`bi ${burgerOpen ? "bi-x-lg" : "bi-list"}`}></i>

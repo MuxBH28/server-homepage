@@ -1,6 +1,6 @@
 {
   "name": "homepage",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fastify/static": "^8.2.0",
     "@tailwindcss/vite": "^4.0.6",
     "aos": "^2.3.4",
     "apexcharts": "^5.3.4",
@@ -16,6 +17,7 @@
     "bcrypt": "^6.0.0",
     "bootstrap-icons": "^1.13.1",
     "express": "^5.1.0",
+    "fastify": "^5.5.0",
     "os-utils": "^0.0.14",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",

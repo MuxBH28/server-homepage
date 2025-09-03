@@ -6,7 +6,35 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
-# [v1.3.7](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.7) – Latest [8/31/25]
+# [v1.3.8](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.8) – [9/3/25]
+
+### Bug Fixes
+- **RAM Indicator Bug** – Fixed an issue where the RAM usage indicator was not updating correctly.
+- **Mobile Menu Fix** – Adjusted navigation and interactions for mobile devices for a smoother experience.
+- **Settings Path Fix** – Corrected logic for adding new disk paths in settings.
+
+### UI & UX Enhancements
+- **Tools Design Tweaks** – Small design improvements across all tool widgets.
+- **Save Settings Button** – Moved the save settings button to the top-right corner for easier access.
+- **Custom Tools Selection** – Users can now choose which tools to display in the dashboard.
+- **Info Panel Author Message** – Added an author message in the InfoCard for more context.
+
+### Functionality Updates
+- **Catch-All Route** – Added `*` route to properly serve frontend assets for unmatched paths.
+- **RSS Feed Settings** – Restored RSS feed settings; added `rss.md` in the extra folder for reference.
+- **Notes Download** – Users can now download their notes as a `.txt` file directly from the widget.
+
+### Backend & Performance
+- **Fastify Migration** – Rewritten backend to use Fastify instead of Express.
+- **Logging Interval Adjustment** – Reduced system and network logging from 12h to 8h.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.3.8
+
+---
+
+# [v1.3.7](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.7) – [8/31/25]
 
 ### Major Changes
 - **Frontend Migration to React + Vite** – Replaced the old static HTML/CSS/JS setup with a modern React architecture powered by Vite for faster builds and improved developer experience.
@@ -37,7 +65,7 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
-# [v1.3.6](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.6) – Latest [8/23/25]
+# [v1.3.6](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.6) – [8/23/25]
 
 ### Improvements
 - **Mobile Design Overhaul** – Redesign of mobile layout for improved usability and aesthetics.
@@ -61,7 +89,7 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
-# [v1.3.5](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.5) – Latest [8/22/25]
+# [v1.3.5](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.5) – [8/22/25]
 
 ### New Features
 - **URL to QR Generator** – Instantly generate QR codes from any text or URL directly on the dashboard.  

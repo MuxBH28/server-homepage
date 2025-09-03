@@ -96,6 +96,7 @@ cd server-homepage
 
 ```bash
 npm install
+npm run build
 ```
 
 4. Start the server:

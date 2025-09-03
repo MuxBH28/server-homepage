@@ -33,19 +33,37 @@ export default function NotesCard() {
         }
     };
 
+    const downloadNotes = () => {
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "notes.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <WidgetCard title="Notes">
             {text === null ? (
                 <p className="text-red-600">Failed to load notes.</p>
             ) : (
-                <div>
+                <div className="flex flex-col h-full relative">
+                    <button
+                        onClick={downloadNotes}
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm z-10"
+                    >
+                        Download
+                    </button>
                     <textarea
                         value={text}
                         onChange={(e) => {
                             setText(e.target.value);
                             saveNotes(e.target.value);
                         }}
-                        className="w-full h-60 p-2 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none"
+                        className="flex-grow w-full p-2 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none min-h-[150px]"
                     />
                     <p className="text-gray-400 text-xs mt-2">
                         Last edited: {lastEdited ? new Date(lastEdited).toLocaleString() : "N/A"}

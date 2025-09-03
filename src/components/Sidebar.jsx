@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-export default function Sidebar({ server, appVersions }) {
+export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen }) {
     const location = useLocation();
-    const [mobileOpen, setMobileOpen] = useState(false);
 
     const navItems = [
         { path: "/", label: "Dashboard", icon: "bi-speedometer2" },
@@ -31,7 +29,7 @@ export default function Sidebar({ server, appVersions }) {
                             <li key={item.path}>
                                 <Link
                                     to={item.path}
-                                    onClick={() => setMobileOpen(false)} // zatvori na mobitelu
+                                    onClick={() => setMobileOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                     ${isActive
                                             ? "bg-red-600 text-white shadow-md"
@@ -68,15 +66,6 @@ export default function Sidebar({ server, appVersions }) {
 
     return (
         <>
-            <div className="md:hidden fixed top-4 left-4 z-50">
-                <button
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    className="text-white bg-gray-800 p-2 rounded-md focus:outline-none"
-                >
-                    <i className={`bi ${mobileOpen ? "bi-x" : "bi-list"} text-2xl`}></i>
-                </button>
-            </div>
-
             <aside className="hidden md:flex fixed inset-y-0 left-0">
                 {sidebarContent}
             </aside>

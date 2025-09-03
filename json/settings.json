@@ -7,5 +7,14 @@
     "diskPaths": [
         "/"
     ],
-    "rss": "https://hnrss.org/frontpage"
+    "rss": "https://hnrss.org/frontpage",
+    "tools": {
+        "Process": true,
+        "Crypto": false,
+        "Notes": true,
+        "RSS": false,
+        "Power": false,
+        "Hardware": false,
+        "QR": true
+    }
 }

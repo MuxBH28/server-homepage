@@ -22,14 +22,18 @@ export default function Dashboard() {
                 const res = await fetch("/api/system");
                 const data = await res.json();
 
-                updateGaugesAndDisks(data, diskChartsRef, gaugesRef);
-                setIndicator(data.cpu_temp, data.cpu_percent, data.disk, false, true);
+                const ramUsedGB = (data.memory.totalMem - data.memory.freeMem) / 1024 / 1024 / 1024;
+                const totalMemGB = data.memory.totalMem / 1024 / 1024 / 1024;
+                const ramUsedPercent = (ramUsedGB / totalMemGB) * 100;
+
+                updateGaugesAndDisks(data, diskChartsRef, gaugesRef, ramUsedPercent);
+                setIndicator(data.cpu_temp, data.cpu_percent, data.disk, ramUsedPercent, true);
 
                 const intervalTime = data.interval && !isNaN(data.interval) ? data.interval : 5000;
                 intervalId = setTimeout(fetchAndSetupInterval, intervalTime);
             } catch (err) {
                 console.error("Error getting data:", err);
-                setIndicator(0, 0, {}, false, false);
+                setIndicator(0, 0, {}, 0, false);
                 if (logsChartRef.current) {
                     logsChartRef.current.innerHTML = '<p class="text-red-600 text-center">Failed to load logs.</p>';
                 }
@@ -90,7 +94,7 @@ function Indicator({ id, src }) {
     );
 }
 
-function setIndicator(cpuTemp, cpuPercent, disks, initial = false, apiOk = false) {
+function setIndicator(cpuTemp, cpuPercent, disks, ramUsedPercent, apiOk = false) {
     const updateIndicator = (id, active, color) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -120,7 +124,7 @@ function setIndicator(cpuTemp, cpuPercent, disks, initial = false, apiOk = false
     };
 
     updateIndicator("indicatorTemp", cpuTemp >= 70, "red");
-    updateIndicator("indicatorRam", cpuPercent >= 80, "orange");
+    updateIndicator("indicatorRam", ramUsedPercent >= 80, "red");
     updateIndicator("indicatorWarning", cpuPercent >= 80 || cpuTemp >= 80, "red");
     updateIndicator("indicatorBattery", true, apiOk ? "limegreen" : "red");
 
@@ -128,7 +132,7 @@ function setIndicator(cpuTemp, cpuPercent, disks, initial = false, apiOk = false
     updateIndicator("indicatorStorage", storageWarning, "red");
 }
 
-function updateGaugesAndDisks(data, diskChartsRef, gaugesRef) {
+function updateGaugesAndDisks(data, diskChartsRef, gaugesRef, ramUsedPercent) {
     const { cpuGauge, ramGauge, cpuTempGauge } = gaugesRef.current;
 
     if (!cpuGauge || !ramGauge || !cpuTempGauge) return;
@@ -139,9 +143,6 @@ function updateGaugesAndDisks(data, diskChartsRef, gaugesRef) {
     cpuGauge.value = parseFloat(data.cpu_percent) || 0;
     cpuGauge.update();
 
-    const ramUsedGB = (data.memory.totalMem - data.memory.freeMem) / 1024 / 1024 / 1024;
-    const totalMemGB = data.memory.totalMem / 1024 / 1024 / 1024;
-    const ramUsedPercent = (ramUsedGB / totalMemGB) * 100;
     ramGauge.value = ramUsedPercent;
     ramGauge.update();
 

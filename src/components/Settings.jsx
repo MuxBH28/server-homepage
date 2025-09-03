@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Welcome from "./Welcome.jsx";
 
-export default function Settings({ settings }) {
+export default function Settings({ settings, setSettings }) {
     const [links, setLinks] = useState([]);
     const [authMessage, setAuthMessage] = useState("");
     const [showWelcome, setShowWelcome] = useState(false);
@@ -9,6 +9,16 @@ export default function Settings({ settings }) {
     useEffect(() => {
         fetchLinks();
     }, []);
+
+    const defaultTools = {
+        Process: false,
+        Crypto: false,
+        Notes: false,
+        RSS: false,
+        Power: false,
+        Hardware: false,
+        QR: false
+    };
 
     const saveSettings = async () => {
         try {
@@ -142,6 +152,17 @@ export default function Settings({ settings }) {
         }
     };
 
+    useEffect(() => {
+        if (!settings.tools) {
+            setSettings(prev => ({ ...prev, tools: { ...defaultTools } }));
+        } else {
+            setSettings(prev => ({
+                ...prev,
+                tools: { ...defaultTools, ...prev.tools }
+            }));
+        }
+    }, []);
+
     return (
         <>
             {showWelcome && (
@@ -154,7 +175,7 @@ export default function Settings({ settings }) {
             )}
             <div className="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full h-full relative">
                 <h2 className="text-red-600 text-2xl font-semibold text-center">Settings</h2>
-                <p className="text-gray-400 text-xs text-center">
+                <p className="text-gray-400 text-xs text-center mb-6">
                     Note: Some changes are visible <strong>after</strong> refreshing page.
                 </p>
 
@@ -211,9 +232,9 @@ export default function Settings({ settings }) {
                             </p>
                             <button
                                 onClick={saveSettings}
-                                className="mt-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white flex items-center gap-2"
+                                className="fixed top-2 right-4 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 shadow-lg"
                             >
-                                <i className="bi bi-save"></i> Save Settings
+                                <i className="bi bi-floppy"></i> Save
                             </button>
                         </div>
 
@@ -242,39 +263,117 @@ export default function Settings({ settings }) {
                 </section>
 
                 <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div className="space-y-3">
-                        <label
-                            htmlFor="diskPathsInput"
-                            className="block text-red-600 font-semibold mb-1"
-                        >
-                            Disk Paths
-                        </label>
-                        <input
-                            type="text"
-                            id="diskPathsInput"
-                            placeholder="e.g /250GB"
-                            onKeyPress={handleDiskPathKey}
-                            className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600"
-                        />
-                        <ul className="space-y-1">
-                            {settings.diskPaths.map((path, idx) => (
-                                <li
-                                    key={idx}
-                                    className="flex justify-between items-center bg-gray-800 rounded px-3 py-1 mb-1"
-                                >
-                                    <span>{path}</span>
-                                    <button
-                                        className="text-red-500 hover:text-red-400"
-                                        onClick={() => removeDiskPath(idx)}
-                                        title="Remove"
+                    <article className="space-y-3">
+                        <div>
+                            <label
+                                htmlFor="diskPathsInput"
+                                className="block text-red-600 font-semibold mb-1"
+                            >
+                                Disk Paths
+                            </label>
+                            <input
+                                type="text"
+                                id="diskPathsInput"
+                                placeholder="e.g /250GB"
+                                onKeyPress={handleDiskPathKey}
+                                className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600"
+                            />
+                            <ul className="space-y-1 mt-2">
+                                {settings.diskPaths.map((path, idx) => (
+                                    <li
+                                        key={idx}
+                                        className="flex justify-between items-center bg-gray-800 rounded px-3 py-2 mb-1"
                                     >
-                                        <i className="bi bi-x-lg"></i>
-                                    </button>
-                                </li>
-                            ))}
+                                        <span>{path}</span>
+                                        <button
+                                            className="text-red-500 hover:text-red-400"
+                                            onClick={() => removeDiskPath(idx)}
+                                            title="Remove"
+                                        >
+                                            <i className="bi bi-x-lg"></i>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="text-gray-400 text-xs">Press Enter to add a new path</p>
+                        </div>
+                        <div>
+                            <label htmlFor="rssUrl" className="block text-red-600 font-semibold mb-1">
+                                RSS Feed URL
+                            </label>
+                            <input
+                                type="text"
+                                id="rssUrl"
+                                placeholder="https://hnrss.org/frontpage"
+                                value={settings.rss || ""}
+                                onChange={(e) =>
+                                    setSettings((prev) => ({ ...prev, rss: e.target.value }))
+                                }
+                                className="w-full p-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-red-600"
+                            />
+                            <p className="text-gray-400 text-xs">
+                                No idea for RSS - more info on this{" "}
+                                <a
+                                    href="https://github.com/MuxBH28/server-homepage/blob/main/extra/rss.md"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-red-500 hover:underline"
+                                >
+                                    Server Homepage GitHub
+                                </a>.
+                            </p>
+                        </div>
+
+                    </article>
+
+                    <article className="space-y-3">
+                        <label className="block text-red-600 font-semibold mb-1">
+                            Tools Selection
+                        </label>
+                        <ul className="space-y-1">
+                            {Object.keys(settings.tools || {}).map((tool) => {
+                                const isEnabled = settings.tools[tool];
+                                return (
+                                    <li
+                                        key={tool}
+                                        className="flex justify-between items-center bg-gray-800 rounded px-3 py-2"
+                                    >
+                                        <span className="text-gray-200">{tool}</span>
+                                        <button
+                                            onClick={() =>
+                                                setSettings(prev => ({
+                                                    ...prev,
+                                                    tools: {
+                                                        ...prev.tools,
+                                                        [tool]: !isEnabled
+                                                    }
+                                                }))
+                                            }
+                                            className={`w-12 h-6 rounded-full p-0.5 flex items-center transition-colors duration-200 ${isEnabled ? "bg-green-500" : "bg-red-500"
+                                                }`}
+                                        >
+                                            <span
+                                                className={`bg-white w-5 h-5 rounded-full shadow transform transition-transform duration-200 ${isEnabled ? "translate-x-6" : "translate-x-0"
+                                                    }`}
+                                            ></span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                            <li className="flex justify-between items-center bg-gray-800 rounded px-3 py-2">
+                                <span className="text-gray-200">You need a new tool?</span>
+                                <a
+                                    href="https://github.com/MuxBH28/server-homepage/issues"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-red-600 hover:bg-red-500 px-2 py-0 rounded-lg text-white"
+                                >
+                                    <i className="bi bi-node-plus"></i>  Request
+                                </a>
+                            </li>
                         </ul>
-                        <p className="text-gray-400 text-xs">Press Enter to add a new path</p>
-                    </div>
+                    </article>
+
                 </section>
 
                 <section className="space-y-3 mt-6">
