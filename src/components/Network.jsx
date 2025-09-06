@@ -50,20 +50,20 @@ export default function Network({ refreshInterval }) {
     const [loading, setLoading] = useState(true);
     const logsChartRef = useRef(null);
 
-    useEffect(() => {
-        const fetchNetwork = () => {
-            fetch("/api/network")
-                .then((res) => res.json())
-                .then((data) => {
-                    setNetworkData(data);
-                    setLoading(false);
-                })
-                .catch((err) => {
-                    console.error("Failed to fetch network data:", err);
-                    setLoading(false);
-                });
-        };
+    const fetchNetwork = () => {
+        fetch("/api/network")
+            .then((res) => res.json())
+            .then((data) => {
+                setNetworkData(data);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch network data:", err);
+                setLoading(false);
+            });
+    };
 
+    useEffect(() => {
         fetchNetwork();
         fetchNetworkLogs(logsChartRef);
 
@@ -73,6 +73,19 @@ export default function Network({ refreshInterval }) {
 
         return () => clearInterval(intervalId);
     }, [refreshInterval]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "r" && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                fetchNetwork();
+                fetchNetworkLogs(logsChartRef);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     const renderFieldValue = (key) => {
         if (loading) return "Loading...";

@@ -7,6 +7,46 @@ export default function Links() {
 
     useEffect(() => {
         fetchLinks();
+
+        const handlePasteShortcut = async (e) => {
+            if (e.ctrlKey && e.key.toLowerCase() === "v") {
+                e.preventDefault();
+
+                try {
+                    let text = "";
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        text = await navigator.clipboard.readText();
+                    } else {
+                        // Fallback for HTTP / non-secure context
+                        text = prompt("Paste your link here:");
+                    }
+
+                    if (!text || !text.startsWith("http")) return;
+
+                    const urlObj = new URL(text);
+                    let hostname = urlObj.hostname.replace(/^www\./, "");
+                    const name = hostname.split(".")[0];
+
+                    await fetch("/api/links", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            name,
+                            url: text,
+                            icon: "bi-link",
+                            category: "Other",
+                        }),
+                    });
+
+                    fetchLinks();
+                } catch (err) {
+                    console.error("Failed to paste-add link:", err);
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handlePasteShortcut);
+        return () => window.removeEventListener("keydown", handlePasteShortcut);
     }, []);
 
     const fetchLinks = async () => {
@@ -20,7 +60,6 @@ export default function Links() {
         }
     };
 
-
     const incrementLinkOpened = async (url) => {
         try {
             await fetch(`/api/links/${encodeURIComponent(url)}/increment`, { method: "POST" });
@@ -30,7 +69,6 @@ export default function Links() {
         }
     };
 
-
     const checkLinkStatus = async (url) => {
         try {
             await fetch(url, { method: "HEAD", mode: "no-cors" });
@@ -39,7 +77,6 @@ export default function Links() {
             return "red";
         }
     };
-
 
     const applyFilter = (links) => {
         switch (filter) {
@@ -63,7 +100,6 @@ export default function Links() {
                 .map(link => [link.url, link])
         ).values())
     );
-
 
     return (
         <section className="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full h-full">

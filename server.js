@@ -224,7 +224,7 @@ fastify.get('/api/system', async (request, reply) => {
 });
 
 fastify.post('/api/links', async (request, reply) => {
-    const { name, url, icon = 'bi-link-45deg', category = 'Custom' } = request.body;
+    const { name, url, icon = 'bi-link-45deg', category = 'Other' } = request.body;
     if (!name || !url) return reply.status(400).send({ error: "Name and URL are required" });
 
     try {
@@ -260,6 +260,32 @@ fastify.delete('/api/links/:index', async (request, reply) => {
         reply.status(500).send({ error: 'Failed to delete link' });
     }
 });
+
+fastify.put('/api/links/:index', async (request, reply) => {
+    const index = parseInt(request.params.index);
+    const { name, url, icon = 'bi-link-45deg', category = 'Other' } = request.body;
+
+    if (!name || !url) {
+        return reply.status(400).send({ error: "Name and URL are required" });
+    }
+
+    try {
+        const data = await fs.promises.readFile(linksFile, 'utf8');
+        let links = JSON.parse(data);
+
+        if (index < 0 || index >= links.length) {
+            return reply.status(400).send({ error: 'Invalid index' });
+        }
+
+        links[index] = { name, url, icon, category };
+
+        await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
+        reply.send({ success: true });
+    } catch (err) {
+        reply.status(500).send({ error: 'Failed to update link' });
+    }
+});
+
 
 fastify.get('/api/process', async (request, reply) => {
     try {
@@ -714,19 +740,14 @@ function getCpuUsage() {
     });
 }
 
-function getCpuTemp() {
-    return new Promise((resolve) => {
-        exec('sensors', (err, stdout) => {
-            if (err) return resolve(null);
-
-            const match = stdout.match(/Core 0:\s+\+([\d.]+)°C/);
-            if (match && match[1]) {
-                resolve(parseFloat(match[1]).toFixed(1));
-            } else {
-                resolve(null);
-            }
-        });
-    });
+async function getCpuTemp() {
+    try {
+        const temp = await si.cpuTemperature();
+        return temp.main ? temp.main.toFixed(1) : null;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
 }
 
 function formatUptime(seconds) {

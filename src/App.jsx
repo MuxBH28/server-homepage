@@ -12,7 +12,7 @@ import Network from "./components/Network";
 import Tools from "./components/Tools";
 import Info from "./components/Info";
 import Settings from "./components/Settings";
-import Modal from "./components/Welcome";
+import Welcome from "./components/Welcome";
 
 function App() {
   const [settings, setSettings] = useState({
@@ -33,7 +33,7 @@ function App() {
         const data = await res.json();
         if (data) setSettings(data);
 
-        if (data?.welcome !== false) {
+        if (!data?.welcome) {
           setShowWelcome(true);
         }
 
@@ -46,6 +46,37 @@ function App() {
 
     loadSettings();
   }, []);
+
+  const saveSettings = async () => {
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      console.log("Settings saved to backend.");
+    } catch (err) {
+      console.error("Failed to save settings:", err);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const active = document.activeElement;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+
+      if (e.shiftKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        if (settings.favouriteLink) {
+          window.open(settings.favouriteLink, "_blank");
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [settings.favouriteLink]);
+
 
   return (
     <Router>
@@ -68,7 +99,14 @@ function App() {
         </div>
 
         <Preloader />
-        {showWelcome && <Modal />}
+        {showWelcome && (
+          <Welcome
+            isOpen={showWelcome}
+            onClose={() => setShowWelcome(false)}
+            settings={settings}
+            saveSettings={saveSettings}
+          />
+        )}
       </div>
     </Router>
   );

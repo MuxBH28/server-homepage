@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import Welcome from "./Welcome.jsx";
 
 export default function Settings({ settings, setSettings }) {
     const [links, setLinks] = useState([]);
     const [authMessage, setAuthMessage] = useState("");
-    const [showWelcome, setShowWelcome] = useState(false);
+    const [editingIndex, setEditingIndex] = useState(null);
 
     useEffect(() => {
         fetchLinks();
@@ -60,7 +59,16 @@ export default function Settings({ settings, setSettings }) {
         }
     };
 
-    const addLink = async (e) => {
+    const startEdit = (idx) => {
+        const link = links[idx];
+        document.getElementById("linkName").value = link.name;
+        document.getElementById("linkUrl").value = link.url;
+        document.getElementById("linkIcon").value = link.icon;
+        document.getElementById("linkCategory").value = link.category;
+        setEditingIndex(idx);
+    };
+
+    const saveLink = async (e) => {
         e.preventDefault();
         const name = document.getElementById("linkName").value.trim();
         const url = document.getElementById("linkUrl").value.trim();
@@ -70,18 +78,24 @@ export default function Settings({ settings, setSettings }) {
         if (!name || !url) return;
 
         try {
-            await fetch("/api/links", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, url, icon, category })
-            });
+            if (editingIndex !== null) {
+                await fetch(`/api/links/${editingIndex}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, url, icon, category })
+                });
+            } else {
+                await fetch("/api/links", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, url, icon, category })
+                });
+            }
             fetchLinks();
-            document.getElementById("linkName").value = "";
-            document.getElementById("linkUrl").value = "";
-            document.getElementById("linkIcon").value = "";
-            document.getElementById("linkCategory").value = "Other";
+            document.getElementById("addLinkForm").reset();
+            setEditingIndex(null);
         } catch (err) {
-            console.error("Failed to add link:", err);
+            console.error("Failed to save link:", err);
         }
     };
 
@@ -92,6 +106,12 @@ export default function Settings({ settings, setSettings }) {
         } catch (err) {
             console.error("Failed to delete link:", err);
         }
+    };
+
+    const setFavourite = (index) => {
+        const favUrl = links[index].url;
+        setSettings((prev) => ({ ...prev, favouriteLink: favUrl }));
+        saveSettings();
     };
 
     const downloadLinks = async () => {
@@ -165,14 +185,6 @@ export default function Settings({ settings, setSettings }) {
 
     return (
         <>
-            {showWelcome && (
-                <Welcome
-                    isOpen={showWelcome}
-                    onClose={() => setShowWelcome(false)}
-                    settings={settings}
-                    saveSettings={saveSettings}
-                />
-            )}
             <div className="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full h-full relative">
                 <h2 className="text-red-600 text-2xl font-semibold text-center">Settings</h2>
                 <p className="text-gray-400 text-xs text-center mb-6">
@@ -378,7 +390,7 @@ export default function Settings({ settings, setSettings }) {
 
                 <section className="space-y-3 mt-6">
                     <h3 className="text-red-600 font-semibold text-lg">Add Link</h3>
-                    <form id="addLinkForm" onSubmit={addLink} className="flex flex-col space-y-2">
+                    <form id="addLinkForm" onSubmit={saveLink} className="flex flex-col space-y-2">
                         <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="text"
@@ -418,9 +430,13 @@ export default function Settings({ settings, setSettings }) {
                             />
                             <button
                                 type="submit"
-                                className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-white flex items-center gap-2 sm:w-auto w-full justify-center"
+                                className={`${editingIndex !== null
+                                    ? "bg-green-600 hover:bg-green-500"
+                                    : "bg-red-600 hover:bg-red-500"
+                                    } px-4 py-2 rounded-lg text-white flex items-center gap-2 sm:w-auto w-full justify-center`}
                             >
-                                <i className="bi bi-plus-circle"></i> Add
+                                <i className={editingIndex !== null ? "bi bi-save" : "bi bi-plus-circle"}></i>
+                                {editingIndex !== null ? "Save" : "Add"}
                             </button>
                         </div>
                     </form>
@@ -443,16 +459,81 @@ export default function Settings({ settings, setSettings }) {
                                     </a>
                                     <span className="text-xs text-gray-400">[{link.category}]</span>
                                 </div>
-                                <button
-                                    onClick={() => deleteLink(idx)}
-                                    className="text-red-500 hover:text-red-400"
-                                >
-                                    <i className="bi bi-trash"></i>
-                                </button>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setFavourite(idx)}
+                                        className="text-yellow-400 hover:text-yellow-200"
+                                        title="Favourite link"
+                                    >
+                                        <i
+                                            className={`bi ${settings.favouriteLink === link.url ? "bi-star-fill" : "bi-star"}`}
+                                        ></i>
+                                    </button>
+                                    <button
+                                        onClick={() => startEdit(idx)}
+                                        className="text-green-500 hover:text-green-300"
+                                        title="Edit link"
+                                    >
+                                        <i className="bi bi-pencil"></i>
+                                    </button>
+                                    <button
+                                        onClick={() => deleteLink(idx)}
+                                        className="text-red-500 hover:text-red-300"
+                                        title="Delete link"
+                                    >
+                                        <i className="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </li>
                         ))}
                     </ul>
                 </section>
+                <section className="space-y-3 mt-6">
+                    <h3 className="text-red-600 font-semibold text-lg">Keyboard Shortcuts</h3>
+                    <ul className="space-y-2 text-sm">
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                Ctrl
+                            </span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                V
+                            </span>
+                            <span className="text-gray-400">— Add new link (on Links page)</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                Shift
+                            </span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                F
+                            </span>
+                            <span className="text-gray-400">— Open favourite link in new tab</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                Ctrl
+                            </span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                R
+                            </span>
+                            <span className="text-gray-400">— Reload page</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
+                                R
+                            </span>
+                            <span className="text-gray-400">— Refresh info (on Dashboard & Network)</span>
+                        </li>
+                    </ul>
+                </section>
+
             </div>
         </>
     );

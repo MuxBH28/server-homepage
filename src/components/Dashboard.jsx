@@ -43,9 +43,21 @@ export default function Dashboard() {
         fetchSystemLogs(logsChartRef);
         fetchAndSetupInterval();
 
-        return () => clearTimeout(intervalId);
-    }, []);
+        const handleKeyDown = (e) => {
+            if (e.key === "r" && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                fetchSystemLogs(logsChartRef);
+                fetchAndSetupInterval();
+            }
+        };
 
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            clearTimeout(intervalId);
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
 
     return (
         <>

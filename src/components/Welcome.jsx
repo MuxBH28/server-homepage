@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 export default function Welcome({ isOpen, onClose, settings, saveSettings }) {
     const [serverName, setServerName] = useState(settings?.server || "");
     const [yourName, setYourName] = useState(settings?.name || "");
-    const [dontShow, setDontShow] = useState(settings?.welcome || false);
+    const [dontShow, setDontShow] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -17,9 +17,10 @@ export default function Welcome({ isOpen, onClose, settings, saveSettings }) {
         if (saveSettings) {
             try {
                 await saveSettings({
+                    ...settings,
                     server: serverName || "Server name",
                     name: yourName || "User",
-                    welcome: dontShow,
+                    welcome: dontShow ? true : false,
                 });
             } catch (err) {
                 console.error("Failed to save settings:", err);
@@ -31,9 +32,7 @@ export default function Welcome({ isOpen, onClose, settings, saveSettings }) {
     const handleShare = () => {
         const repoLink = "https://github.com/MuxBH28/server-homepage/";
         if (navigator.clipboard?.writeText) {
-            navigator.clipboard.writeText(repoLink).then(() => {
-                alert("Link copied!");
-            });
+            navigator.clipboard.writeText(repoLink).then(() => alert("Link copied!"));
         } else {
             const tempInput = document.createElement("input");
             document.body.appendChild(tempInput);

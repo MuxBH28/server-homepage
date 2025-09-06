@@ -257,44 +257,49 @@ The dashboard includes several indicators to help monitor the server's status:
 
 The SVG icons used in this project are proudly sourced from [SVG Repo](https://www.svgrepo.com/collection/car-parts-2/) collection *Car Parts 2*.
 
-### Widgets
+### Tools
 
-The Server Homepage comes with an integrated widget system that allows you to view and interact with different information directly on the main page.
-Currently available widgets:
+The Server Homepage includes a dedicated **Tools** section, accessible separately from the main page. These tools provide various utilities for monitoring, interaction, and customization of your server environment.
 
-- **Process Viewer** – Displays all active processes on the server, including PID, CPU usage, and memory.
-- **Power Options** – Provides basic server commands: Shutdown, Restart, and Sleep.
-- **Notes** – Allows you to keep personal notes directly on the server. All changes are saved automatically.
-- **URL to QR** – Generates a QR code from any text or URL. You can customize size, colors, and download the generated QR.
-- **RSS Reader** – Displays the latest articles from a selected RSS feed.
-- **Crypto Prices** – Shows the current prices of popular cryptocurrencies (Bitcoin, Ethereum, and others as configured).
-- **Hardware Info** – Displays detailed hardware information about the server (CPU, RAM, Storage, and more).
+Currently available tools:
 
-Widgets can be switched using the **select dropdown** at the top of the widget section. The selected widget is loaded and automatically refreshed according to configured intervals:
+- **Process Viewer** – Lists all active server processes with details such as PID, CPU usage, and memory consumption.
+- **Crypto Prices** – Displays real-time prices of selected cryptocurrencies (e.g., Bitcoin, Ethereum), with automatic updates.
+- **Notes** – A simple note-taking tool for storing personal or server-related notes. Changes are saved instantly.
+- **RSS Viewer** – Fetches and displays the latest articles from a configured RSS feed.
+- **Power Options** – Offers essential server commands: Shutdown, Restart, and Sleep.
+- **Hardware Info** – Shows detailed specifications of the server hardware, including CPU, RAM, and storage.
+- **QR Code Maker** – Converts any text or URL into a customizable QR code. You can adjust size, colors, and download the result.
 
-- Process Viewer and Crypto Prices refresh every minute or according to the configured interval.
-- Notes are loaded only once, and changes are saved immediately when edited.
-- RSS Reader refreshes every 10 minutes.
-- Hardware info is only fetched on load.
-- Power Options and URL to QR do not require automatic refreshing.
+#### Refresh Behavior
+
+- **Process Viewer** and **Crypto Prices** refresh every minute (or based on custom interval).
+- **RSS Viewer** updates every 10 minutes.
+- **Notes** load once and save changes immediately.
+- **Hardware Info** is fetched only on initial load.
+- **Power Options** and **QR Code Maker** do not require automatic refreshing.
 
 ### To Do
 
-- [ ] Improve mobile responsiveness
-- [ ] Fix layout issues on smaller screens
-- [ ] Optimize load time (Vite + lazy loading)
-- [ ] Add loading indicators for system stats
-- [ ] Improve accessibility (ARIA roles, keyboard navigation)
+- [x] Improve mobile responsiveness
+- [x] Fix layout issues on smaller screens
+- [x] Optimize load time (Vite + lazy loading)
+- [x] Add loading indicators for system stats
+- [x] Improve accessibility (ARIA roles, keyboard navigation)
 - [ ] Polish UI animations and transitions
-- [ ] Ctrl+V to paste link
+- [x] Ctrl+V to paste link
 - [ ] Telegram notifications for warnings
 - [ ] Background images from Immich ([ImmichFrame](https://github.com/immichFrame/ImmichFrame))
 
 ## Notes
 
 - Ideas and suggestions are welcome! Feel free to share them by creating an [issue](https://github.com/MuxBH28/server-homepage/issues) on GitHub.
-- Public network information is retrieved from [ipinfo.io](https://ipinfo.io/json).
 - The available demo is provided for reference purposes and may not reflect the most recent version of the project.
+- The backend makes external requests to the following services:
+  - [ipinfo.io](https://ipinfo.io/json) – for public network information.
+  - [api.coingecko.com](https://api.coingecko.com) – for retrieving cryptocurrency prices.
+  - [hnrss.org](https://hnrss.org) – used as the default RSS feed source.
+  - [github.com](https://github.com) – for checking the latest available version of the project.
 
 ---
 

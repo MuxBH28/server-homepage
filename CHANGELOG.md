@@ -6,6 +6,29 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.3.9](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.9) – [9/6/25]
+
+### Bug Fixes
+- **Welcome Modal Fix** – Corrected logic so the welcome screen only shows if the user hasn’t seen it yet.
+- **Shortcuts Fix** – Added global keyboard shortcuts (`Shift+F` for opening favourite link, `Ctrl+V` for adding links) to work reliably.
+
+### UI & UX Enhancements
+- **Link Editing in Settings** – Users can now edit existing links directly from the settings panel.
+- **Favourite Link Feature** – Added ability to mark a favourite link and open it quickly via `Shift+F`.
+
+### Functionality Updates
+- **Paste & Add Link (Ctrl+V)** – Users can now paste a URL and automatically add it to links using the clipboard shortcut.
+- **CPU Temperature via systeminformation** – Replaced the previous `exec('sensors')` approach with the `systeminformation` package for more reliable CPU temperature readings.
+
+### Backend & Performance
+- **Temperature Display Fix** – Fixed an issue where CPU temperature was sometimes not displayed for certain systems.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.3.9
+
+---
+
 # [v1.3.8](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.8) – [9/3/25]
 
 ### Bug Fixes
