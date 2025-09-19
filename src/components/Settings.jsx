@@ -19,18 +19,28 @@ export default function Settings({ settings, setSettings }) {
         QR: false
     };
 
-    const saveSettings = async () => {
+    const saveSettings = async (e) => {
+        const btn = e.currentTarget;
+        const original = btn.innerHTML;
+
         try {
             await fetch("/api/settings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(settings)
+                body: JSON.stringify(settings),
             });
+
             console.log("Settings saved to backend.");
+            btn.innerHTML = `<i class="bi bi-check2"></i> Saved`;
+
+            setTimeout(() => {
+                btn.innerHTML = original;
+            }, 1000);
         } catch (err) {
             console.error("Failed to save settings:", err);
         }
     };
+
 
     const handleDiskPathKey = (e) => {
         if (e.key === "Enter") {

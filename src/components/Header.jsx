@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
+import Info from "./Info";
 
 export default function Header({ name, onMobileToggle }) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [burgerOpen, setBurgerOpen] = useState(false);
     const [welcomeMsg, setWelcomeMsg] = useState("");
+    const [infoOpen, setInfoOpen] = useState(false);
     const isMobile = window.innerWidth < 768;
-
-    const welcomeMessages = [
-        "Have a productive day!",
-        "We hope you the best!",
-        "Let's make today amazing!",
-        "Keep up the great work!",
-        "Stay focused and motivated!",
-        "Time to shine!",
-        "Another day, another opportunity!"
-    ];
 
     const handleBurgerClick = () => {
         if (isMobile && onMobileToggle) {
@@ -24,18 +16,88 @@ export default function Header({ name, onMobileToggle }) {
         }
     };
 
-    useEffect(() => {
-        const randomIndex = Math.floor(Math.random() * welcomeMessages.length);
-        setWelcomeMsg(welcomeMessages[randomIndex]);
+    const toggleInfo = () => setInfoOpen(!infoOpen);
 
-        const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    const getWelcomeMessage = (hour) => {
+        let messages = [];
+
+        if (hour >= 0 && hour < 5) {
+            messages = [
+                "Why are you still awake? Debugging something spooky?",
+                "It's 3 AM… are you coding or dreaming in JavaScript?",
+                "Night owl spotted! Hope the bugs are sleepy too.",
+                "Late hours, deep thoughts. Don't forget to rest.",
+                "You may not rest now, there are bugs nearby!",
+                "The server sleeps, but you don't. Keep watch!",
+            ];
+        } else if (hour >= 5 && hour < 12) {
+            messages = [
+                "Good morning! Hope you had a nice sleep.",
+                "Rise and shine, a new day is waiting!",
+                "Fresh start! Let's make today productive.",
+                "Coffee first, then conquer the code.",
+                "Time to craft your morning!",
+                "Sun's up, time to respawn with energy!",
+            ];
+        } else if (hour >= 12 && hour < 17) {
+            messages = [
+                "Good afternoon! Stay productive and focused.",
+                "Keep the energy up, the day is still young.",
+                "Time to get things done — one commit at a time!",
+                "Sun is high, motivation higher!",
+                "Halfway to victory! Keep smashing those tasks.",
+                "Lunch break? Or adventure time in code?",
+            ];
+        } else if (hour >= 17 && hour < 22) {
+            messages = [
+                "Good evening! Time to wrap things up nicely.",
+                "Hope your day was amazing so far!",
+                "Evenings are perfect for reflection and code cleanup.",
+                "Take it easy, but finish strong.",
+                "Nightfall approaches… prepare your base!",
+                "XP gained today: productive. Rest soon!",
+            ];
+        } else {
+            messages = [
+                "Getting late… maybe it's time to rest soon.",
+                "Midnight thoughts hit different — commit carefully.",
+                "Don't let the night shift take over completely!",
+                "Dark outside, bright ideas inside.",
+                "You may not rest now, there are bugs nearby!",
+                "The world sleeps, but your server doesn't.",
+            ];
+        }
+
+        return messages[Math.floor(Math.random() * messages.length)];
+    };
+
+
+    useEffect(() => {
+        setWelcomeMsg(getWelcomeMessage(new Date().getHours()));
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            setCurrentTime(now);
+            setWelcomeMsg(getWelcomeMessage(now.getHours()));
+        }, 60 * 1000);
+
         return () => clearInterval(interval);
     }, []);
 
     const formatTime = (date) =>
-        date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+
     const formatDate = (date) =>
-        date.toLocaleDateString([], { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+        date.toLocaleDateString([], {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
 
     return (
         <>
@@ -53,6 +115,12 @@ export default function Header({ name, onMobileToggle }) {
                             {formatTime(currentTime)}
                         </div>
                         <button
+                            onClick={toggleInfo}
+                            className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
+                        >
+                            <i className="bi bi-info-square"></i>
+                        </button>
+                        <button
                             onClick={handleBurgerClick}
                             className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
                         >
@@ -66,11 +134,14 @@ export default function Header({ name, onMobileToggle }) {
                     </div>
                 </div>
             </header>
+
             {burgerOpen && (
                 <div className="fixed top-[72px] right-6 w-64 bg-black/80 backdrop-blur-md rounded-xl shadow-xl border border-gray-700 p-4 z-[9999]">
                     <div className="flex flex-col items-center mb-3">
                         <img src="/assets/logo.png" alt="Logo" className="w-16 h-16 mb-2" />
-                        <h2 className="text-gray-200 font-bold text-lg">Server Homepage</h2>
+                        <h2 className="text-gray-200 font-bold text-lg">
+                            Server Homepage
+                        </h2>
                     </div>
 
                     <hr className="border-gray-600 mb-3" />
@@ -119,6 +190,9 @@ export default function Header({ name, onMobileToggle }) {
                     </ul>
                 </div>
             )}
+
+            <Info isOpen={infoOpen} onClose={() => setInfoOpen(false)} />
+
         </>
     );
 }

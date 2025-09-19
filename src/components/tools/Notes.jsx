@@ -55,7 +55,7 @@ export default function NotesCard() {
                         onClick={downloadNotes}
                         className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm z-10"
                     >
-                        Download
+                        <i className="bi bi-cloud-download"></i> Download
                     </button>
                     <textarea
                         value={text}

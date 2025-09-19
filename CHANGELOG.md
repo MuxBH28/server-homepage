@@ -6,6 +6,21 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.0) – [9/19/25]
+
+### UI & UX Enhancements
+- **Info Modal Relocation** – Moved the Info panel from the sidebar into a dedicated modal. It can now be accessed via the button next to the burger menu.
+- **Dynamic Button Text** – Buttons now display dynamic feedback messages. For example, the settings save button will show "Saved" after saving.
+- **Time-Based Header Messages** – Added contextual messages in the header based on time of day. For example, at night users may see: _"You may not rest now, there are bugs nearby!"_
+
+### Bug Fixes
+- **QR Code Generator Fix** – Resolved an issue where the QR code tool was not functioning correctly.
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.0
+
+---
+
 # [v1.3.9](https://github.com/MuxBH28/server-homepage/releases/tag/v1.3.9) – [9/6/25]
 
 ### Bug Fixes

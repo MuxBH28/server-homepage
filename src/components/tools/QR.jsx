@@ -1,4 +1,3 @@
-// ./tools/QR.jsx
 import { useState } from "react";
 import WidgetCard from "./WidgetCard";
 

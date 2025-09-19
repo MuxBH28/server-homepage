@@ -87,7 +87,7 @@ function initFiles() {
                 RSS: true,
                 Power: true,
                 Hardware: true,
-                QR: true,
+                QR: true
             },
         };
         fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), "utf8");
@@ -614,7 +614,7 @@ fastify.post("/api/linksFile", async (request, reply) => {
 
 fastify.post("/api/urltoqrl", async (request, reply) => {
     const { text, type, width, color, bgColor } = request.body;
-    const qrPath = path.join(__dirname, "assets", `qrcode.${type}`);
+    const qrPath = path.join(__dirname, "dist", "assets", `qrcode.${type}`);
 
     try {
         await QRCode.toFile(qrPath, text, {

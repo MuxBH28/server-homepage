@@ -8,7 +8,6 @@ export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen
         { path: "/links", label: "Links", icon: "bi-link-45deg" },
         { path: "/network", label: "Network", icon: "bi-hdd-network" },
         { path: "/tools", label: "Tools", icon: "bi-tools" },
-        { path: "/info", label: "Info", icon: "bi-info-circle" },
         { path: "/settings", label: "Settings", icon: "bi-gear" },
     ];
 
