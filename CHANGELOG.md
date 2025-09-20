@@ -6,6 +6,13 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.0.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.0) – [9/20/25]
+
+### Hotfix
+- **Welcome screen bug** – Fixed an issue where the welcome modal did not save the entered name and kept reappearing after refresh.
+
+---
+
 # [v1.4.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.0) – [9/19/25]
 
 ### UI & UX Enhancements

@@ -36,9 +36,6 @@ function App() {
         if (!data?.welcome) {
           setShowWelcome(true);
         }
-
-        const refreshInput = document.getElementById("refreshInterval");
-        if (refreshInput) refreshInput.value = data.refreshInterval;
       } catch (err) {
         console.error("Failed to load settings:", err);
       }
@@ -47,12 +44,13 @@ function App() {
     loadSettings();
   }, []);
 
-  const saveSettings = async () => {
+  const saveSettings = async (newSettings) => {
     try {
+      setSettings(newSettings);
       await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings)
+        body: JSON.stringify(newSettings),
       });
       console.log("Settings saved to backend.");
     } catch (err) {

@@ -9,7 +9,7 @@ export default function Welcome({ isOpen, onClose, settings, saveSettings }) {
         if (isOpen) {
             setServerName(settings?.server || "");
             setYourName(settings?.name || "");
-            setDontShow(settings?.welcome || false);
+            setDontShow(settings?.welcome === true);
         }
     }, [isOpen, settings]);
 
@@ -20,7 +20,7 @@ export default function Welcome({ isOpen, onClose, settings, saveSettings }) {
                     ...settings,
                     server: serverName || "Server name",
                     name: yourName || "User",
-                    welcome: dontShow ? true : false,
+                    welcome: dontShow,
                 });
             } catch (err) {
                 console.error("Failed to save settings:", err);
