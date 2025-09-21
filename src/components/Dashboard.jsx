@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import initGauges from "./gauges/Gauges.js";
 import ApexCharts from "apexcharts";
 
@@ -9,7 +9,10 @@ export default function Dashboard() {
     const diskChartsRef = useRef(null);
     const logsChartRef = useRef(null);
     const gaugesRef = useRef({ cpuGauge: null, ramGauge: null, cpuTempGauge: null });
-
+    const [leftBlinker, setLeftBlinker] = useState(false);
+    const [rightBlinker, setRightBlinker] = useState(false);
+    const [leftBlinkerFill, setLeftBlinkerFill] = useState(false);
+    const [rightBlinkerFill, setRightBlinkerFill] = useState(false);
     useEffect(() => {
         if (cpuRef.current && ramRef.current && tempRef.current) {
             gaugesRef.current = initGauges(cpuRef.current, ramRef.current, tempRef.current);
@@ -49,6 +52,33 @@ export default function Dashboard() {
                 fetchSystemLogs(logsChartRef);
                 fetchAndSetupInterval();
             }
+
+            if (e.shiftKey && e.key === "ArrowLeft") {
+                e.preventDefault();
+                setLeftBlinker((prev) => !prev);
+                setRightBlinker(false);
+            }
+            if (e.shiftKey && e.key === "ArrowRight") {
+                e.preventDefault();
+                setRightBlinker((prev) => !prev);
+                setLeftBlinker(false);
+            }
+
+            if (e.shiftKey && e.key === "ArrowUp") {
+                e.preventDefault();
+                setLeftBlinker(true);
+                setRightBlinker(true);
+                setLeftBlinkerFill(true);
+                setRightBlinkerFill(true);
+            }
+
+            if (e.shiftKey && e.key === "ArrowDown") {
+                e.preventDefault();
+                setLeftBlinker(false);
+                setRightBlinker(false);
+                setLeftBlinkerFill(false);
+                setRightBlinkerFill(false);
+            }
         };
 
         window.addEventListener("keydown", handleKeyDown);
@@ -59,12 +89,44 @@ export default function Dashboard() {
         };
     }, []);
 
+    useEffect(() => {
+        if (leftBlinker || rightBlinker) {
+            const blinkInterval = setInterval(() => {
+                if (leftBlinker && rightBlinker) {
+                    setLeftBlinkerFill(prev => !prev);
+                    setRightBlinkerFill(prev => !prev);
+                } else {
+                    if (leftBlinker) setLeftBlinkerFill(prev => !prev);
+                    if (rightBlinker) setRightBlinkerFill(prev => !prev);
+                }
+            }, 600);
+
+            return () => clearInterval(blinkInterval);
+        }
+    }, [leftBlinker, rightBlinker]);
+
     return (
         <>
             <section className="shadow-lg rounded-2xl p-6 mt-3 md:p-8 bg-black/40 backdrop-blur-md border border-white/20 flex flex-col w-full">
                 <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 w-full">
+                    <div className="relative flex flex-col items-center gap-6 w-full md:w-auto order-1 md:order-2">
+                        {leftBlinker && (
+                            <div className="absolute -top-4 -left-4 text-green-600 text-4xl">
+                                <i
+                                    className={`bi ${leftBlinkerFill ? "bi-caret-left-fill" : "bi-caret-left"
+                                        }`}
+                                ></i>
+                            </div>
+                        )}
 
-                    <div className="flex flex-col items-center gap-6 w-full md:w-auto order-1 md:order-2">
+                        {rightBlinker && (
+                            <div className="absolute -top-4 -right-4 text-green-600 text-4xl">
+                                <i
+                                    className={`bi ${rightBlinkerFill ? "bi-caret-right-fill" : "bi-caret-right"
+                                        }`}
+                                ></i>
+                            </div>
+                        )}
                         <canvas id="cpuTempGauge" ref={tempRef} className="w-28 sm:w-32 md:w-[150px] md:h-[150px]" title="CPU Temperature"></canvas>
                         <div className="grid grid-cols-3 gap-4 p-4 border border-red-700 rounded-lg shadow w-full max-w-sm md:w-auto justify-items-center">
                             <Indicator id="indicatorBattery" src="/assets/battery.svg" />

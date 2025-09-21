@@ -15,7 +15,7 @@ body {
 }
 
 ::selection {
-    background-color: #b399c8;
+    background-color: #ff0000;
     color: #585858;
 }
 
@@ -63,4 +63,13 @@ img {
 .apexcharts-toolbar .apexcharts-menu-item,
 .apexcharts-toolbar svg {
     color: #fff !important;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

@@ -6,6 +6,25 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.1) – [9/21/25]
+
+### Functionality Updates
+- **Indicator Shortcuts** – Added visual indicators that can be toggled using `Shift + Arrow` key combinations.
+- **Custom Sidebar Links** – Users can now add their own custom links directly to the sidebar.
+- **Multi-Note Support** – Notes widget has been significantly upgraded to support multiple separate notes instead of just one.
+
+### UI & UX Enhancements
+- **Responsive Info Button** – The Info button in the header is now only visible on larger screens and will not appear on mobile devices.
+
+### Bug Fixes
+- **Link Edit Scroll Fix** – Resolved an issue where editing a link did not scroll the view to the edit form.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.1
+
+---
+
 # [v1.4.0.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.0) – [9/20/25]
 
 ### Hotfix

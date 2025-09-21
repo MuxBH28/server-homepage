@@ -114,12 +114,14 @@ export default function Header({ name, onMobileToggle }) {
                         <div className="text-2xl font-mono text-gray-200 bg-gray-800/50 px-5 py-2 rounded-xl shadow-inner tracking-wider">
                             {formatTime(currentTime)}
                         </div>
-                        <button
-                            onClick={toggleInfo}
-                            className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
-                        >
-                            <i className="bi bi-info-square"></i>
-                        </button>
+                        {!isMobile && (
+                            <button
+                                onClick={toggleInfo}
+                                className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
+                            >
+                                <i className="bi bi-info-square"></i>
+                            </button>
+                        )}
                         <button
                             onClick={handleBurgerClick}
                             className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"

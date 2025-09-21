@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 
-export default function Settings({ settings, setSettings }) {
-    const [links, setLinks] = useState([]);
+export default function Settings({ settings, setSettings, links, fetchLinks }) {
     const [authMessage, setAuthMessage] = useState("");
     const [editingIndex, setEditingIndex] = useState(null);
-
-    useEffect(() => {
-        fetchLinks();
-    }, []);
+    const [editingSidebar, setEditingSidebar] = useState(false);
 
     const defaultTools = {
         Process: false,
@@ -41,7 +37,6 @@ export default function Settings({ settings, setSettings }) {
         }
     };
 
-
     const handleDiskPathKey = (e) => {
         if (e.key === "Enter") {
             const newPath = e.target.value.trim();
@@ -59,23 +54,19 @@ export default function Settings({ settings, setSettings }) {
         }));
     };
 
-    const fetchLinks = async () => {
-        try {
-            const res = await fetch("/api/links");
-            const data = await res.json();
-            setLinks(data || []);
-        } catch (err) {
-            console.error("Failed to fetch links:", err);
-        }
-    };
-
     const startEdit = (idx) => {
         const link = links[idx];
         document.getElementById("linkName").value = link.name;
         document.getElementById("linkUrl").value = link.url;
         document.getElementById("linkIcon").value = link.icon;
         document.getElementById("linkCategory").value = link.category;
+        setEditingSidebar(link.sidebar || false);
         setEditingIndex(idx);
+
+        const editSection = document.getElementById("edit");
+        if (editSection) {
+            editSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
     };
 
     const saveLink = async (e) => {
@@ -92,15 +83,16 @@ export default function Settings({ settings, setSettings }) {
                 await fetch(`/api/links/${editingIndex}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, url, icon, category })
+                    body: JSON.stringify({ name, url, icon, category, sidebar: editingSidebar })
                 });
             } else {
                 await fetch("/api/links", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, url, icon, category })
+                    body: JSON.stringify({ name, url, icon, category, sidebar: false })
                 });
             }
+
             fetchLinks();
             document.getElementById("addLinkForm").reset();
             setEditingIndex(null);
@@ -123,6 +115,16 @@ export default function Settings({ settings, setSettings }) {
         setSettings((prev) => ({ ...prev, favouriteLink: favUrl }));
         saveSettings();
     };
+
+    const setSidebar = async (index) => {
+        const updated = { ...links[index], sidebar: !links[index].sidebar };
+        await fetch(`/api/links/${index}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+        });
+        fetchLinks();
+    }
 
     const downloadLinks = async () => {
         const blob = new Blob([JSON.stringify(links, null, 2)], { type: "application/json" });
@@ -398,8 +400,8 @@ export default function Settings({ settings, setSettings }) {
 
                 </section>
 
-                <section className="space-y-3 mt-6">
-                    <h3 className="text-red-600 font-semibold text-lg">Add Link</h3>
+                <section className="space-y-3 mt-6" id="edit">
+                    <h3 className="text-red-600 font-semibold text-lg">{editingIndex !== null ? "Edit " : "Add "} Link</h3>
                     <form id="addLinkForm" onSubmit={saveLink} className="flex flex-col space-y-2">
                         <div className="flex flex-col sm:flex-row gap-2">
                             <input
@@ -471,6 +473,8 @@ export default function Settings({ settings, setSettings }) {
                                 </div>
 
                                 <div className="flex items-center gap-3">
+                                    <span className="text-xs text-gray-400 cursor-help" title="Times opened">{link.opened}</span>
+                                    <span>|</span>
                                     <button
                                         onClick={() => setFavourite(idx)}
                                         className="text-yellow-400 hover:text-yellow-200"
@@ -480,6 +484,14 @@ export default function Settings({ settings, setSettings }) {
                                             className={`bi ${settings.favouriteLink === link.url ? "bi-star-fill" : "bi-star"}`}
                                         ></i>
                                     </button>
+                                    <button
+                                        onClick={() => setSidebar(idx)}
+                                        className="text-blue-400 hover:text-blue-200"
+                                        title={link.sidebar ? "Remove from sidebar" : "Add to sidebar"}
+                                    >
+                                        <i className={`bi ${link.sidebar ? "bi-folder-symlink-fill" : "bi-folder-symlink"}`}></i>
+                                    </button>
+
                                     <button
                                         onClick={() => startEdit(idx)}
                                         className="text-green-500 hover:text-green-300"
@@ -503,45 +515,60 @@ export default function Settings({ settings, setSettings }) {
                     <h3 className="text-red-600 font-semibold text-lg">Keyboard Shortcuts</h3>
                     <ul className="space-y-2 text-sm">
                         <li className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                Ctrl
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Ctrl</span>
                             +
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                V
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">V</span>
                             <span className="text-gray-400">— Add new link (on Links page)</span>
                         </li>
 
                         <li className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                Shift
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Shift</span>
                             +
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                F
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">F</span>
                             <span className="text-gray-400">— Open favourite link in new tab</span>
                         </li>
 
                         <li className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                Ctrl
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Ctrl</span>
                             +
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                R
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">R</span>
                             <span className="text-gray-400">— Reload page</span>
                         </li>
 
                         <li className="flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">
-                                R
-                            </span>
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">R</span>
                             <span className="text-gray-400">— Refresh info (on Dashboard & Network)</span>
                         </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Shift</span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">←</span>
+                            <span className="text-gray-400">— Toggle left blinker</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Shift</span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">→</span>
+                            <span className="text-gray-400">— Toggle right blinker</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Shift</span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">↑</span>
+                            <span className="text-gray-400">— Toggle hazard (both blinkers)</span>
+                        </li>
+
+                        <li className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">Shift</span>
+                            +
+                            <span className="inline-flex items-center justify-center rounded border bg-gray-100 text-black px-2 py-0.5 font-mono shadow-sm">↓</span>
+                            <span className="text-gray-400">— Turn off all blinkers</span>
+                        </li>
                     </ul>
+                    <span className="text-sm">*Blinkers are decorative and functional only on the Dashboard panel.</span>
                 </section>
 
             </div>

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import WidgetCard from "./WidgetCard";
 
 export default function NotesCard() {
-    const [text, setText] = useState("");
-    const [lastEdited, setLastEdited] = useState(null);
+    const [notesList, setNotesList] = useState([]);
+    const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(() => {
         fetchNotes();
@@ -13,32 +13,85 @@ export default function NotesCard() {
         try {
             const res = await fetch("/api/notes");
             const data = await res.json();
-            setText(data.notes || "");
-            setLastEdited(data.lastEdited);
-        } catch {
-            setText(null);
+            if (Array.isArray(data) && data.length) {
+                setNotesList(data);
+            } else {
+                setNotesList([{ header: "Notes1", notes: data.notes || "", lastEdited: data.lastEdited || null }]);
+            }
+        } catch (err) {
+            console.error("Failed to load notes:", err);
+            setNotesList([{ header: "Notes1", notes: "", lastEdited: null }]);
         }
     };
 
-    const saveNotes = async (val) => {
+    const saveNotes = async (index, newText) => {
+        setNotesList(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], notes: newText, lastEdited: new Date().toISOString() };
+            return updated;
+        });
+
         try {
             await fetch("/api/notes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ notes: val }),
+                body: JSON.stringify(notesList),
             });
-            setLastEdited(new Date().toISOString());
-        } catch {
-            console.error("Failed to save notes.");
+        } catch (err) {
+            console.error("Failed to save notes:", err);
         }
     };
 
-    const downloadNotes = () => {
-        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const addNote = () => {
+        setNotesList(prev => [
+            ...prev,
+            {
+                header: `Note ${prev.length + 1}`,
+                notes: "",
+                lastEdited: new Date().toISOString(),
+            },
+        ]);
+        setActiveIndex(notesList.length);
+    };
+
+    const deleteNote = (index) => {
+        setNotesList(prev => {
+            const updated = prev.filter((_, i) => i !== index);
+            if (activeIndex >= updated.length) {
+                setActiveIndex(updated.length - 1 >= 0 ? updated.length - 1 : 0);
+            }
+            return updated;
+        });
+    };
+
+    const renameNote = async (index, newHeader) => {
+        setNotesList(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                header: newHeader,
+                lastEdited: new Date().toISOString(),
+            };
+            return updated;
+        });
+
+        try {
+            await fetch("/api/notes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(notesList),
+            });
+        } catch (err) {
+            console.error("Failed to save notes:", err);
+        }
+    };
+
+    const downloadNote = (note) => {
+        const blob = new Blob([note.notes], { type: "text/plain;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "notes.txt";
+        a.download = `${note.header}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -47,29 +100,64 @@ export default function NotesCard() {
 
     return (
         <WidgetCard title="Notes">
-            {text === null ? (
-                <p className="text-red-600">Failed to load notes.</p>
-            ) : (
-                <div className="flex flex-col h-full relative">
+            <section className="flex h-full gap-2">
+                <article className="flex flex-col gap-2 overflow-y-auto scrollbar-none">
+                    {notesList.map((note, idx) => (
+                        <div
+                            key={idx}
+                            className={`p-2 rounded cursor-pointer transition-colors ${activeIndex === idx ? "bg-red-600 text-white" : "bg-gray-800 text-gray-200 hover:bg-gray-700"}`}
+                            onClick={() => setActiveIndex(idx)}
+                        >
+                            <input
+                                type="text"
+                                value={note.header}
+                                onChange={(e) => renameNote(idx, e.target.value)}
+                                className="flex-1 bg-transparent border-none text-sm font-semibold text-white focus:outline-none pr-2"
+                            />
+                        </div>
+                    ))}
                     <button
-                        onClick={downloadNotes}
-                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm z-10"
+                        onClick={addNote}
+                        className="mt-2 bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-sm"
                     >
-                        <i className="bi bi-cloud-download"></i> Download
+                        + Add Note
                     </button>
+
+                    <div className="mt-auto pt-2 border-t border-gray-700 flex flex-col gap-2">
+                        {notesList[activeIndex] ? (
+                            <>
+                                <p className="text-gray-400 text-xs mb-1" title="Last edited">
+                                    {notesList[activeIndex]?.lastEdited
+                                        ? new Date(notesList[activeIndex].lastEdited).toLocaleString()
+                                        : "N/A"}
+                                </p>
+                                <button
+                                    onClick={() => downloadNote(notesList[activeIndex])}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm mb-1"
+                                >
+                                    <i className="bi bi-cloud-download mr-1"></i> Download
+                                </button>
+                                <button
+                                    onClick={() => deleteNote(activeIndex)}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm"
+                                >
+                                    <i className="bi bi-trash mr-1"></i> Delete
+                                </button>
+                            </>
+                        ) : (
+                            <p className="text-gray-400 text-xs">No notes available</p>
+                        )}
+                    </div>
+                </article>
+
+                {notesList[activeIndex] && (
                     <textarea
-                        value={text}
-                        onChange={(e) => {
-                            setText(e.target.value);
-                            saveNotes(e.target.value);
-                        }}
-                        className="flex-grow w-full p-2 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none min-h-[150px]"
+                        value={notesList[activeIndex].notes}
+                        onChange={(e) => saveNotes(activeIndex, e.target.value)}
+                        className="flex-grow w-full p-2 bg-gray-800 border border-gray-700 text-white rounded-lg resize-none min-h-[200px]"
                     />
-                    <p className="text-gray-400 text-xs mt-2">
-                        Last edited: {lastEdited ? new Date(lastEdited).toLocaleString() : "N/A"}
-                    </p>
-                </div>
-            )}
-        </WidgetCard>
+                )}
+            </section>
+        </WidgetCard >
     );
 }

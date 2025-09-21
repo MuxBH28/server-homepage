@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function Links() {
-    const [links, setLinks] = useState([]);
+export default function Links({ links, fetchLinks, incrementLinkOpened }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [filter, setFilter] = useState(localStorage.getItem("linksFilter") || "none");
 
@@ -17,7 +16,6 @@ export default function Links() {
                     if (navigator.clipboard && navigator.clipboard.readText) {
                         text = await navigator.clipboard.readText();
                     } else {
-                        // Fallback for HTTP / non-secure context
                         text = prompt("Paste your link here:");
                     }
 
@@ -47,27 +45,7 @@ export default function Links() {
 
         window.addEventListener("keydown", handlePasteShortcut);
         return () => window.removeEventListener("keydown", handlePasteShortcut);
-    }, []);
-
-    const fetchLinks = async () => {
-        try {
-            const res = await fetch("/api/links");
-            const data = await res.json();
-            setLinks(data);
-        } catch (err) {
-            console.error("Failed to fetch links:", err);
-            setLinks([]);
-        }
-    };
-
-    const incrementLinkOpened = async (url) => {
-        try {
-            await fetch(`/api/links/${encodeURIComponent(url)}/increment`, { method: "POST" });
-            fetchLinks();
-        } catch (err) {
-            console.error("Failed to increment opened count:", err);
-        }
-    };
+    }, [fetchLinks]);
 
     const checkLinkStatus = async (url) => {
         try {
