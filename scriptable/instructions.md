@@ -49,7 +49,8 @@ You can modify the script inside **Scriptable** to match your preferences:
 - **API URL:**
   Change the `url` variable in the script if your server IP or port is different.
   ```js
-  let url = "http://192.168.1.50:6969/api/system"
+  const systemURL = "http://192.168.1.50:6969/api/system"
+  const networkURL = "http://192.168.1.50:6969/api/network"
   ```
 - **Colors:**
   Adjust the `addLine` function color codes for CPU, RAM, Temperature, Download, and Upload.
