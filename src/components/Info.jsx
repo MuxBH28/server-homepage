@@ -103,8 +103,8 @@ export default function Info({ isOpen, onClose }) {
                     </p>
                     <p>
                         <strong>Special Thanks:</strong> the{" "}
-                        <a href="https://www.reddit.com/r/homelab/" target="_blank" className="underline text-red-500">
-                            r/homelab community
+                        <a href="https://www.reddit.com/r/selfhosted/" target="_blank" className="underline text-red-500">
+                            r/selfhosted community
                         </a>
                     </p>
                 </div>

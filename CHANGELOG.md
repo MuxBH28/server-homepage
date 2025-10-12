@@ -6,6 +6,21 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.2](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.2) – [10/12/25]
+
+### UI & UX Enhancements
+- **Header Optimization** – Improved initial rendering of time and welcome messages to prevent empty states.
+- **Mobile View** – Clock and welcome message display correctly based on screen size; Clock is hidden on mobile devices.
+
+### Repository Enhancements
+- **Scriptable Script for iOS** – Updated to work with the latest version and backend API changes.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.2
+
+---
+
 # [v1.4.1](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.1) – [9/21/25]
 
 ### Functionality Updates

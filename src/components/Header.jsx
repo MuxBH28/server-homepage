@@ -71,15 +71,19 @@ export default function Header({ name, onMobileToggle }) {
         return messages[Math.floor(Math.random() * messages.length)];
     };
 
-
     useEffect(() => {
-        setWelcomeMsg(getWelcomeMessage(new Date().getHours()));
+        const now = new Date();
+        setCurrentTime(now);
+        setWelcomeMsg(getWelcomeMessage(now.getHours()));
 
         const interval = setInterval(() => {
-            const now = new Date();
-            setCurrentTime(now);
-            setWelcomeMsg(getWelcomeMessage(now.getHours()));
-        }, 60 * 1000);
+            const current = new Date();
+            setCurrentTime(current);
+
+            if (current.getHours() !== now.getHours()) {
+                setWelcomeMsg(getWelcomeMessage(current.getHours()));
+            }
+        }, 1000);
 
         return () => clearInterval(interval);
     }, []);
@@ -111,16 +115,17 @@ export default function Header({ name, onMobileToggle }) {
 
                 <div className="flex flex-col items-end gap-2 relative">
                     <div className="flex items-center gap-3">
-                        <div className="text-2xl font-mono text-gray-200 bg-gray-800/50 px-5 py-2 rounded-xl shadow-inner tracking-wider">
-                            {formatTime(currentTime)}
-                        </div>
-                        {!isMobile && (
+                        {!isMobile && (<>
+                            <div className="text-2xl font-mono text-gray-200 bg-gray-800/50 px-5 py-2 rounded-xl shadow-inner tracking-wider">
+                                {formatTime(currentTime)}
+                            </div>
                             <button
                                 onClick={toggleInfo}
                                 className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
                             >
                                 <i className="bi bi-info-square"></i>
                             </button>
+                        </>
                         )}
                         <button
                             onClick={handleBurgerClick}

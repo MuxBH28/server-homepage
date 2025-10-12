@@ -56,7 +56,7 @@ export default function QRCard() {
     return (
         <WidgetCard title="QR Generator">
             {!qrUrl ? (
-                <div className="flex flex-col items-center gap-4">
+                <section className="flex flex-col items-center gap-4 max-w-xl mx-auto">
                     <input
                         type="text"
                         placeholder="Enter text or URL"
@@ -118,9 +118,9 @@ export default function QRCard() {
                     <p className="text-gray-400 text-xs">
                         QR Code is always stored in "./assets/" folder.
                     </p>
-                </div>
+                </section>
             ) : (
-                <div className="flex flex-col items-center gap-3">
+                <section className="flex flex-col items-center gap-3 max-w-xl mx-auto">
                     <h2 className="text-red-600 text-lg font-semibold flex items-center gap-2">
                         <i className="bi bi-qr-code"></i> QR Code is ready:
                     </h2>
@@ -147,7 +147,7 @@ export default function QRCard() {
                             <i className="bi bi-arrow-repeat"></i> Make One More
                         </button>
                     </div>
-                </div>
+                </section>
             )}
         </WidgetCard>
     );
