@@ -3,7 +3,6 @@ import ProcessCard from "./tools/Process";
 import CryptoCard from "./tools/Crypto";
 import NotesCard from "./tools/Notes";
 import RSSCard from "./tools/RSS";
-import PowerCard from "./tools/Power";
 import HardwareCard from "./tools/Hardware";
 import QRCard from "./tools/QR";
 import InfoCard from "./tools/Info";
@@ -13,7 +12,6 @@ const allWidgets = [
     { key: "Crypto", label: "Crypto", icon: "bi-currency-bitcoin", component: CryptoCard },
     { key: "Notes", label: "Notes", icon: "bi-stickies", component: NotesCard },
     { key: "RSS", label: "RSS", icon: "bi-rss", component: RSSCard },
-    { key: "Power", label: "Power", icon: "bi-power", component: PowerCard },
     { key: "Hardware", label: "Hardware", icon: "bi-hdd", component: HardwareCard },
     { key: "QR", label: "QR", icon: "bi-qr-code", component: QRCard }
 ];

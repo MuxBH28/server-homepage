@@ -6,6 +6,20 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.3](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.3) – [1/28/26]
+
+### Functionality Updates
+- **Removed tool** – Removed `Power` tool due to security reasons.
+
+### Bug Fixes
+- **Header bug** – Improved rendering header messages to prevent loop states.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.3
+
+---
+
 # [v1.4.2](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.2) – [10/12/25]
 
 ### UI & UX Enhancements

@@ -72,21 +72,16 @@ export default function Header({ name, onMobileToggle }) {
     };
 
     useEffect(() => {
-        const now = new Date();
-        setCurrentTime(now);
-        setWelcomeMsg(getWelcomeMessage(now.getHours()));
-
         const interval = setInterval(() => {
-            const current = new Date();
-            setCurrentTime(current);
-
-            if (current.getHours() !== now.getHours()) {
-                setWelcomeMsg(getWelcomeMessage(current.getHours()));
-            }
+            setCurrentTime(new Date());
         }, 1000);
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        setWelcomeMsg(getWelcomeMessage(currentTime.getHours()));
+    }, [currentTime.getHours()]);
 
     const formatTime = (date) =>
         date.toLocaleTimeString([], {

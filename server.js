@@ -4,7 +4,6 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import si from 'systeminformation';
-import { exec } from 'child_process';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
 import Parser from 'rss-parser';
@@ -85,7 +84,6 @@ function initFiles() {
                 Crypto: true,
                 Notes: true,
                 RSS: true,
-                Power: true,
                 Hardware: true,
                 QR: true
             },
@@ -224,8 +222,10 @@ fastify.get('/api/system', async (request, reply) => {
 });
 
 fastify.post('/api/links', async (request, reply) => {
-    const { name, url, icon = 'bi-link-45deg', category = 'Other' } = request.body;
-    if (!name || !url) return reply.status(400).send({ error: "Name and URL are required" });
+    const { name, url, icon = 'bi-link-45deg', category = 'Other', sidebar = false } = request.body;
+
+    if (!name || !url)
+        return reply.status(400).send({ error: "Name and URL are required" });
 
     try {
         const data = await fs.promises.readFile(linksFile, 'utf8');
@@ -236,7 +236,8 @@ fastify.post('/api/links', async (request, reply) => {
             return reply.status(500).send({ error: 'Corrupt links data' });
         }
 
-        links.push({ name, url, icon, category });
+        links.push({ name, url, icon, category, sidebar, opened: 0 });
+
         await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
         reply.send({ success: true });
     } catch (err) {
@@ -263,7 +264,7 @@ fastify.delete('/api/links/:index', async (request, reply) => {
 
 fastify.put('/api/links/:index', async (request, reply) => {
     const index = parseInt(request.params.index);
-    const { name, url, icon = 'bi-link-45deg', category = 'Other' } = request.body;
+    const { name, url, icon = 'bi-link-45deg', category = 'Other', sidebar = false } = request.body;
 
     if (!name || !url) {
         return reply.status(400).send({ error: "Name and URL are required" });
@@ -277,7 +278,7 @@ fastify.put('/api/links/:index', async (request, reply) => {
             return reply.status(400).send({ error: 'Invalid index' });
         }
 
-        links[index] = { name, url, icon, category };
+        links[index] = { ...links[index], name, url, icon, category, sidebar };
 
         await fs.promises.writeFile(linksFile, JSON.stringify(links, null, 2), 'utf8');
         reply.send({ success: true });
@@ -285,7 +286,6 @@ fastify.put('/api/links/:index', async (request, reply) => {
         reply.status(500).send({ error: 'Failed to update link' });
     }
 });
-
 
 fastify.get('/api/process', async (request, reply) => {
     try {
@@ -479,7 +479,7 @@ fastify.get("/api/crypto", async (request, reply) => {
 
 fastify.get("/api/notes", async (request, reply) => {
     try {
-        if (!fs.existsSync(notesFile)) return reply.send({ notes: "", lastEdited: null });
+        if (!fs.existsSync(notesFile)) return reply.send([]);
         const data = JSON.parse(fs.readFileSync(notesFile, "utf8"));
         reply.send(data);
     } catch (err) {
@@ -490,43 +490,13 @@ fastify.get("/api/notes", async (request, reply) => {
 
 fastify.post("/api/notes", async (request, reply) => {
     try {
-        const notes = request.body.notes || "";
-        const data = { notes, lastEdited: new Date().toISOString() };
-        fs.writeFileSync(notesFile, JSON.stringify(data, null, 2), "utf8");
-        reply.send({ success: true, data });
+        const notes = request.body || [];
+        fs.writeFileSync(notesFile, JSON.stringify(notes, null, 2), "utf8");
+        reply.send({ success: true, data: notes });
     } catch (err) {
         console.error("Error saving notes:", err.message);
         reply.status(500).send({ error: "Failed to save notes." });
     }
-});
-
-fastify.post("/api/power", async (request, reply) => {
-    const action = request.body.action;
-
-    if (!["shutdown", "restart", "sleep"].includes(action)) {
-        return reply.status(400).send({ error: "Invalid action" });
-    }
-
-    let cmd = "";
-    switch (action) {
-        case "shutdown":
-            cmd = "shutdown -h now";
-            break;
-        case "restart":
-            cmd = "shutdown -r now";
-            break;
-        case "sleep":
-            cmd = "systemctl suspend";
-            break;
-    }
-
-    exec(cmd, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error executing ${action}:`, error);
-            return reply.status(500).send({ error: `Failed to ${action}` });
-        }
-        reply.send({ success: true, action });
-    });
 });
 
 fastify.get("/api/rss", async (request, reply) => {

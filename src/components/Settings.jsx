@@ -10,7 +10,6 @@ export default function Settings({ settings, setSettings, links, fetchLinks }) {
         Crypto: false,
         Notes: false,
         RSS: false,
-        Power: false,
         Hardware: false,
         QR: false
     };
