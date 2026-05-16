@@ -5,16 +5,14 @@
 </p>
 
 <p align="center">
-  <em>A lightweight dashboard for your home server.</em>
+  <em>A lightweight dashboard for your home server with iOS widgets and Firefox extension support.</em>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/github/stars/MuxBH28/server-homepage?color=232323&label=server-homepage&logo=github&labelColor=232323" alt="View server-homepage on GitHub" />
   <img src="https://img.shields.io/badge/Sponsor-b820f9?labelColor=b820f9&logo=githubsponsors&logoColor=fff" alt="Sponsor MuxBH28" />
-  <img src="https://img.shields.io/badge/Docker%20Pulls-latest-blue?style=flat-square&logo=docker&link=https%3A%2F%2Fghcr.io%2Fmuxbh28%2Fserver-homepage" alt="Docker Pulls" />
   <img src="https://img.shields.io/github/license/muxbh28/server-homepage" alt="License" />
   <img src="https://img.shields.io/github/v/release/muxbh28/server-homepage" alt="Release" />
-  <img src="https://img.shields.io/github/commit-activity/m/MuxBH28/server-homepage" alt="Commit Activity" />
   <a href="https://github.com/MuxBH28/server-homepage/pkgs/container/server-homepage" target="_blank">
     <img src="https://img.shields.io/badge/Download-Docker-blue" alt="Download" />
   </a>
@@ -31,12 +29,13 @@
 
 
 | Section       | Link                                  |
-| --------------- | --------------------------------------- |
+| ------------- | ------------------------------------- |
 | About         | [Go to About](#about)                 |
 | Preview       | [Go to Preview](#preview)             |
 | Installation  | [Go to Installation](#installation)   |
 | Arduino       | [Go to Arduino](#arduino)             |
 | Scriptable    | [Go to Scriptable](#scriptable)       |
+| Firefox Addon | [Go to Firefox](#firefox)             |
 | Usage         | [Go to Usage](#usage)                 |
 | Customization | [Go to Customization](#customization) |
 | Author        | [Go to Author](#author)               |
@@ -54,19 +53,6 @@ The project is intended to be deployed on a Linux server and accessed locally or
 ---
 
 ## Preview
-
-Version 1.0:
-![Version 1.0](extra/preview.png)
-[Release v1.0](https://github.com/MuxBH28/server-homepage/releases/tag/v1.0)
-
-Version 1.1+:
-![Version 1.1](extra/preview2.png)
-
-Version 1.3.1:
-![Version 1.3.1](extra/preview1.3.1.png)
-
-Version 1.3.5:
-![Version 1.3.5](extra/preview1.3.5.png)
 
 Version 1.3.7:
 ![Version 1.3.7](extra/preview1.3.7.png)
@@ -204,6 +190,24 @@ Detailed installation and setup instructions are available in [scriptable/instru
 
 ![Scriptable Widget Preview](scriptable/preview.jpg)
 
+## Firefox Add-on
+
+Server Homepage includes a dedicated Firefox browser extension that connects directly to your dashboard backend and displays real-time system metrics inside the browser.
+
+It shows live data such as CPU usage, RAM utilization, and CPU temperature, giving you a quick overview of your server’s health without needing to open the full dashboard.
+
+The extension reads data directly from your existing Server Homepage API and is designed to be lightweight and fast.
+
+### Features
+- Real-time CPU, RAM, and temperature monitoring
+- Lightweight dashboard overview inside the browser
+- Quick actions via context menu (send links directly to dashboard)
+- Customizable toolbar badge (CPU / RAM / Temperature display)
+- Seamless integration with Server Homepage backend
+
+![Firefox Preview](addon/preview.png)
+
+[Install the extension here](https://addons.mozilla.org/en-US/firefox/addon/server-homepage-monitor/)
 ---
 
 ## Usage
@@ -308,7 +312,7 @@ Currently available tools:
 
 - Created by: **MuxBH28**
 - Website: [https://msehic.com](https://msehic.com)
-- Email: [sehicmuhammed7@proton.me](mailto:sehicmuhammed7@proton.me)
+- Email: [contact@msehic.com](mailto:contact@msehic.com)
 - GitHub: [https://github.com/MuxBH28](https://github.com/MuxBH28)
 
 ---

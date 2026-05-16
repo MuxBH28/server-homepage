@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import Info from "./Info";
+import StatsModal from "./StatsModal";
 
 export default function Header({ name, onMobileToggle }) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [burgerOpen, setBurgerOpen] = useState(false);
     const [welcomeMsg, setWelcomeMsg] = useState("");
     const [infoOpen, setInfoOpen] = useState(false);
+    const [statsOpen, setStatsOpen] = useState(false);
     const isMobile = window.innerWidth < 768;
 
     const handleBurgerClick = () => {
@@ -17,6 +19,14 @@ export default function Header({ name, onMobileToggle }) {
     };
 
     const toggleInfo = () => setInfoOpen(!infoOpen);
+    const toggleStats = () => setStatsOpen(!statsOpen);
+
+    const platformHints = [
+        "View stats on iOS with Scriptable widgets.",
+        "Use Firefox add-on for quick dashboard access.",
+        "Check your server from mobile widgets anytime.",
+        "Keep stats one click away with browser extension.",
+    ];
 
     const getWelcomeMessage = (hour) => {
         let messages = [];
@@ -67,8 +77,12 @@ export default function Header({ name, onMobileToggle }) {
                 "The world sleeps, but your server doesn't.",
             ];
         }
+        const maybeHint = Math.random() < 0.25
+            ? platformHints[Math.floor(Math.random() * platformHints.length)]
+            : null;
 
-        return messages[Math.floor(Math.random() * messages.length)];
+        const base = messages[Math.floor(Math.random() * messages.length)];
+        return maybeHint ? maybeHint : base;
     };
 
     useEffect(() => {
@@ -115,6 +129,13 @@ export default function Header({ name, onMobileToggle }) {
                                 {formatTime(currentTime)}
                             </div>
                             <button
+                                onClick={toggleStats}
+                                className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
+                                title="System Statistics"
+                            >
+                                <i className="bi bi-graph-up-arrow"></i>
+                            </button>
+                            <button
                                 onClick={toggleInfo}
                                 className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
                             >
@@ -126,7 +147,7 @@ export default function Header({ name, onMobileToggle }) {
                             onClick={handleBurgerClick}
                             className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
                         >
-                            <i className={`bi ${burgerOpen ? "bi-x-lg" : "bi-list"}`}></i>
+                            <i className={`bi ${burgerOpen ? "bi-x-lg" : "bi-list"} `}></i>
                         </button>
                     </div>
 
@@ -189,12 +210,41 @@ export default function Header({ name, onMobileToggle }) {
                                 <i className="bi bi-person-circle"></i> Author
                             </a>
                         </li>
+
+
+                        <hr className="border-gray-700 my-3" />
+
+                        <li className="text-gray-400 text-xs uppercase tracking-wider">
+                            Quick Access
+                        </li>
+
+                        <li>
+                            <a
+                                href="https://github.com/MuxBH28/server-homepage/?tab=readme-ov-file#scriptable"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-red-500"
+                            >
+                                <i className="bi bi-phone-fill"></i> iOS Widget
+                            </a>
+                        </li>
+
+                        <li>
+                            <a
+                                href="https://addons.mozilla.org/en-US/firefox/addon/server-homepage-monitor/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-red-500"
+                            >
+                                <i className="bi bi-browser-firefox"></i> Firefox Add-on
+                            </a>
+                        </li>
                     </ul>
                 </div>
             )}
 
             <Info isOpen={infoOpen} onClose={() => setInfoOpen(false)} />
-
+            <StatsModal isOpen={statsOpen} onClose={() => setStatsOpen(false)} />
         </>
     );
 }

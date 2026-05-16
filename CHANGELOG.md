@@ -6,6 +6,37 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.4](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.4) – [5/16/26]
+
+### Backend Improvements
+- **System Statistics Overhaul** - Refactored and improved the /api/stats endpoint for more consistent and structured data output.
+- **Persistent Stats Storage** - Ensured system statistics (CPU, RAM, Temperature, uptime) are properly maintained and persisted in stats.json.
+- **Improved Metrics Tracking** - Enhanced internal caching system for 24h and all-time min/max/avg calculations.
+- **Better Uptime Handling** - Uptime now includes both formatted runtime and formatted start timestamp.
+
+### New Features
+- **Firefox Add-on Support** - Added official Firefox browser extension for quick dashboard access and system monitoring.
+- **Platform Integration Hints** - Updated UI hints and navigation to include browser extension and mobile (iOS Scriptable) integration options.
+
+### Performance & Reliability
+- **Optimized Stats Logging** - Reduced overhead in periodic system monitoring loop and improved stability under continuous logging.
+- **Safer File Writes** - Improved handling of JSON writes to prevent corruption during frequent updates.
+- **Network & System Monitoring Stability** - Reduced chance of inconsistent readings during high load sampling.
+
+### API Enhancements
+- **Unified Stats Response** - `/api/stats` now returns cleaner and more predictable structure for frontend consumption.
+- **Frontend Compatibility Fixes** - Improved alignment between backend stats format and dashboard StatCard components.
+
+### General Improvements
+- Minor backend cleanup and refactoring for readability and maintainability.
+- Improved error handling across system monitoring utilities.
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.4
+
+---
+
 # [v1.4.3](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.3) – [1/28/26]
 
 ### Functionality Updates

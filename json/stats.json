@@ -1,0 +1,23 @@
+{
+  "cpu": {
+    "min24h": 2.84,
+    "max24h": 3.46,
+    "avg24h": 3.15,
+    "allTimeMin": 2.72,
+    "allTimeMax": 19.75
+  },
+  "ram": {
+    "min24h": 29.23,
+    "max24h": 29.4,
+    "avg24h": 29.31,
+    "allTimeMin": 27.21,
+    "allTimeMax": 29.72
+  },
+  "temp": {
+    "min24h": 44,
+    "max24h": 47,
+    "avg24h": 45.5,
+    "allTimeMin": 42,
+    "allTimeMax": 50
+  }
+}

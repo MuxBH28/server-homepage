@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0b0b;
+            color: #d4d4d4;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #262626;
+            margin-bottom: 32px;
+        }
+
+        .logo-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: #a3a3a3;
+            font-size: 0.875rem;
+            margin: 4px 0 0 0;
+        }
+
+        .card {
+            background-color: #111111;
+            border: 1px solid #262626;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-accent {
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(26, 26, 26, 0.4);
+        }
+
+        .card-accent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #ef4444;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+
+        .setting-block {
+            margin-bottom: 20px;
+        }
+
+        .setting-block:last-of-type {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 0.937rem;
+            line-height: 1.6;
+            color: #a3a3a3;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: #f43f5e;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border: 1px solid #262626;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: #1a1a1a;
+            border: 1px solid #262626;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            border-radius: 12px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+            outline: none;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.937rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.15s ease;
+        }
+
+        #save {
+            background-color: #ef4444;
+            color: #ffffff;
+            flex-grow: 1;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        #save:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid #262626;
+            color: #d4d4d4;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: #404040;
+        }
+
+        #status-msg {
+            margin-top: 16px;
+            font-size: 0.875rem;
+            text-align: center;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .success {
+            color: #10b981;
+        }
+
+        .error {
+            color: #f43f5e;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .grid-item {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid #262626;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .grid-item h4 {
+            margin: 0 0 6px 0;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .grid-item p {
+            margin: 0;
+            font-size: 0.812rem;
+            color: #737373;
+        }
+
+        .footer-actions {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #262626;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <img src="../icons/128.png" alt="Server Homepage Logo" class="logo-img">
+        <div>
+            <h1>Server Homepage</h1>
+            <p class="subtitle">Extension setup & documentation</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Configuration Workspace</h2>
+
+        <div class="setting-block">
+            <label for="api">Backend Connection Target</label>
+            <p>Provide the backend instance base URL of your Server Homepage application. The extension talks directly
+                to its API routes to stream diagnostics and catalog remote assets.</p>
+            <p>Format setup: <code>http://IP_ADDRESS:PORT</code> (e.g., <code>http://192.168.1.50:6969</code>)</p>
+            <input id="api" placeholder="http://192.168.1.50:6969">
+        </div>
+
+        <div class="setting-block">
+            <label for="badgeMode">Active Toolbar Badge Stream</label>
+            <p>Select which telemetry payload variable is dynamically projected onto your global browser action badge
+                layout layer.</p>
+            <select id="badgeMode">
+                <option value="temp">CPU Temperature</option>
+                <option value="cpu">CPU Usage</option>
+                <option value="ram">RAM Usage</option>
+                <option value="off">Disabled</option>
+            </select>
+        </div>
+
+        <div class="btn-container">
+            <button id="save">Save Preferences</button>
+        </div>
+        <div id="status-msg"></div>
+    </div>
+
+    <div class="card card-accent">
+        <h2>Extension Features Explained</h2>
+        <p>This integration brings automation utilities out of the local app dashboard directly into your regular
+            browsing sessions:</p>
+
+        <div class="grid">
+            <div class="grid-item">
+                <h4>Dynamic Badge Display</h4>
+                <p>The system badge text layer in your toolbar dynamically mirrors your server's selected hardware
+                    metric stream metrics.</p>
+            </div>
+            <div class="grid-item">
+                <h4>Smart Color Alerts</h4>
+                <p>The runtime engine tracks health parameters. Badge backgrounds shift matching load states (Green:
+                    Normal, Orange: Warning, Red: Error).</p>
+            </div>
+            <div class="grid-item">
+                <h4>Context Menu Dispatch</h4>
+                <p>Right-click elements inside any tab window to trigger quick link dispatches straight into your
+                    operational sidebar array.</p>
+            </div>
+            <div class="grid-item">
+                <h4>Automated Heartbeats</h4>
+                <p>The persistent background background routine schedules asynchronous intervals evaluating
+                    infrastructure reachability matrix.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-actions">
+        <a id="copy-btn" href="https://msehic.com/" target="_blank" class="btn-secondary">Author</a>
+        <a id="bug-btn" href="https://github.com/MuxBH28/server-homepage/issues/new" target="_blank"
+            class="btn-secondary">Report a Bug</a>
+        <a id="sponsor-btn" href="https://github.com/sponsors/MuxBH28/" target="_blank" class="btn-secondary"
+            style="border-color: rgba(219, 39, 119, 0.3); color: #f472b6;">Sponsor Project</a>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>

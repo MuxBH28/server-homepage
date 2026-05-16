@@ -8,7 +8,6 @@ import axios from 'axios';
 import bcrypt from 'bcrypt';
 import Parser from 'rss-parser';
 import QRCode from 'qrcode';
-import osu from 'os-utils';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -22,6 +21,8 @@ const NETWORK_CACHE_TTL = 5 * 60 * 1000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const START_TIME = new Date().toISOString();
 
 fastify.register(fastifyStatic, {
     root: path.join(__dirname, 'dist'),
@@ -42,10 +43,28 @@ const settingsFile = path.join(__dirname, "json/settings.json");
 const serverLog = path.join(__dirname, "server.log");
 const networkLog = path.join(__dirname, "network.log");
 const notesFile = path.join(__dirname, "json/notes.json");
+const statsFile = path.join(__dirname, "json/stats.json");
+
+const metricsCache = {
+    system: null,
+    stats: {
+        cpu: [],
+        ram: [],
+        temp: [],
+    },
+};
 
 let settings = {};
 let links = [];
 let notes = {};
+let statsSummary = {
+    cpu: {},
+    ram: {},
+    temp: {},
+    uptime: {
+        startedAt: START_TIME,
+    },
+};
 
 function initFiles() {
     const jsonDir = path.join(__dirname, "json");
@@ -104,13 +123,47 @@ function initFiles() {
 
     if (!fs.existsSync(notesFile)) {
         const defaultNotes = {
-            notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes and reminders.\nLooking for a more advanced notes app for your server?\nCheck out: https://github.com/MuxBH28/brahke-pisar",
+            notes: "Welcome to Server Homepage Notes!\nThis is your personal space for quick notes.",
             lastEdited: new Date().toISOString(),
         };
         fs.writeFileSync(notesFile, JSON.stringify(defaultNotes, null, 2), "utf8");
         notes = defaultNotes;
     } else {
         notes = JSON.parse(fs.readFileSync(notesFile, "utf8"));
+    }
+
+    if (!fs.existsSync(statsFile)) {
+        const defaultStats = {
+            cpu: {
+                min24h: null,
+                max24h: null,
+                avg24h: null,
+                allTimeMin: null,
+                allTimeMax: null,
+            },
+            ram: {
+                min24h: null,
+                max24h: null,
+                avg24h: null,
+                allTimeMin: null,
+                allTimeMax: null,
+            },
+            temp: {
+                min24h: null,
+                max24h: null,
+                avg24h: null,
+                allTimeMin: null,
+                allTimeMax: null,
+            },
+            uptime: {
+                startedAt: new Date().toISOString(),
+            },
+        };
+
+        fs.writeFileSync(statsFile, JSON.stringify(defaultStats, null, 2), "utf8");
+        statsSummary = defaultStats;
+    } else {
+        statsSummary = JSON.parse(fs.readFileSync(statsFile, "utf8"));
     }
 }
 
@@ -123,6 +176,12 @@ async function logSystemStats() {
         const usedMem = totalMem - os.freemem();
         const memPercent = ((usedMem / totalMem) * 100).toFixed(2);
         const cpuLoadNum = Number(cpuLoad) || 0;
+
+        await updateStats(
+            cpuLoadNum,
+            Number(memPercent),
+            cpuTemp ? Number(cpuTemp) : null
+        );
 
         const now = new Date();
         const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -184,7 +243,11 @@ fastify.get('/api/system', async (request, reply) => {
         const mem = process.memoryUsage();
         const uptime = process.uptime();
 
-        const fsData = await si.fsSize();
+        const [fsData, cpuTemp] = await Promise.all([
+            si.fsSize(),
+            getCpuTemp(),
+        ]);
+
         const diskInfo = {};
         for (const p of settings.diskPaths) {
             const match = fsData.find(d => d.mount === p || d.fs === p);
@@ -199,8 +262,6 @@ fastify.get('/api/system', async (request, reply) => {
                 diskInfo[p] = null;
             }
         }
-
-        const cpuTemp = await getCpuTemp();
 
         reply.send({
             cpu_percent: cpuLoad,
@@ -680,6 +741,27 @@ fastify.get("/api/temperature", async (request, reply) => {
     }
 });
 
+fastify.get("/api/stats", async (request, reply) => {
+    try {
+        const uptimeSeconds = process.uptime();
+
+        reply.send({
+            ...statsSummary,
+            uptime: {
+                current: formatUptime(uptimeSeconds),
+                startedAt: process.env.STARTED_AT || statsSummary.uptime?.startedAt || null,
+                startedAtFormatted: statsSummary.uptime?.startedAt
+                    ? new Date(statsSummary.uptime.startedAt).toLocaleString()
+                    : "N/A",
+            },
+        });
+    } catch (err) {
+        reply.status(500).send({
+            error: "Failed to fetch stats",
+        });
+    }
+});
+
 async function getVersion() {
     const appVersions = {
         local: "N/A",
@@ -702,12 +784,9 @@ async function getVersion() {
     return appVersions;
 }
 
-function getCpuUsage() {
-    return new Promise((resolve) => {
-        osu.cpuUsage((v) => {
-            resolve((v * 100).toFixed(2));
-        });
-    });
+async function getCpuUsage() {
+    const load = await si.currentLoad();
+    return load.currentLoad.toFixed(2);
 }
 
 async function getCpuTemp() {
@@ -726,6 +805,103 @@ function formatUptime(seconds) {
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
     return `${d}d ${h}h ${m}m ${s}s`;
+}
+
+function calculateStats(arr) {
+    if (!arr.length) {
+        return {
+            min: null,
+            max: null,
+            avg: null,
+        };
+    }
+
+    return {
+        min: Math.min(...arr),
+        max: Math.max(...arr),
+        avg: +(arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2),
+    };
+}
+
+async function updateStats(cpu, ram, temp) {
+    metricsCache.stats.cpu.push(cpu);
+    metricsCache.stats.ram.push(ram);
+
+    if (temp !== null) {
+        metricsCache.stats.temp.push(temp);
+    }
+
+    const MAX_POINTS = 60 * 24;
+
+    if (metricsCache.stats.cpu.length > MAX_POINTS) {
+        metricsCache.stats.cpu.shift();
+    }
+
+    if (metricsCache.stats.ram.length > MAX_POINTS) {
+        metricsCache.stats.ram.shift();
+    }
+
+    if (metricsCache.stats.temp.length > MAX_POINTS) {
+        metricsCache.stats.temp.shift();
+    }
+
+    const cpuStats = calculateStats(metricsCache.stats.cpu);
+    const ramStats = calculateStats(metricsCache.stats.ram);
+    const tempStats = calculateStats(metricsCache.stats.temp);
+
+    statsSummary.cpu = {
+        min24h: cpuStats.min,
+        max24h: cpuStats.max,
+        avg24h: cpuStats.avg,
+
+        allTimeMin:
+            statsSummary.cpu.allTimeMin === null
+                ? cpu
+                : Math.min(statsSummary.cpu.allTimeMin, cpu),
+
+        allTimeMax:
+            statsSummary.cpu.allTimeMax === null
+                ? cpu
+                : Math.max(statsSummary.cpu.allTimeMax, cpu),
+    };
+
+    statsSummary.ram = {
+        min24h: ramStats.min,
+        max24h: ramStats.max,
+        avg24h: ramStats.avg,
+
+        allTimeMin:
+            statsSummary.ram.allTimeMin === null
+                ? ram
+                : Math.min(statsSummary.ram.allTimeMin, ram),
+
+        allTimeMax:
+            statsSummary.ram.allTimeMax === null
+                ? ram
+                : Math.max(statsSummary.ram.allTimeMax, ram),
+    };
+
+    statsSummary.temp = {
+        min24h: tempStats.min,
+        max24h: tempStats.max,
+        avg24h: tempStats.avg,
+
+        allTimeMin:
+            statsSummary.temp.allTimeMin === null
+                ? temp
+                : Math.min(statsSummary.temp.allTimeMin, temp),
+
+        allTimeMax:
+            statsSummary.temp.allTimeMax === null
+                ? temp
+                : Math.max(statsSummary.temp.allTimeMax, temp),
+    };
+
+    await fs.promises.writeFile(
+        statsFile,
+        JSON.stringify(statsSummary, null, 2),
+        "utf8"
+    );
 }
 
 fastify.setNotFoundHandler((request, reply) => {

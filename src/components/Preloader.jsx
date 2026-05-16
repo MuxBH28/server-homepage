@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import baseGaugeOptions from "./gauges/baseGauge";
 
-const appVersion = 'v1.4.3';
+const appVersion = 'v1.4.4';
 
 export default function Preloader() {
     const [visible, setVisible] = useState(true);
