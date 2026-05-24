@@ -280,6 +280,24 @@
             </select>
         </div>
 
+        <div class="setting-block">
+            <label for="refreshTime">Refresh Interval (seconds)</label>
+            <p>Defines how frequently the extension polls the Server Homepage API for live telemetry updates.</p>
+
+            <input id="refreshTime" type="number" min="5" max="3600" placeholder="10">
+        </div>
+
+        <div class="setting-block">
+            <label for="contextMenuEnabled">Context Menu Integration</label>
+            <p>Enable or disable right-click quick actions for adding links directly into the Server Homepage sidebar.
+            </p>
+
+            <select id="contextMenuEnabled">
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+            </select>
+        </div>
+
         <div class="btn-container">
             <button id="save">Save Preferences</button>
         </div>
