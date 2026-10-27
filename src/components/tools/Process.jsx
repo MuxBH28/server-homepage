@@ -29,26 +29,28 @@ export default function ProcessCard({ refreshInterval }) {
             ) : processes.length === 0 ? (
                 <p className="text-gray-400">No processes found.</p>
             ) : (
-                <table className="w-full text-left text-sm text-gray-300 border border-gray-700 rounded-lg">
-                    <thead className="bg-gray-800 sticky top-0">
-                        <tr>
-                            <th className="px-3 py-2 border-b border-gray-700">PID</th>
-                            <th className="px-3 py-2 border-b border-gray-700">Name</th>
-                            <th className="px-3 py-2 border-b border-gray-700">CPU %</th>
-                            <th className="px-3 py-2 border-b border-gray-700">Memory</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {processes.map((p) => (
-                            <tr key={p.pid} className="hover:bg-gray-700">
-                                <td className="px-3 py-1 border-b border-gray-700">{p.pid}</td>
-                                <td className="px-3 py-1 border-b border-gray-700">{p.name}</td>
-                                <td className="px-3 py-1 border-b border-gray-700">{p.cpu}</td>
-                                <td className="px-3 py-1 border-b border-gray-700">{formatBytes(p.memory)}</td>
+                <div className="overflow-auto max-h-[70dvh] rounded-lg border border-gray-700">
+                    <table className="w-full text-left text-xs sm:text-sm text-gray-300">
+                        <thead className="bg-gray-800 sticky top-0">
+                            <tr>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700">PID</th>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700">Name</th>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700 whitespace-nowrap">CPU %</th>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700">Memory</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {processes.map((p) => (
+                                <tr key={p.pid} className="hover:bg-gray-700">
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700">{p.pid}</td>
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700 max-w-[6.5rem] sm:max-w-xs md:max-w-md truncate" title={p.name}>{p.name}</td>
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700">{p.cpu}</td>
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700 whitespace-nowrap">{formatBytes(p.memory)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </WidgetCard>
     );

@@ -1,7 +1,30 @@
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen, links = [], incrementLinkOpened }) {
     const location = useLocation();
+    const isMobile = useIsMobile();
+
+    useEffect(() => {
+        if (!mobileOpen) return;
+
+        if (!isMobile) {
+            setMobileOpen(false);
+            return;
+        }
+
+        const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+        const prevOverflow = document.body.style.overflow;
+
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", onKey);
+
+        return () => {
+            document.body.style.overflow = prevOverflow;
+            window.removeEventListener("keydown", onKey);
+        };
+    }, [mobileOpen, isMobile, setMobileOpen]);
 
     const navItems = [
         { path: "/", label: "Dashboard", icon: "bi-speedometer2" },
@@ -12,7 +35,7 @@ export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen
     ];
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-black/50 backdrop-blur-md border-r border-gray-700 p-6 w-64 shadow-lg">
+        <div className="flex flex-col h-full bg-black/50 backdrop-blur-md border-r border-gray-700 p-6 w-64 max-w-[85vw] shadow-lg">
             <div className="flex flex-col items-center mb-8">
                 <h2 className="flex items-center text-2xl font-bold text-gray-100 mb-2">
                     <i className="bi bi-activity mr-3 text-red-500 animate-pulse"></i>
@@ -20,7 +43,7 @@ export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen
                 </h2>
             </div>
 
-            <nav className="flex-1 overflow-y-auto max-h-[calc(100vh-180px)] scrollbar-none">
+            <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
                 <ul className="space-y-3">
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path;
@@ -63,7 +86,7 @@ export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen
                                             className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:bg-gray-700 hover:text-white"
                                         >
                                             <i className={`bi ${link.icon || "bi-link"} text-lg`}></i>
-                                            <span className="font-medium">{link.name}</span>
+                                            <span className="font-medium truncate min-w-0">{link.name}</span>
                                             {link.opened !== undefined && (
                                                 <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {link.opened}
@@ -106,11 +129,11 @@ export default function Sidebar({ server, appVersions, mobileOpen, setMobileOpen
 
             {mobileOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50"
+                    className="fixed inset-0 z-40 bg-black/60 md:hidden overlay-in"
                     onClick={() => setMobileOpen(false)}
                 >
                     <div
-                        className="absolute left-0 top-0 h-full"
+                        className="absolute left-0 top-0 h-full bg-[#14141c] drawer-in pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {sidebarContent}

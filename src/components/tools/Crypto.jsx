@@ -27,22 +27,26 @@ export default function CryptoCard() {
             ) : Object.keys(crypto).length === 0 ? (
                 <p className="text-gray-400">No crypto data available.</p>
             ) : (
-                <table className="w-full text-left text-sm text-gray-300 border border-gray-700 rounded-lg">
-                    <thead className="bg-gray-800 sticky top-0">
-                        <tr>
-                            <th className="px-3 py-2 border-b border-gray-700">Coin</th>
-                            <th className="px-3 py-2 border-b border-gray-700">Price (USD)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(crypto).map(([coin, info]) => (
-                            <tr key={coin} className="hover:bg-gray-700">
-                                <td className="px-3 py-1 border-b border-gray-700">{coin.toUpperCase()}</td>
-                                <td className="px-3 py-1 border-b border-gray-700">${info.usd.toLocaleString()}</td>
+                <div className="overflow-x-auto rounded-lg border border-gray-700">
+                    <table className="w-full text-left text-xs sm:text-sm text-gray-300">
+                        <thead className="bg-gray-800">
+                            <tr>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700">Coin</th>
+                                <th className="px-2 sm:px-3 py-2 border-b border-gray-700 whitespace-nowrap">Price (USD)</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {Object.entries(crypto).map(([coin, info]) => (
+                                <tr key={coin} className="hover:bg-gray-700">
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700">{coin.toUpperCase()}</td>
+                                    <td className="px-2 sm:px-3 py-1 border-b border-gray-700 whitespace-nowrap">
+                                        {typeof info?.usd === "number" ? `$${info.usd.toLocaleString()}` : "N/A"}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </WidgetCard>
     );
