@@ -18,7 +18,7 @@ WORKDIR /app
 ENV DENO_INSTALL=/root/.deno
 ENV PATH="/root/.deno/bin:${PATH}"
 
-RUN apt-get update && apt-get install -y --no-install-recommends python3 python-is-python3 ca-certificates curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python-is-python3 ca-certificates curl unzip && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deno.land/install.sh | sh
 
