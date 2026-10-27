@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import useModalEffects from "../hooks/useModalEffects";
 
 const StatCard = ({ title, icon, data, unit = "%" }) => (
-    <div className="bg-black/40 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors duration-200">
+    <div className="bg-black/40 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-neutral-700 transition-colors duration-200">
         <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
                 <i className={`bi ${icon} text-red-500 text-xl`}></i>
@@ -64,6 +65,8 @@ export default function StatsModal({ isOpen, onClose }) {
             .catch(err => console.error(err));
     }, [isOpen]);
 
+    useModalEffects(isOpen, onClose);
+
     if (!isOpen) return null;
 
     return (
@@ -71,36 +74,36 @@ export default function StatsModal({ isOpen, onClose }) {
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="w-full max-w-5xl bg-[#111] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-5xl bg-[#111] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
 
-                <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-800 bg-black/20">
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                            System Statistics
-                        </h2>
-                        <p className="text-neutral-400 text-xs sm:text-sm mt-1">
-                            Historical monitoring overview
-                        </p>
-                    </div>
+                <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5 border-b border-neutral-800 bg-black/20">                    <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                        System Statistics
+                    </h2>
+                    <p className="text-neutral-400 text-xs sm:text-sm mt-1">
+                        Historical monitoring overview
+                    </p>
+                </div>
 
                     <button
                         onClick={onClose}
-                        className="text-neutral-400 hover:text-red-500 transition-colors duration-200 p-2 hover:bg-neutral-800/50 rounded-lg text-xl"
+                        aria-label="Close"
+                        className="shrink-0 text-neutral-400 hover:text-red-500 transition-colors duration-200 p-2 hover:bg-neutral-800/50 rounded-lg text-xl"
                     >
                         <i className="bi bi-x-lg"></i>
                     </button>
                 </div>
 
-                <div className="overflow-y-auto p-6">
+                <div className="overflow-y-auto p-4 sm:p-6">
                     {!stats ? (
                         <div className="py-20 text-center text-neutral-400 flex flex-col items-center gap-3">
                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
                             <span className="text-sm font-medium tracking-wide">Loading statistics...</span>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
 
-                            <div className="md:col-span-3 bg-black/40 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors duration-200">
+                            <div className="md:col-span-3 bg-black/40 border border-neutral-800 rounded-xl p-4 sm:p-5 hover:border-neutral-700 transition-colors duration-200">
                                 <div className="flex items-center gap-3 mb-5">
                                     <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20">
                                         <i className="bi bi-clock-history text-red-500 text-xl"></i>

@@ -1,14 +1,28 @@
 import baseGaugeOptions from "./baseGauge";
 
-function initGauges(cpuCanvas, ramCanvas, tempCanvas) {
+const MAX_SIZE = { cpu: 250, ram: 250, temp: 150 };
+const MIN_SIZE = 130;
+
+function sizeFor(cell, max) {
+    const available = cell?.clientWidth || max;
+    return Math.max(MIN_SIZE, Math.min(max, Math.floor(available)));
+}
+
+function initGauges(cpuCanvas, ramCanvas, tempCanvas, cells = {}) {
     if (!cpuCanvas || !ramCanvas || !tempCanvas) {
         console.error("Canvas elements must be provided to initGauges!");
         return;
     }
 
+    const cpuSize = sizeFor(cells.cpu, MAX_SIZE.cpu);
+    const ramSize = sizeFor(cells.ram, MAX_SIZE.ram);
+    const tempSize = sizeFor(cells.temp, MAX_SIZE.temp);
+
     const cpuGauge = new RadialGauge({
         ...baseGaugeOptions,
         renderTo: cpuCanvas,
+        width: cpuSize,
+        height: cpuSize,
         units: '%',
         minValue: 0,
         maxValue: 100,
@@ -26,6 +40,8 @@ function initGauges(cpuCanvas, ramCanvas, tempCanvas) {
     const ramGauge = new RadialGauge({
         ...baseGaugeOptions,
         renderTo: ramCanvas,
+        width: ramSize,
+        height: ramSize,
         units: '%',
         minValue: 0,
         maxValue: 100,
@@ -43,8 +59,8 @@ function initGauges(cpuCanvas, ramCanvas, tempCanvas) {
     const cpuTempGauge = new RadialGauge({
         ...baseGaugeOptions,
         renderTo: tempCanvas,
-        width: 150,
-        height: 150,
+        width: tempSize,
+        height: tempSize,
         units: '°C',
         minValue: 0,
         maxValue: 100,
@@ -62,6 +78,23 @@ function initGauges(cpuCanvas, ramCanvas, tempCanvas) {
     }).draw();
 
     return { cpuGauge, ramGauge, cpuTempGauge };
+}
+
+export function fitGauges(gauges, cells) {
+    if (!gauges) return;
+    const { cpuGauge, ramGauge, cpuTempGauge } = gauges;
+
+    [
+        [cpuGauge, cells.cpu, MAX_SIZE.cpu],
+        [ramGauge, cells.ram, MAX_SIZE.ram],
+        [cpuTempGauge, cells.temp, MAX_SIZE.temp],
+    ].forEach(([gauge, cell, max]) => {
+        if (!gauge || !cell) return;
+        const size = sizeFor(cell, max);
+        if (gauge.options.width !== size) {
+            gauge.update({ width: size, height: size });
+        }
+    });
 }
 
 export default initGauges;

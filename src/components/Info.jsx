@@ -1,7 +1,10 @@
 import { useState } from "react";
+import useModalEffects from "../hooks/useModalEffects";
 
 export default function Info({ isOpen, onClose }) {
     const [copyStatus, setCopyStatus] = useState("Copy Repo Link");
+
+    useModalEffects(isOpen, onClose);
 
     const handleCopy = () => {
         const repoLink = "https://github.com/MuxBH28/server-homepage/";
@@ -46,19 +49,21 @@ export default function Info({ isOpen, onClose }) {
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="w-full max-w-4xl bg-[#111] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-4xl bg-[#111] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
 
-                <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-800 bg-black/20">
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5 border-b border-neutral-800 bg-black/20">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                         <img
                             src="/assets/logo.png"
                             alt="Server Logo"
-                            className="w-10 h-10 rounded-xl border border-red-500/30 object-cover"
+                            className="w-10 h-10 shrink-0 rounded-xl border border-red-500/30 object-cover"
                         />
-                        <div>
-                            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+
+                        <div className="min-w-0">
+                            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
                                 Server Homepage
                             </h2>
+
                             <p className="text-neutral-400 text-xs sm:text-sm mt-0.5">
                                 Project information & credits
                             </p>
@@ -66,14 +71,16 @@ export default function Info({ isOpen, onClose }) {
                     </div>
 
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="text-neutral-400 hover:text-red-500 transition-colors duration-200 p-2 hover:bg-neutral-800/50 rounded-lg text-xl"
+                        aria-label="Close"
+                        className="shrink-0 flex items-center justify-center w-10 h-10 text-neutral-400 hover:text-red-500 active:text-red-500 rounded-lg touch-manipulation"
                     >
-                        <i className="bi bi-x-lg"></i>
+                        <i className="bi bi-x-lg text-xl pointer-events-none"></i>
                     </button>
                 </div>
 
-                <div className="overflow-y-auto p-6 space-y-6">
+                <div className="overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
 
                     <p className="text-neutral-300 text-sm sm:text-base leading-relaxed bg-neutral-900/30 p-4 rounded-xl border border-neutral-800/40">
                         This is a minimalist personal homepage project built with a <strong className="text-white font-semibold">Node.js (Express)</strong> backend
@@ -105,7 +112,7 @@ export default function Info({ isOpen, onClose }) {
 
                 </div>
 
-                <div className="px-6 py-4 border-t border-neutral-800 bg-black/20 flex flex-col sm:flex-row justify-end gap-3 text-sm">
+                <div className="px-4 sm:px-6 py-4 border-t border-neutral-800 bg-black/20 flex flex-col sm:flex-row justify-end gap-3 text-sm">
                     <button
                         onClick={handleCopy}
                         className="bg-blue-600/10 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-500 text-blue-400 hover:text-white px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 font-medium"

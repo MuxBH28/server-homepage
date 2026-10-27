@@ -10,6 +10,8 @@ import Parser from 'rss-parser';
 import QRCode from 'qrcode';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import ytDlp from "yt-dlp-exec";
+import ffmpegPath from "ffmpeg-static";
 
 const parser = new Parser();
 const fastify = Fastify({ logger: { level: 'error' } });
@@ -98,14 +100,15 @@ function initFiles() {
             rss: "https://hnrss.org/frontpage",
             login: "",
             diskPaths: ["/"],
-            tools: {
-                Process: true,
-                Crypto: true,
-                Notes: true,
-                RSS: true,
-                Hardware: true,
-                QR: true
-            },
+            "tools": {
+                "Process": true,
+                "Crypto": true,
+                "Notes": true,
+                "RSS": true,
+                "Hardware": true,
+                "QR": true,
+                "YtDlp": true
+            }
         };
         fs.writeFileSync(settingsFile, JSON.stringify(defaultSettings, null, 2), "utf8");
         settings = defaultSettings;
@@ -903,6 +906,160 @@ async function updateStats(cpu, ram, temp) {
         "utf8"
     );
 }
+
+fastify.post("/api/ytdlp", async (req, reply) => {
+    const { url, format = "mp3" } = req.body || {};
+
+    if (!url || typeof url !== "string") {
+        return reply.status(400).send({
+            error: "URL is required."
+        });
+    }
+
+    if (!["mp3", "mp4"].includes(format)) {
+        return reply.status(400).send({
+            error: "Unsupported format. Allowed formats are MP3 and MP4."
+        });
+    }
+
+    const cleanUrl = url.trim();
+
+    if (!cleanUrl) {
+        return reply.status(400).send({
+            error: "URL is required."
+        });
+    }
+
+    const tempDir = await fs.promises.mkdtemp(
+        path.join(os.tmpdir(), "ytdlp-")
+    );
+
+    const outputTemplate = path.join(
+        tempDir,
+        "%(title)s.%(ext)s"
+    );
+
+    try {
+        if (format === "mp3") {
+            await ytDlp(cleanUrl, {
+                noPlaylist: true,
+                extractAudio: true,
+                audioFormat: "mp3",
+                audioQuality: "0",
+                output: outputTemplate,
+                ffmpegLocation: ffmpegPath,
+                jsRuntimes: "deno"
+            });
+        }
+
+        if (format === "mp4") {
+            await ytDlp(cleanUrl, {
+                noPlaylist: true,
+                format:
+                    "bestvideo[height<=1080][vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[height<=1080][vcodec^=avc1][acodec^=mp4a]",
+                mergeOutputFormat: "mp4",
+                output: outputTemplate,
+                ffmpegLocation: ffmpegPath,
+                jsRuntimes: "deno"
+            });
+        }
+
+        const files = await fs.promises.readdir(tempDir);
+
+        const outputFile = files.find((file) =>
+            file.toLowerCase().endsWith(`.${format}`)
+        );
+
+        if (!outputFile) {
+            throw new Error(
+                `No ${format.toUpperCase()} file was found after processing.`
+            );
+        }
+
+        const filePath = path.join(tempDir, outputFile);
+
+        const safeFilename = outputFile
+            .replace(/č/gi, "c")
+            .replace(/ć/gi, "c")
+            .replace(/š/gi, "s")
+            .replace(/đ/gi, "d")
+            .replace(/ž/gi, "z")
+            .replace(/[\r\n\t]/g, " ")
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+            .trim();
+
+        const finalFilename =
+            safeFilename || `download.${format}`;
+
+        const contentType =
+            format === "mp3"
+                ? "audio/mpeg"
+                : "video/mp4";
+
+        const stat = await fs.promises.stat(filePath);
+
+        reply
+            .header("Content-Type", contentType)
+            .header(
+                "Content-Disposition",
+                `attachment; filename="${finalFilename}"`
+            )
+            .header("Content-Length", String(stat.size));
+
+        const stream = fs.createReadStream(filePath);
+
+        stream.on("close", async () => {
+            try {
+                await fs.promises.rm(tempDir, {
+                    recursive: true,
+                    force: true
+                });
+            } catch { }
+        });
+
+        return reply.send(stream);
+    } catch (err) {
+        try {
+            await fs.promises.rm(tempDir, {
+                recursive: true,
+                force: true
+            });
+        } catch { }
+
+        const errorText =
+            err?.stderr ||
+            err?.message ||
+            "";
+
+        let message = "An error occurred while downloading the media.";
+
+        if (
+            errorText.includes("403") ||
+            errorText.includes("Forbidden")
+        ) {
+            message =
+                "The source rejected the download (HTTP 403). Please try again or use a different URL.";
+        } else if (
+            errorText.includes("No supported JavaScript runtime")
+        ) {
+            message =
+                "A supported JavaScript runtime for yt-dlp is missing.";
+        } else if (
+            errorText.includes("Unable to download")
+        ) {
+            message =
+                "Unable to download media from the specified page.";
+        } else if (
+            errorText.includes("Unsupported URL")
+        ) {
+            message = "This URL is not supported.";
+        }
+
+        return reply.status(500).send({
+            error: message
+        });
+    }
+});
 
 fastify.setNotFoundHandler((request, reply) => {
     reply.sendFile("index.html");

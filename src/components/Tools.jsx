@@ -6,6 +6,7 @@ import RSSCard from "./tools/RSS";
 import HardwareCard from "./tools/Hardware";
 import QRCard from "./tools/QR";
 import InfoCard from "./tools/Info";
+import YtDlpCard from "./tools/YtDlp";
 
 const allWidgets = [
     { key: "Process", label: "Process", icon: "bi-cpu", component: ProcessCard },
@@ -13,11 +14,12 @@ const allWidgets = [
     { key: "Notes", label: "Notes", icon: "bi-stickies", component: NotesCard },
     { key: "RSS", label: "RSS", icon: "bi-rss", component: RSSCard },
     { key: "Hardware", label: "Hardware", icon: "bi-hdd", component: HardwareCard },
-    { key: "QR", label: "QR", icon: "bi-qr-code", component: QRCard }
+    { key: "QR", label: "QR", icon: "bi-qr-code", component: QRCard },
+    { key: "YtDlp", label: "yt-dlp", icon: "bi-youtube", component: YtDlpCard }
 ];
 
 export default function Tools({ refreshInterval, tools }) {
-    const availableWidgets = allWidgets.filter(w => tools?.[w.label]);
+    const availableWidgets = allWidgets.filter(w => tools?.[w.key]);
 
     const [active, setActive] = useState(() => {
         const stored = localStorage.getItem("activeWidget");

@@ -6,6 +6,38 @@ If you have any questions or issues, contact me via email or GitHub.
 
 ---
 
+# [v1.4.5](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.5) – [10/27/26]
+
+### Mobile & Responsive Improvements
+- **Sticky Compact Header** - The header now stays at the top while scrolling and uses a compact layout on phones, with the clock moved next to the welcome message.
+- **Stats & Info on Mobile** - System Statistics and Info buttons are now available on small screens, where they were previously hidden.
+- **Responsive Gauges** - CPU, RAM and temperature gauges now automatically adapt to the width of their container instead of using fixed sizes, and re-adjust on rotation or window resize.
+- **Adaptive Dashboard Layout** - Gauges are arranged in 1, 2 or 3 columns depending on screen width, and disk usage cards wrap automatically.
+
+### Usability
+- **Keyboard & Scroll Handling** - Modals, the mobile sidebar and the header menu now close with Escape, and the page behind a modal no longer scrolls.
+- **Auto-Close Menus** - The mobile sidebar closes automatically when the screen becomes wide, and the header menu closes when clicking outside of it.
+- **Resize-Aware Layout** - Mobile detection now reacts to window resize and device rotation instead of being checked only once.
+- **Reduced Motion** - Animations are disabled for users who prefer reduced motion.
+
+### Bug Fixes
+- **Tools Page Empty After Reload** - Fixed "No Tools Enabled" being shown after refreshing the Tools page even though tools were enabled.
+- **Crypto Prices Crash** - Fixed a crash when the price API returned an error or incomplete data; unavailable prices now show as N/A.
+
+### General Improvements
+- Added `viewport-fit=cover` and `theme-color` for better display on modern phones.
+- Switched to dynamic viewport height (`dvh`) so layouts fit correctly with mobile browser toolbars.
+- Added shared `useIsMobile` and `useModalEffects` hooks to reduce duplicated code.
+
+### TODO
+ - **YtDlp Downloader** - Added a new tool for downloading media in MP3 and MP4 formats (in progress).
+
+---
+
+**Full Changelog**: https://github.com/MuxBH28/server-homepage/commits/v1.4.5
+
+---
+
 # [v1.4.4](https://github.com/MuxBH28/server-homepage/releases/tag/v1.4.4) – [5/16/26]
 
 ### Backend Improvements

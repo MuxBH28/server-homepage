@@ -11,7 +11,8 @@ export default function Settings({ settings, setSettings, links, fetchLinks }) {
         Notes: false,
         RSS: false,
         Hardware: false,
-        QR: false
+        QR: false,
+        YtDlp: false
     };
 
     const saveSettings = async (e) => {

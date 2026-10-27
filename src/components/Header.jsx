@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Info from "./Info";
 import StatsModal from "./StatsModal";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function Header({ name, onMobileToggle }) {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -8,7 +9,7 @@ export default function Header({ name, onMobileToggle }) {
     const [welcomeMsg, setWelcomeMsg] = useState("");
     const [infoOpen, setInfoOpen] = useState(false);
     const [statsOpen, setStatsOpen] = useState(false);
-    const isMobile = window.innerWidth < 768;
+    const isMobile = useIsMobile();
 
     const handleBurgerClick = () => {
         if (isMobile && onMobileToggle) {
@@ -97,11 +98,24 @@ export default function Header({ name, onMobileToggle }) {
         setWelcomeMsg(getWelcomeMessage(currentTime.getHours()));
     }, [currentTime.getHours()]);
 
+    useEffect(() => {
+        if (!burgerOpen) return;
+        const onKey = (e) => e.key === "Escape" && setBurgerOpen(false);
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [burgerOpen]);
+
     const formatTime = (date) =>
         date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
+        });
+
+    const formatTimeShort = (date) =>
+        date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
         });
 
     const formatDate = (date) =>
@@ -112,54 +126,72 @@ export default function Header({ name, onMobileToggle }) {
             day: "numeric",
         });
 
+    const formatDateShort = (date) =>
+        date.toLocaleDateString([], {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+        });
+
     return (
         <>
-            <header className="w-full bg-black/50 backdrop-blur-md border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-lg relative">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-200">
+            <header className="sticky top-0 z-30 w-full bg-black/50 backdrop-blur-md border-b border-gray-700 px-3 sm:px-6 pb-3 md:pb-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] md:pt-4 flex justify-between items-center gap-3 shadow-lg">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-200 truncate">
                         Welcome, <span className="text-red-500">{name || "User"}</span>
                     </h1>
-                    <p className="text-gray-400 text-sm mt-1">{welcomeMsg}</p>
+                    <p className="text-gray-400 text-xs sm:text-sm mt-0.5 md:mt-1 truncate" title={welcomeMsg}>
+                        <span className="lg:hidden font-mono text-gray-200 mr-2">
+                            {formatTimeShort(currentTime)}
+                        </span>
+                        {welcomeMsg}
+                    </p>
                 </div>
 
-                <div className="flex flex-col items-end gap-2 relative">
-                    <div className="flex items-center gap-3">
-                        {!isMobile && (<>
-                            <div className="text-2xl font-mono text-gray-200 bg-gray-800/50 px-5 py-2 rounded-xl shadow-inner tracking-wider">
-                                {formatTime(currentTime)}
-                            </div>
-                            <button
-                                onClick={toggleStats}
-                                className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
-                                title="System Statistics"
-                            >
-                                <i className="bi bi-graph-up-arrow"></i>
-                            </button>
-                            <button
-                                onClick={toggleInfo}
-                                className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
-                            >
-                                <i className="bi bi-info-square"></i>
-                            </button>
-                        </>
-                        )}
+                <div className="flex flex-col items-end gap-1 md:gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                        <div className="hidden lg:block whitespace-nowrap text-2xl font-mono text-gray-200 bg-gray-800/50 px-5 py-2 rounded-xl shadow-inner tracking-wider">
+                            {formatTime(currentTime)}
+                        </div>
+                        <button
+                            onClick={toggleStats}
+                            className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 inline-flex items-center justify-center text-gray-200 hover:text-red-500 text-lg sm:text-xl lg:text-2xl rounded-lg bg-gray-800/50 shadow"
+                            title="System Statistics"
+                            aria-label="System Statistics"
+                        >
+                            <i className="bi bi-graph-up-arrow"></i>
+                        </button>
+                        <button
+                            onClick={toggleInfo}
+                            className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 inline-flex items-center justify-center text-gray-200 hover:text-red-500 text-lg sm:text-xl lg:text-2xl rounded-lg bg-gray-800/50 shadow"
+                            title="Info"
+                            aria-label="Info"
+                        >
+                            <i className="bi bi-info-square"></i>
+                        </button>
                         <button
                             onClick={handleBurgerClick}
-                            className="text-gray-200 hover:text-red-500 text-2xl p-2 rounded-lg bg-gray-800/50 shadow"
+                            className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 inline-flex items-center justify-center text-gray-200 hover:text-red-500 text-lg sm:text-xl lg:text-2xl rounded-lg bg-gray-800/50 shadow"
+                            aria-label="Menu"
                         >
                             <i className={`bi ${burgerOpen ? "bi-x-lg" : "bi-list"} `}></i>
                         </button>
                     </div>
 
-                    <div className="text-gray-400 text-sm flex items-center gap-2 mt-1">
+                    <div className="hidden sm:flex text-gray-400 text-sm items-center gap-2">
                         <i className="bi bi-calendar-heart text-red-400"></i>
-                        {formatDate(currentTime)}
+                        <span className="hidden lg:inline">{formatDate(currentTime)}</span>
+                        <span className="lg:hidden">{formatDateShort(currentTime)}</span>
                     </div>
                 </div>
             </header>
 
             {burgerOpen && (
-                <div className="fixed top-[72px] right-6 w-64 bg-black/80 backdrop-blur-md rounded-xl shadow-xl border border-gray-700 p-4 z-[9999]">
+                <div className="fixed inset-0 z-[9998]" onClick={() => setBurgerOpen(false)} />
+            )}
+
+            {burgerOpen && (
+                <div className="fixed top-[72px] right-3 md:right-6 w-64 max-w-[calc(100vw-1.5rem)] max-h-[calc(100dvh-5rem)] overflow-y-auto bg-black/80 backdrop-blur-md rounded-xl shadow-xl border border-gray-700 p-4 z-[9999]">
                     <div className="flex flex-col items-center mb-3">
                         <img src="/assets/logo.png" alt="Logo" className="w-16 h-16 mb-2" />
                         <h2 className="text-gray-200 font-bold text-lg">

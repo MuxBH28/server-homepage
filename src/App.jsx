@@ -101,7 +101,7 @@ function App() {
 
   return (
     <Router>
-      <div className="font-sans min-h-screen flex bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-white">
+      <div className="font-sans min-h-dvh flex bg-gradient-to-br from-[#1f1f2e] to-[#2c2c3a] text-white">
         <Sidebar
           server={settings.server}
           appVersions={settings.appVersions}
@@ -111,9 +111,9 @@ function App() {
           incrementLinkOpened={incrementLinkOpened}
         />
 
-        <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+        <div className="flex-1 min-w-0 md:ml-64 flex flex-col min-h-dvh">
           <Header name={settings.name} onMobileToggle={() => setMobileOpen(!mobileOpen)} />
-          <main className="flex-1 p-6 space-y-6">
+          <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route
